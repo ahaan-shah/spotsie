@@ -108,13 +108,30 @@ Plain `cargo` is fine. Never put build output or large scratch files in
 - Report platform coverage honestly. Do not claim a platform was tested when
   it was only compiled or reasoned about.
 
-## Releases
+## Installing and releasing
 
-1. Change the `Cargo.toml` version, add the matching release to the Flatpak
-   metainfo, write `packaging/release-notes/vVERSION.md`, and update the
-   lockfile with a build. Commit and push, and wait for CI.
-2. Push the `v*` tag, which triggers the release workflow. Check the
-   published notes and every artifact. Never publish placeholder notes.
+`scripts/install.sh` builds a release binary and installs it for the user
+(`~/.local/bin`, the launcher entry and the icon). Run it after changes the
+user wants on their system.
+
+Versions are tagged `vMAJOR.MINOR.PATCH`, starting at v0.1.0:
+
+1. Write `packaging/release-notes/vVERSION.md`: a short plain-language
+   summary, then `New`, `Changed`, `Fixed` or `Removed` sections as they
+   apply, each item leading with a bold user-facing result. Never write
+   placeholder notes.
+2. With everything else committed, run `scripts/release.sh VERSION`. It sets
+   the version in `Cargo.toml`, `Cargo.lock` and the Flatpak metainfo,
+   commits, and creates the annotated tag. It does not push.
+3. Push only when the user asks: `git push && git push origin vVERSION`.
+4. Run `scripts/install.sh` so the installed app is the new version.
+
+CI runs on Linux only. The release workflow, which builds packages for every
+platform, runs only when started by hand from the Actions tab on a tag.
+
+The icon is `packaging/icons/spotsie.svg`; the app renders it at runtime.
+After changing it, regenerate `packaging/macos/icon-1024.png` and
+`packaging/windows/spotsie.ico` from it.
 
 Never use em dashes in user-facing text. Use a full stop, comma, colon, or
 parentheses instead.

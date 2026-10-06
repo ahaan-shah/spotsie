@@ -1,8 +1,10 @@
 name: Release
 
+# Started by hand from the Actions tab, choosing the version's tag as the
+# ref: tags are version bookmarks, and building every platform on each one
+# would spend the private repository's Actions minutes.
 on:
-  push:
-    tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write

@@ -39,6 +39,22 @@ cargo run --features demo -- --demo
 
 Other systems: see [Build from source](docs/_guide/getting-started.md#build-from-source).
 
+## Install on this computer
+
+```sh
+scripts/install.sh              # build and install, or update an installed copy
+scripts/install.sh --uninstall  # remove it (settings and sign-in stay)
+```
+
+This puts `spotsie` in `~/.local/bin` and adds Spotsie to the app launcher.
+
+## Versions
+
+Releases are tagged `v0.1.0`, `v0.1.1` and so on. To cut one, write
+`packaging/release-notes/vVERSION.md`, then run `scripts/release.sh VERSION`.
+It sets the version, commits and tags. Then push with
+`git push && git push origin vVERSION` and run `scripts/install.sh`.
+
 ## Docs
 
 - [Getting started](docs/_guide/getting-started.md): sign-in, playback on this computer, themes, fonts, proxies

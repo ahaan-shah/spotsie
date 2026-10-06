@@ -554,12 +554,13 @@ pub fn play_glyph_offset(icon: Icon, icon_size: f32) -> Vec2 {
     }
 }
 
-/// The app's mark, the same picture as the app icon: the polished green
-/// disc with the play triangle, rasterised once per size by
-/// `util::app_icon_rgba` and drawn wherever the app shows its logo.
+/// The app's mark, the same picture as the app icon: the record with its
+/// green label, rasterised once per size by `util::app_icon_rgba` and drawn
+/// wherever the app shows its logo.
 pub fn logo(ui: &egui::Ui, center: egui::Pos2, diameter: f32) {
     let ppp = ui.ctx().pixels_per_point();
-    // The raster keeps two pixels of margin on each side of the disc.
+    // The icon leaves a little margin around the record; four pixels
+    // more than the diameter keeps the record itself about that wide.
     let pixels = (diameter * ppp).round() as usize + 4;
     let id = egui::Id::new(("spotsie-logo", pixels));
     let texture = ui

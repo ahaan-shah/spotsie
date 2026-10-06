@@ -77,6 +77,10 @@ fastframe-instance = { git = "https://github.com/crmne/fastframe", tag = "v0.4.1
 # commands back, and closing the window keeps the music playing.
 fastframe-now-playing = { git = "https://github.com/crmne/fastframe", tag = "v0.4.1" }
 image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+# Rasterising the app icon (packaging/icons/spotsie.svg) for the window,
+# the trays and the in-app logo. Already compiled for the SVG icons through
+# egui_extras, so this adds no code to the build.
+resvg = { version = "0.45", default-features = false }
 # Drawing the Windows taskbar's thumbnail buttons (src/thumbbar.rs). Already
 # compiled for the SVG icons through egui_extras and resvg, so this adds no
 # code to the build.
