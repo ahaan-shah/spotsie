@@ -1,0 +1,37 @@
+# The release workflow's Flatpak: the binary the Linux job built, packaged
+# into the same sandbox as io.github.ahaan_shah.Spotsie.yml describes. The
+# job unpacks the release tarball into built/ beside this file first.
+id: io.github.ahaan_shah.Spotsie
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: spotsie
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  - --socket=pulseaudio
+  - --share=network
+  # Platform storage for this application's Spotify grants.
+  - --talk-name=org.freedesktop.secrets
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --own-name=org.mpris.MediaPlayer2.spotsie
+  - --persist=.local/state
+modules:
+  - name: spotsie
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 spotsie /app/bin/spotsie
+      - install -Dm644 packaging/applications/*.desktop /app/share/applications/io.github.ahaan_shah.Spotsie.desktop
+      - sed -i 's/^Icon=.*$/Icon=io.github.ahaan_shah.Spotsie/;s/^StartupWMClass=spotsie$/StartupWMClass=io.github.ahaan_shah.Spotsie/' /app/share/applications/io.github.ahaan_shah.Spotsie.desktop
+      - install -Dm644 packaging/icons/*.svg /app/share/icons/hicolor/scalable/apps/io.github.ahaan_shah.Spotsie.svg
+      - install -Dm644 packaging/flatpak/io.github.ahaan_shah.Spotsie.metainfo.xml /app/share/metainfo/io.github.ahaan_shah.Spotsie.metainfo.xml
+      - install -Dm644 LICENSE /app/share/licenses/spotsie/LICENSE
+    sources:
+      - type: dir
+        path: built
+      # Metainfo belongs to this packaging checkout, not the portable archive.
+      - type: file
+        path: io.github.ahaan_shah.Spotsie.metainfo.xml
+        dest: packaging/flatpak

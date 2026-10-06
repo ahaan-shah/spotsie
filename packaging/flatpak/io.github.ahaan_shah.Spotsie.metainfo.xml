@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.ahaan_shah.Spotsie</id>
+  <name>Spotsie</name>
+  <summary>A native Spotify client</summary>
+  <developer id="io.github.ahaan_shah">
+    <name>Ahaan Shah</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>
+      A Spotify client written in Rust with no browser engine. It starts
+      in well under a second, plays music on this computer, and controls other
+      Spotify Connect devices.
+    </p>
+    <p>
+      Browse your library, search Spotify, edit playlists, manage the queue,
+      and view lyrics. It also has keyboard shortcuts, media-key support,
+      background playback, and an equalizer. Playback needs Spotify Premium.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.ahaan_shah.Spotsie.desktop</launchable>
+  <url type="homepage">https://github.com/ahaan-shah/spotsie</url>
+  <url type="bugtracker">https://github.com/ahaan-shah/spotsie/issues</url>
+  <url type="help">https://github.com/ahaan-shah/spotsie/blob/main/docs/_guide/getting-started.md</url>
+  <url type="vcs-browser">https://github.com/ahaan-shah/spotsie</url>
+  <screenshots>
+    <screenshot type="default">
+      <caption>A playlist, with the queue open and a track playing on a remote speaker</caption>
+      <image>https://raw.githubusercontent.com/ahaan-shah/spotsie/main/docs/screenshot.png</image>
+    </screenshot>
+  </screenshots>
+  <branding>
+    <color type="primary" scheme_preference="light">#1ed760</color>
+    <color type="primary" scheme_preference="dark">#144a2a</color>
+  </branding>
+  <content_rating type="oars-1.1" />
+  <requires>
+    <display_length compare="ge">760</display_length>
+    <internet>always</internet>
+  </requires>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <releases>
+    <release version="0.1.0" date="2026-10-06">
+      <url>https://github.com/ahaan-shah/spotsie/releases/tag/v0.1.0</url>
+    </release>
+  </releases>
+</component>
