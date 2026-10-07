@@ -52,7 +52,8 @@ pub fn side_panel(app: &mut App, ui: &mut egui::Ui) {
                 .fill(palette.panel)
                 .inner_margin(Margin::symmetric(12, 12)),
         );
-    let response = panel.show(ui, |ui| {
+    let mut open = app.show_lyrics_panel;
+    let shown = super::sliding_panel(ui, panel, "lyrics-panel", &mut open, |ui| {
         let window_controls = super::window_controls_reservation(
             ui.ctx(),
             app.show_queue_panel,
@@ -112,6 +113,12 @@ pub fn side_panel(app: &mut App, ui: &mut egui::Ui) {
         ui.add_space(8.0);
         contents(app, ui);
     });
+    if open != app.show_lyrics_panel {
+        app.show_lyrics_panel = open;
+    }
+    let Some((response, true)) = shown else {
+        return;
+    };
     let current_width = response.response.rect.width();
     if (app.settings.lyrics_width - current_width).abs() > 1.0
         && super::panel_width_chosen(ui.ctx(), "lyrics-panel", &fit)
@@ -127,7 +134,7 @@ fn contents(app: &mut App, ui: &mut egui::Ui) {
         widgets::empty_state(
             ui,
             &palette,
-            Icon::Mic,
+            Icon::Lyrics,
             &gettext(app.locale, "Nothing playing"),
             &gettext(app.locale, "Play a song to see its lyrics."),
         );
@@ -158,7 +165,7 @@ fn contents(app: &mut App, ui: &mut egui::Ui) {
             widgets::empty_state(
                 ui,
                 &palette,
-                Icon::Mic,
+                Icon::Lyrics,
                 &gettext(app.locale, "No lyrics"),
                 &gettext(app.locale, "No lyrics found for this track."),
             );
@@ -596,7 +603,7 @@ fn fullscreen_contents(app: &mut App, ui: &mut egui::Ui) {
         widgets::empty_state(
             ui,
             &palette,
-            Icon::Mic,
+            Icon::Lyrics,
             &gettext(app.locale, "Nothing playing"),
             &gettext(app.locale, "Play a song to see its lyrics."),
         );
@@ -627,7 +634,7 @@ fn fullscreen_contents(app: &mut App, ui: &mut egui::Ui) {
             widgets::empty_state(
                 ui,
                 &palette,
-                Icon::Mic,
+                Icon::Lyrics,
                 &gettext(app.locale, "No lyrics"),
                 &gettext(app.locale, "No lyrics found for this track."),
             );

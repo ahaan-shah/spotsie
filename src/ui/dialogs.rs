@@ -7,16 +7,39 @@ use crate::i18n::{Locale, gettext, ngettext};
 use crate::model::{Action, Dialog};
 use crate::theme;
 
+/// Whether a dialog was showing last frame, and since when.
+const OPENED_ID: &str = "dialog-opened-at";
+
 pub fn show(app: &mut App, ctx: &egui::Context) {
+    let opened_id = egui::Id::new(OPENED_ID);
     let Some(dialog) = app.dialog.clone() else {
+        ctx.data_mut(|data| data.remove::<f64>(opened_id));
         return;
     };
+    // A dialog fades in over its backdrop and lands, as Magpie's do.
+    let opened_at = ctx
+        .data(|data| data.get_temp::<f64>(opened_id))
+        .unwrap_or_else(|| {
+            let now = ctx.input(|input| input.time);
+            ctx.data_mut(|data| data.insert_temp(opened_id, now));
+            now
+        });
+    let arrival = crate::motion::appear(ctx, opened_at, 0.0, 0.28);
     let palette = app.palette;
+    ctx.layer_painter(egui::LayerId::new(
+        egui::Order::Middle,
+        egui::Id::new("dialog-backdrop"),
+    ))
+    .rect_filled(
+        ctx.content_rect(),
+        0.0,
+        egui::Color32::from_black_alpha((if palette.dark { 150.0 } else { 80.0 } * arrival) as u8),
+    );
     let locale = app.locale;
     let frame = Frame::new()
         .fill(palette.overlay)
         .stroke(Stroke::new(1.0, palette.outline))
-        .corner_radius(CornerRadius::same(theme::RADIUS + 4))
+        .corner_radius(CornerRadius::same(theme::RADIUS_CARD))
         .inner_margin(Margin::same(24))
         .shadow(egui::epaint::Shadow {
             offset: [0, 10],
@@ -26,12 +49,11 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
         });
     let response = egui::Modal::new(egui::Id::new("dialog"))
         .frame(frame)
-        .backdrop_color(egui::Color32::from_black_alpha(if palette.dark {
-            150
-        } else {
-            80
-        }))
+        // The dialog's own layer scales as it lands, so the dimming sits on
+        // a layer of its own beneath it and only fades.
+        .backdrop_color(egui::Color32::TRANSPARENT)
         .show(ctx, |ui| {
+            ui.set_opacity(arrival);
             ui.set_width(420.0);
             match dialog {
                 Dialog::PersonalAppIntro => {
@@ -227,6 +249,12 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
             }
         });
     app.dialog_rect = Some(response.response.rect);
+    let scale = 0.94 + 0.06 * crate::motion::ease_out_back(arrival);
+    let centre = response.response.rect.center().to_vec2();
+    ctx.set_transform_layer(
+        response.response.layer_id,
+        egui::emath::TSTransform::new(centre * (1.0 - scale), scale),
+    );
     if response.should_close() {
         app.actions.push(Action::CloseDialog);
     }

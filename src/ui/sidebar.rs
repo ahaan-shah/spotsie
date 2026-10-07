@@ -366,11 +366,13 @@ fn sort_button(app: &mut App, ui: &mut egui::Ui, shelf: Filter, selected: Librar
         egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), label.as_ref())
     });
     let open = egui::Popup::is_id_open(ui.ctx(), egui::Popup::default_response_id(&response));
-    let tint = if response.hovered() || response.has_focus() || open {
-        palette.text
-    } else {
-        palette.secondary
-    };
+    let lit = crate::motion::toggle(
+        ui.ctx(),
+        response.id.with("lit"),
+        response.hovered() || response.has_focus() || open,
+        crate::motion::MICRO,
+    );
+    let tint = crate::motion::lerp_color(palette.secondary, palette.text, lit);
     if ui.is_rect_visible(rect) {
         theme::paint_icon(ui, Icon::List, rect, ICON, tint);
     }
@@ -398,12 +400,7 @@ fn sort_button(app: &mut App, ui: &mut egui::Ui, shelf: Filter, selected: Librar
                 {
                     continue;
                 }
-                if super::widgets::menu_item(
-                    ui,
-                    &app.palette,
-                    (*sort == selected).then_some(Icon::Check),
-                    label,
-                ) {
+                if super::widgets::menu_choice(ui, &palette, *sort == selected, label) {
                     app.actions
                         .push(Action::SetLibrarySort { shelf, sort: *sort });
                 }
@@ -511,7 +508,8 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             top,
             bottom: if expanded_art { 0 } else { 8 },
         }));
-    let response = panel.show(ui, |ui| {
+    let mut open = app.settings.sidebar_visible;
+    let shown = super::sliding_panel(ui, panel, "sidebar", &mut open, |ui| {
         let art_rect = expanded_art.then(|| expanded_art_rect(ui));
         if let Some(rect) = art_rect.filter(|_| !floating_art) {
             reserve_expanded_art(ui, rect);
@@ -524,6 +522,13 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             paint_expanded_art(app, ui, rect);
         }
     });
+    if open != app.settings.sidebar_visible {
+        app.settings.sidebar_visible = open;
+        app.actions.push(Action::SettingsChanged);
+    }
+    let Some((response, true)) = shown else {
+        return;
+    };
     let width = response.response.rect.width();
     if (width - app.settings.sidebar_width).abs() > 1.0
         && super::panel_width_chosen(ui.ctx(), "sidebar", &fit)
@@ -810,11 +815,13 @@ fn nav_row(
 ) -> egui::Response {
     let (rect, response) = ui.allocate_exact_size(vec2(ui.available_width(), 40.0), Sense::click());
     if ui.is_rect_visible(rect) {
-        let color = if active || response.hovered() {
-            palette.text
-        } else {
-            palette.secondary
-        };
+        let lit = crate::motion::toggle(
+            ui.ctx(),
+            response.id.with("lit"),
+            active || response.hovered(),
+            crate::motion::MICRO,
+        );
+        let color = crate::motion::lerp_color(palette.secondary, palette.text, lit);
         let icon_rect =
             Rect::from_center_size(pos2(rect.left() + 22.0, rect.center().y), Vec2::splat(22.0));
         icon.image(color, 22.0).paint_at(ui, icon_rect);
@@ -1354,16 +1361,15 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
                 // click on it does not also play from the row.
                 let mut cover_took_click = false;
                 if ui.is_rect_visible(rect) {
-                    if active {
-                        ui.painter()
-                            .rect_filled(rect, CornerRadius::same(6), palette.surface);
-                    } else if response.hovered() {
-                        ui.painter().rect_filled(
-                            rect,
-                            CornerRadius::same(6),
-                            palette.surface_hover.gamma_multiply(0.6),
-                        );
-                    }
+                    super::widgets::row_wash(
+                        ui,
+                        response.id,
+                        &palette,
+                        rect,
+                        6,
+                        active,
+                        response.hovered(),
+                    );
                     if drop_hover {
                         ui.painter().rect_filled(
                             rect,
@@ -1704,16 +1710,15 @@ fn library_grid(
                     );
                     let mut cover_took_click = false;
                     if ui.is_rect_visible(rect) {
-                        if active {
-                            ui.painter()
-                                .rect_filled(rect, CornerRadius::same(6), palette.surface);
-                        } else if response.hovered() {
-                            ui.painter().rect_filled(
-                                rect,
-                                CornerRadius::same(6),
-                                palette.surface_hover.gamma_multiply(0.6),
-                            );
-                        }
+                        super::widgets::row_wash(
+                            ui,
+                            response.id,
+                            &palette,
+                            rect,
+                            6,
+                            active,
+                            response.hovered(),
+                        );
                         if entry.liked {
                             liked_cover(ui, cover_rect, 6.0);
                         } else if entry.folder.is_some() {

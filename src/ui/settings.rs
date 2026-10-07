@@ -14,6 +14,8 @@ use super::widgets;
 const PLAYBACK_DIRTY_ID: &str = "playback-settings-dirty";
 pub(crate) const PERSONAL_APP_FOCUS_ID: &str = "focus-personal-app-setup";
 const SETTINGS_FILTER_ID: &str = "settings-filter";
+/// How many sections this frame has drawn, for their staggered entrance.
+const SECTION_INDEX_ID: &str = "settings-section-index";
 
 /// Whether a settings row matches the filter query (case-insensitive).
 /// An empty query matches everything, so the page reads exactly as
@@ -58,9 +60,6 @@ impl<'a> RowText<'a> {
                 || row_matches(needle, &self.title, &self.description))
     }
 }
-
-/// The guide to writing a palette file for the themes folder.
-const THEMES_GUIDE_URL: &str = "https://github.com/ahaan-shah/spotsie/blob/main/docs/_reference/settings-and-files.md#custom-themes";
 
 fn section_matches(needle: &str, title: &str, rows: &[RowText<'_>]) -> bool {
     let needle = needle.trim().to_lowercase();
@@ -109,34 +108,58 @@ pub(crate) fn clear_search(ctx: &egui::Context) {
 }
 const PROXY_DIRTY_ID: &str = "proxy-settings-dirty";
 
+/// A settings section, as Magpie draws one: a card with its title inside,
+/// rising into place a moment after the one above it when the page opens.
 fn section(
     ui: &mut egui::Ui,
     palette: &Palette,
     title: &str,
     add_contents: impl FnOnce(&mut egui::Ui),
 ) {
-    ui.add_space(10.0);
-    theme::text(ui, title, theme::bold(18.0), palette.text);
-    ui.add_space(8.0);
-    Frame::new()
-        .fill(
-            palette
-                .surface
-                .gamma_multiply(if palette.dark { 0.7 } else { 1.0 }),
-        )
-        .stroke(Stroke::new(1.0, palette.outline))
-        .corner_radius(CornerRadius::same(theme::RADIUS + 2))
-        .inner_margin(Margin::symmetric(20, 16))
-        .show(ui, |ui| {
-            ui.set_width(ui.available_width().min(760.0));
-            add_contents(ui);
-        });
-    ui.add_space(8.0);
+    let index_id = egui::Id::new(SECTION_INDEX_ID);
+    let index = ui
+        .data(|data| data.get_temp::<usize>(index_id))
+        .unwrap_or(0);
+    ui.data_mut(|data| data.insert_temp(index_id, index + 1));
+    let shown_at = super::page_shown_at(ui.ctx());
+    let (opacity, lift) = crate::motion::reveal(ui.ctx(), shown_at, index);
+    let width = ui.available_width().min(800.0);
+    ui.scope(|ui| {
+        ui.set_opacity(opacity);
+        ui.add_space(lift);
+        Frame::new()
+            .fill(
+                palette
+                    .surface
+                    .gamma_multiply(if palette.dark { 0.75 } else { 1.0 }),
+            )
+            .stroke(Stroke::new(1.0, palette.outline))
+            .corner_radius(CornerRadius::same(theme::RADIUS_CARD))
+            .inner_margin(Margin::same(20))
+            .shadow(egui::epaint::Shadow {
+                offset: [0, 2],
+                blur: if palette.dark { 8 } else { 14 },
+                spread: 0,
+                color: if palette.dark {
+                    egui::Color32::from_black_alpha(40)
+                } else {
+                    egui::Color32::from_rgba_premultiplied(18, 22, 40, 10)
+                },
+            })
+            .show(ui, |ui| {
+                ui.set_width(width - 40.0);
+                theme::text(ui, title, theme::semibold(16.0), palette.text);
+                ui.add_space(14.0);
+                add_contents(ui);
+            });
+        ui.add_space(16.0 - lift);
+    });
 }
 
 pub fn show(app: &mut App, ui: &mut egui::Ui) {
     let palette = app.palette;
     let locale = app.locale;
+    ui.data_mut(|data| data.insert_temp(egui::Id::new(SECTION_INDEX_ID), 0_usize));
     ui.add_space(8.0);
     theme::text(
         ui,
@@ -700,8 +723,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
 
     let appearance = gettext(locale, "Appearance");
     let theme_title = gettext(locale, "Theme");
-    let theme_guide = gettext(locale, "How to make a theme");
-    let themes_folder = gettext(locale, "Open themes folder");
     let accent_from_art = gettext(locale, "Colour from album art");
     let sidebar_compact = gettext(locale, "Compact library sidebar");
     let tracklist_compact = gettext(locale, "Compact track list");
@@ -781,104 +802,44 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     if section_matches(&needle, &appearance, &appearance_rows) {
         any_visible = true;
         section(ui, &palette, &appearance, |ui| {
-            // Wide enough for the theme's two buttons side by side.
-            let theme_buttons_width = theme::soft_button_width(ui, &theme_guide)
-                + theme::soft_button_width(ui, &themes_folder)
-                + 6.0;
-            filtered_row_sized(
-                ui,
-                &palette,
-                &needle,
-                &appearance,
-                &appearance_rows[0],
-                theme_buttons_width,
-                |ui| {
-                    ui.with_layout(Layout::top_down(Align::Max), |ui| {
-                        let selected = app
-                            .settings
-                            .custom_theme
-                            .as_deref()
-                            .map(|filename| fastframe_theme::display_name(filename).into())
-                            .unwrap_or_else(|| app.settings.theme.label(locale));
-                        let response = egui::ComboBox::from_id_salt("appearance_theme")
-                            .selected_text(selected.as_ref())
-                            .width(200.0_f32.min(ui.available_width()))
-                            .show_ui(ui, |ui| {
-                                for choice in ThemeChoice::ALL {
-                                    if ui
-                                        .selectable_label(
-                                            app.settings.custom_theme.is_none()
-                                                && app.settings.theme == choice,
-                                            choice.label(locale).as_ref(),
-                                        )
-                                        .clicked()
-                                    {
-                                        app.actions.push(Action::SetTheme(choice));
-                                    }
-                                }
-                                if app.custom_themes.picker_themes().next().is_some() {
-                                    ui.separator();
-                                }
-                                for theme in app.custom_themes.picker_themes() {
-                                    if ui
-                                        .selectable_label(
-                                            app.settings.custom_theme.as_deref()
-                                                == Some(theme.filename.as_str()),
-                                            fastframe_theme::display_name(&theme.filename),
-                                        )
-                                        .clicked()
-                                    {
-                                        app.actions
-                                            .push(Action::SetCustomTheme(theme.filename.clone()));
-                                    }
-                                }
-                            });
-                        response.response.widget_info(|| {
-                            let mut info = egui::WidgetInfo::labeled(
-                                egui::WidgetType::ComboBox,
-                                ui.is_enabled(),
-                                theme_title.as_ref(),
-                            );
-                            info.current_text_value = Some(selected.to_string());
-                            info
-                        });
-                        // The guide to writing a theme sits beside the folder
-                        // it goes in, and above it when both do not fit.
-                        let (guide, folder) = (&theme_guide, &themes_folder);
-                        let gap = 6.0;
-                        let mut buttons = |ui: &mut egui::Ui| {
-                            if theme::soft_button(ui, &palette, Some(Icon::Globe), guide, false)
-                                .clicked()
-                            {
-                                app.actions.push(Action::OpenUrl(THEMES_GUIDE_URL.into()));
-                            }
-                            if theme::soft_button(
-                                ui,
-                                &palette,
-                                Some(Icon::ExternalLink),
-                                folder,
-                                false,
-                            )
-                            .clicked()
-                            {
-                                app.actions.push(Action::OpenThemesFolder);
+            if appearance_rows[0].matches(&needle, &appearance) {
+                widgets::setting_row(
+                    ui,
+                    &palette,
+                    &appearance_rows[0].title,
+                    &appearance_rows[0].description,
+                    |_| {},
+                );
+                ui.add_space(-4.0);
+                ui.horizontal_wrapped(|ui| {
+                    ui.spacing_mut().item_spacing = egui::vec2(12.0, 12.0);
+                    let current = app.settings.custom_theme.clone();
+                    for choice in ThemeChoice::ALL {
+                        let preview = match choice {
+                            ThemeChoice::Light => ThemePreview::One(Palette::light()),
+                            ThemeChoice::Dark => ThemePreview::One(Palette::dark()),
+                            ThemeChoice::System => {
+                                ThemePreview::Split(Palette::light(), Palette::dark())
                             }
                         };
-                        let both = theme::soft_button_width(ui, guide)
-                            + theme::soft_button_width(ui, folder)
-                            + gap;
-                        if ui.available_width() >= both {
-                            ui.horizontal(|ui| {
-                                ui.spacing_mut().item_spacing.x = gap;
-                                buttons(ui);
-                            });
-                        } else {
-                            ui.spacing_mut().item_spacing.y = gap;
-                            buttons(ui);
+                        let selected = current.is_none() && app.settings.theme == choice;
+                        let label = choice.label(locale);
+                        if theme_tile(ui, &palette, &preview, &label, selected).clicked() {
+                            app.actions.push(Action::SetTheme(choice));
                         }
-                    });
-                },
-            );
+                    }
+                    for custom in app.custom_themes.picker_themes() {
+                        let selected = current.as_deref() == Some(custom.filename.as_str());
+                        let label = fastframe_theme::display_name(&custom.filename);
+                        let preview = ThemePreview::One(custom.palette);
+                        if theme_tile(ui, &palette, &preview, label, selected).clicked() {
+                            app.actions
+                                .push(Action::SetCustomTheme(custom.filename.clone()));
+                        }
+                    }
+                });
+                ui.add_space(18.0);
+            }
             filtered_row(
                 ui,
                 &palette,
@@ -1161,12 +1122,20 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                     app.actions.push(Action::ApplyEqPreset(picked));
                 }
                 ui.add_space(10.0);
-                eq_curve(ui, &palette, &crate::app::eq_settings(&app.settings));
+                // A new preset glides into place; a dragged slider follows
+                // the pointer. Switching the equalizer fades its colour.
+                let shown = glide_eq(ui.ctx(), &crate::app::eq_settings(&app.settings));
+                let on = crate::motion::toggle(
+                    ui.ctx(),
+                    egui::Id::new("eq-on"),
+                    app.settings.eq_on,
+                    crate::motion::STANDARD,
+                );
+                eq_curve(ui, &palette, &shown, on);
                 ui.add_space(10.0);
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 14.0;
-                    let on = app.settings.eq_on;
-                    let mut preamp = app.settings.eq_preamp_db;
+                    let mut preamp = shown.preamp_db;
                     if eq_slider(
                         ui,
                         &palette,
@@ -1178,7 +1147,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                         app.actions.push(Action::SetEqPreamp(preamp));
                     }
                     for (band, hz) in crate::eq::BANDS.iter().enumerate() {
-                        let mut gain = app.settings.eq_bands_db[band];
+                        let mut gain = shown.bands_db[band];
                         if eq_slider(ui, &palette, &hertz(*hz), &mut gain, on) {
                             app.actions.push(Action::SetEqBand(band, gain));
                         }
@@ -1350,34 +1319,31 @@ fn language_picker(app: &mut App, ui: &mut egui::Ui) {
         LanguageChoice::System => system.clone(),
         LanguageChoice::Locale(chosen) => chosen.native_name().into(),
     };
-    let response = egui::ComboBox::from_id_salt("interface_language")
-        .selected_text(selected.as_ref())
-        .width(200.0_f32.min(ui.available_width()))
-        // As many languages as a menu holds before it scrolls, not five.
-        .height(1000.0)
-        .show_ui(ui, |ui| {
+    let name = gettext(locale, "Language");
+    let palette = app.palette;
+    let width = 220.0_f32.min(ui.available_width());
+    widgets::dropdown(
+        ui,
+        &palette,
+        "interface_language",
+        &name,
+        &selected,
+        width,
+        |ui| {
             let choices = std::iter::once((LanguageChoice::System, system.clone())).chain(
                 crate::i18n::LOCALES
                     .iter()
                     .map(|&each| (LanguageChoice::Locale(each), each.native_name().into())),
             );
             for (choice, label) in choices {
-                if ui
-                    .selectable_label(current == choice, label.as_ref())
-                    .clicked()
+                if widgets::option(ui, &palette, current == choice, &label).clicked()
                     && current != choice
                 {
                     app.actions.push(Action::SetLanguage(choice));
                 }
             }
-        });
-    let name = gettext(locale, "Language");
-    response.response.widget_info(|| {
-        let mut info =
-            egui::WidgetInfo::labeled(egui::WidgetType::ComboBox, ui.is_enabled(), name.as_ref());
-        info.current_text_value = Some(selected.to_string());
-        info
-    });
+        },
+    );
 }
 
 fn hertz(hz: f32) -> String {
@@ -1391,7 +1357,31 @@ fn hertz(hz: f32) -> String {
 /// One vertical slider in the app's own style: the track filled from
 /// 0 dB, the handle in the middle when flat, a double-click to put it
 /// back there. Returns whether it moved.
-fn eq_slider(ui: &mut egui::Ui, palette: &Palette, label: &str, value: &mut f32, on: bool) -> bool {
+/// A value that glides to a new place when it jumps (a preset) and follows
+/// at once when it moves by small steps (a drag).
+fn glide(ctx: &egui::Context, id: egui::Id, target: f32) -> f32 {
+    let last_id = id.with("target");
+    let last = ctx
+        .data(|data| data.get_temp::<f32>(last_id))
+        .unwrap_or(target);
+    ctx.data_mut(|data| data.insert_temp(last_id, target));
+    if target != last && (target - last).abs() < 1.0 {
+        crate::motion::snap(ctx, id);
+    }
+    crate::motion::tween(ctx, id, target, crate::motion::GLIDE)
+}
+
+/// The equalizer as drawn this frame: each band on its way to its setting.
+fn glide_eq(ctx: &egui::Context, settings: &crate::eq::EqSettings) -> crate::eq::EqSettings {
+    let mut shown = *settings;
+    shown.preamp_db = glide(ctx, egui::Id::new("eq-glide-preamp"), settings.preamp_db);
+    for (band, db) in shown.bands_db.iter_mut().enumerate() {
+        *db = glide(ctx, egui::Id::new(("eq-glide", band)), *db);
+    }
+    shown
+}
+
+fn eq_slider(ui: &mut egui::Ui, palette: &Palette, label: &str, value: &mut f32, on: f32) -> bool {
     use egui::{Rect, Stroke, pos2, vec2};
     let range = crate::eq::RANGE_DB;
     ui.vertical(|ui| {
@@ -1413,10 +1403,16 @@ fn eq_slider(ui: &mut egui::Ui, palette: &Palette, label: &str, value: &mut f32,
                 changed = true;
             }
         }
+        let lit = crate::motion::toggle(
+            ui.ctx(),
+            response.id.with("lit"),
+            response.hovered() || response.dragged() || response.has_focus(),
+            crate::motion::MICRO,
+        );
         if ui.is_rect_visible(rect) {
             let painter = ui.painter();
             painter.rect_filled(track, 2.0, palette.surface_active);
-            let fill = if on { palette.accent } else { palette.dim };
+            let fill = crate::motion::lerp_color(palette.dim, palette.accent, on);
             let (top, bottom) = (y_of(value.max(0.0)), y_of(value.min(0.0)));
             painter.rect_filled(
                 Rect::from_min_max(pos2(track.left(), top), pos2(track.right(), bottom)),
@@ -1429,14 +1425,19 @@ fn eq_slider(ui: &mut egui::Ui, palette: &Palette, label: &str, value: &mut f32,
                 Stroke::new(1.0, palette.dim),
             );
             let handle = pos2(track.center().x, y_of(*value));
-            painter.circle_filled(handle, 7.0, palette.text);
-            if response.hovered() || response.dragged() {
+            painter.circle_filled(
+                handle + vec2(0.0, 0.5),
+                7.5 + lit,
+                egui::Color32::from_black_alpha(40),
+            );
+            painter.circle_filled(handle, 7.0 + lit, palette.text);
+            if lit > 0.0 {
                 painter.text(
                     pos2(track.center().x, rect.top() + 2.0),
                     egui::Align2::CENTER_TOP,
                     format!("{value:+.1}"),
                     theme::regular(11.0),
-                    palette.secondary,
+                    crate::motion::with_alpha(palette.secondary, lit),
                 );
             }
         }
@@ -1448,7 +1449,7 @@ fn eq_slider(ui: &mut egui::Ui, palette: &Palette, label: &str, value: &mut f32,
 
 /// The equalizer's response over the audible range, the bands marked on
 /// it: the shape says what a row of numbers cannot.
-fn eq_curve(ui: &mut egui::Ui, palette: &Palette, settings: &crate::eq::EqSettings) {
+fn eq_curve(ui: &mut egui::Ui, palette: &Palette, settings: &crate::eq::EqSettings, on: f32) {
     use egui::{Shape, Stroke, pos2, vec2};
     let width = ui.available_width().min(720.0);
     let (rect, _) = ui.allocate_exact_size(vec2(width, 120.0), egui::Sense::hover());
@@ -1482,14 +1483,196 @@ fn eq_curve(ui: &mut egui::Ui, palette: &Palette, settings: &crate::eq::EqSettin
             pos2(plot.left() + t * plot.width(), y_of(curve.db_at(hz)))
         })
         .collect();
-    let color = if settings.on {
-        palette.accent
-    } else {
-        palette.dim
-    };
+    let color = crate::motion::lerp_color(palette.dim, palette.accent, on);
     painter.add(Shape::line(points, Stroke::new(2.0, color)));
     for (hz, db) in crate::eq::BANDS.iter().zip(settings.bands_db) {
         painter.circle_filled(pos2(x_of(*hz), y_of(db + settings.preamp_db)), 3.0, color);
+    }
+}
+
+/// What a theme tile shows: one palette, or for Follow system, the light and
+/// dark ones side by side.
+enum ThemePreview {
+    One(Palette),
+    Split(Palette, Palette),
+}
+
+/// One theme to choose, as Magpie offers them: a miniature of the app in its
+/// colours with the name below, lifting a little under the pointer, ringed
+/// in the accent with a check once chosen.
+fn theme_tile(
+    ui: &mut egui::Ui,
+    palette: &Palette,
+    preview: &ThemePreview,
+    label: &str,
+    selected: bool,
+) -> egui::Response {
+    use crate::motion;
+    let (rect, response) = ui.allocate_exact_size(egui::vec2(156.0, 112.0), egui::Sense::click());
+    response.widget_info(|| {
+        egui::WidgetInfo::selected(
+            egui::WidgetType::RadioButton,
+            ui.is_enabled(),
+            selected,
+            label,
+        )
+    });
+    let hover = motion::toggle(
+        ui.ctx(),
+        response.id.with("hover"),
+        response.hovered() || response.has_focus(),
+        motion::MICRO,
+    );
+    let chosen = motion::toggle(
+        ui.ctx(),
+        response.id.with("chosen"),
+        selected,
+        motion::STANDARD,
+    );
+    if ui.is_rect_visible(rect) {
+        let inner = rect.shrink(3.0 - 2.0 * hover);
+        let painter = ui.painter();
+        match preview {
+            ThemePreview::One(theme) => paint_theme_miniature(painter, inner, theme, label),
+            ThemePreview::Split(light, dark) => {
+                let half = inner.center().x;
+                let left = egui::Rect::from_min_max(inner.min, egui::pos2(half, inner.max.y));
+                let right = egui::Rect::from_min_max(egui::pos2(half, inner.min.y), inner.max);
+                paint_theme_miniature(&painter.with_clip_rect(left), inner, light, "");
+                paint_theme_miniature(&painter.with_clip_rect(right), inner, dark, "");
+                // One name across both halves, on a bar in today's colours.
+                let bar = egui::Rect::from_min_max(
+                    egui::pos2(inner.left(), inner.bottom() - 34.0),
+                    inner.max,
+                );
+                painter.rect_filled(
+                    bar,
+                    CornerRadius {
+                        nw: 0,
+                        ne: 0,
+                        sw: 12,
+                        se: 12,
+                    },
+                    palette.panel,
+                );
+                painter.text(
+                    egui::pos2(inner.left() + 12.0, bar.center().y),
+                    egui::Align2::LEFT_CENTER,
+                    label,
+                    theme::semibold(12.5),
+                    palette.text,
+                );
+            }
+        }
+        painter.rect_stroke(
+            rect,
+            CornerRadius::same(theme::RADIUS_CARD),
+            Stroke::new(
+                1.0 + 1.5 * chosen,
+                motion::lerp_color(palette.outline, palette.accent, chosen),
+            ),
+            egui::StrokeKind::Inside,
+        );
+        if chosen > 0.01 {
+            let centre = egui::pos2(inner.right() - 14.0, inner.bottom() - 15.0);
+            painter.circle_filled(centre, 8.0 * chosen, palette.accent);
+            let size = 11.0 * chosen;
+            Icon::Check.image(palette.on_accent, size).paint_at(
+                ui,
+                egui::Rect::from_center_size(centre, egui::Vec2::splat(size)),
+            );
+        }
+    }
+    theme::focus_ring(ui, &response);
+    response
+}
+
+/// Spotsie in miniature: a sidebar with its rows, a cover and its title, a
+/// row of cards, the player bar with its green button, and the name.
+fn paint_theme_miniature(painter: &egui::Painter, rect: egui::Rect, theme: &Palette, label: &str) {
+    use egui::{Rect, pos2, vec2};
+    let radius = CornerRadius::same(12);
+    painter.rect_filled(rect, radius, theme.window);
+    let sidebar = Rect::from_min_size(rect.min, vec2(34.0, rect.height()));
+    painter.rect_filled(
+        sidebar,
+        CornerRadius {
+            nw: 12,
+            sw: 12,
+            ne: 0,
+            se: 0,
+        },
+        theme.panel,
+    );
+    for row in 0..4 {
+        let top = rect.top() + 14.0 + row as f32 * 11.0;
+        painter.rect_filled(
+            Rect::from_min_size(pos2(sidebar.left() + 7.0, top), vec2(6.0, 6.0)),
+            CornerRadius::same(1),
+            if row == 0 {
+                theme.accent
+            } else {
+                theme.surface_active
+            },
+        );
+        painter.rect_filled(
+            Rect::from_min_size(pos2(sidebar.left() + 16.0, top + 1.0), vec2(12.0, 4.0)),
+            CornerRadius::same(2),
+            theme.dim,
+        );
+    }
+    let left = sidebar.right() + 10.0;
+    let cover = Rect::from_min_size(pos2(left, rect.top() + 12.0), vec2(26.0, 26.0));
+    painter.rect_filled(
+        cover,
+        CornerRadius::same(4),
+        theme.accent.gamma_multiply(0.85),
+    );
+    painter.rect_filled(
+        Rect::from_min_size(
+            pos2(cover.right() + 7.0, cover.top() + 6.0),
+            vec2(48.0, 6.0),
+        ),
+        CornerRadius::same(2),
+        theme.text,
+    );
+    painter.rect_filled(
+        Rect::from_min_size(
+            pos2(cover.right() + 7.0, cover.top() + 16.0),
+            vec2(32.0, 4.0),
+        ),
+        CornerRadius::same(2),
+        theme.secondary,
+    );
+    for card in 0..3 {
+        let card = Rect::from_min_size(
+            pos2(left + card as f32 * 34.0, rect.top() + 46.0),
+            vec2(28.0, 22.0),
+        );
+        painter.rect_filled(card, CornerRadius::same(4), theme.surface);
+    }
+    let bar = Rect::from_min_max(
+        pos2(sidebar.right(), rect.bottom() - 34.0),
+        pos2(rect.right(), rect.bottom()),
+    );
+    painter.rect_filled(
+        bar,
+        CornerRadius {
+            nw: 0,
+            sw: 0,
+            ne: 0,
+            se: 12,
+        },
+        theme.panel,
+    );
+    if !label.is_empty() {
+        painter.text(
+            pos2(left, bar.center().y),
+            egui::Align2::LEFT_CENTER,
+            label,
+            theme::semibold(12.5),
+            theme.text,
+        );
     }
 }
 

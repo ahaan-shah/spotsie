@@ -62,15 +62,10 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     if app.lyrics_fullscreen.is_some() {
         lyrics::fullscreen(app, ui);
     } else {
-        if app.settings.sidebar_visible {
-            sidebar::show(app, ui);
-        }
-        if app.show_queue_panel {
-            queue::side_panel(app, ui);
-        }
-        if app.show_lyrics_panel {
-            lyrics::side_panel(app, ui);
-        }
+        // Each panel draws while it slides in or out, so these always run.
+        sidebar::show(app, ui);
+        queue::side_panel(app, ui);
+        lyrics::side_panel(app, ui);
         central(app, ui);
         keep_room_for_panels(app, ctx);
     }
@@ -93,6 +88,33 @@ fn main_min_width(page: f32, sidebar: bool, right_panel: bool) -> f32 {
         0.0
     };
     (sidebar + right + page).max(crate::window::MAIN_MIN_SIZE[0])
+}
+
+/// Shows a side panel that slides open and closed, as Magpie's panels do.
+/// While it slides, the page beside it follows the visible part.
+///
+/// `open` says where it is heading and comes back `false` if the person
+/// dragged it shut. Returns the panel's response while any of it shows, and
+/// whether it is fully open, the only time its width is the chosen one.
+/// Without motion (tests, screenshots) it simply shows or doesn't.
+pub(crate) fn sliding_panel<R>(
+    ui: &mut egui::Ui,
+    panel: egui::Panel,
+    id: &str,
+    open: &mut bool,
+    add_contents: impl FnOnce(&mut egui::Ui) -> R,
+) -> Option<(egui::InnerResponse<R>, bool)> {
+    if !crate::motion::enabled() {
+        return open.then(|| (panel.show(ui, add_contents), true));
+    }
+    let settled = ui
+        .ctx()
+        .animate_bool_responsive(Id::new(id).with("animation"), *open)
+        >= 1.0;
+    panel
+        .drag_to_open(false)
+        .show_collapsible(ui, open, add_contents)
+        .map(|response| (response, settled))
 }
 
 /// The sidebar's narrowest width.
@@ -169,6 +191,29 @@ pub(crate) fn yielding_panel(
 /// held back by the page, or by their own drag.
 pub(crate) fn panel_width_chosen(ctx: &Context, id: &str, fit: &PanelFit) -> bool {
     !fit.yielding || ctx.is_being_dragged(Id::new(id).with("__resize"))
+}
+
+const PAGE_SHOWN_ID: &str = "page-shown-at";
+
+/// When the page on screen was opened, in egui's time: now, if it differs
+/// from last frame's.
+fn note_page_shown(ctx: &Context, page: &Page) -> f64 {
+    let key = page.encode();
+    let id = Id::new(PAGE_SHOWN_ID);
+    match ctx.data(|data| data.get_temp::<(String, f64)>(id)) {
+        Some((shown, at)) if shown == key => at,
+        _ => {
+            let now = ctx.input(|input| input.time);
+            ctx.data_mut(|data| data.insert_temp(id, (key, now)));
+            now
+        }
+    }
+}
+
+/// When the page on screen was opened, for entrances within it.
+pub(crate) fn page_shown_at(ctx: &Context) -> f64 {
+    ctx.data(|data| data.get_temp::<(String, f64)>(Id::new(PAGE_SHOWN_ID)))
+        .map_or(0.0, |(_, at)| at)
 }
 
 /// Spotify artwork width used by the library grid and its page preview.
@@ -276,6 +321,14 @@ fn central(app: &mut App, ui: &mut egui::Ui) {
             ui.spacing_mut().scroll.fade.strength = 0.0;
             topbar::show(app, ui);
             let page = app.page().clone();
+            let shown_at = note_page_shown(ui.ctx(), &page);
+            // A page rises into place as Magpie's do; Settings staggers its
+            // cards instead.
+            let (opacity, lift) = if page == Page::Settings {
+                (1.0, 0.0)
+            } else {
+                crate::motion::reveal(ui.ctx(), shown_at, 0)
+            };
             let scroll = crate::autoscroll::show(
                 ui,
                 egui::ScrollArea::vertical()
@@ -292,6 +345,8 @@ fn central(app: &mut App, ui: &mut egui::Ui) {
                         })
                         .show(ui, |ui| {
                             ui.set_min_width(ui.available_width());
+                            ui.set_opacity(opacity);
+                            ui.add_space(lift);
                             match page {
                                 Page::Home => home::show(app, ui),
                                 Page::TopSongs => collection::top_songs(app, ui),
@@ -576,45 +631,54 @@ fn toasts(app: &mut App, ctx: &egui::Context, bottom_offset: f32) {
             ui.spacing_mut().item_spacing.y = 8.0;
             for toast in &app.toasts {
                 let age = toast.created.elapsed().as_secs_f32();
-                let alpha = if age < 0.15 {
-                    age / 0.15
-                } else if age > 2.8 {
-                    ((3.2 - age) / 0.4).clamp(0.0, 1.0)
+                // Each toast rises into place with a little overshoot, as
+                // Magpie's land, and fades away at the end.
+                let arrival = if crate::motion::enabled() {
+                    (age / 0.3).clamp(0.0, 1.0)
                 } else {
                     1.0
                 };
-                ui.set_opacity(alpha);
-                Frame::new()
-                    .fill(palette.overlay)
-                    .stroke(Stroke::new(1.0, palette.outline))
-                    .corner_radius(CornerRadius::same(theme::RADIUS))
-                    .inner_margin(Margin::symmetric(14, 10))
-                    .shadow(egui::epaint::Shadow {
-                        offset: [0, 4],
-                        blur: 16,
-                        spread: 0,
-                        color: palette.shadow,
-                    })
-                    .show(ui, |ui| {
-                        ui.horizontal(|ui| {
-                            let (icon, color) = match toast.kind {
-                                ToastKind::Info => (Icon::CircleCheck, palette.accent),
-                                ToastKind::Error => (Icon::CircleAlert, palette.danger),
-                            };
-                            theme::icon(ui, icon, 16.0, color);
-                            // Laid out at its own width. The area
-                            // remembers its size, so after a short toast a
-                            // label left to wrap at the area's width broke
-                            // long messages on every word.
-                            let galley = ui.painter().layout(
-                                toast.message.clone(),
-                                theme::medium(13.5),
-                                palette.text,
-                                280.0,
-                            );
-                            ui.add(egui::Label::new(galley));
+                let alpha = if age > 2.8 {
+                    ((3.2 - age) / 0.4).clamp(0.0, 1.0)
+                } else {
+                    crate::motion::ease_out(arrival)
+                };
+                let lift = (1.0 - crate::motion::ease_out_back(arrival)) * 14.0;
+                ui.scope(|ui| {
+                    ui.set_opacity(alpha);
+                    ui.add_space(lift.max(0.0));
+                    Frame::new()
+                        .fill(palette.overlay)
+                        .stroke(Stroke::new(1.0, palette.outline))
+                        .corner_radius(CornerRadius::same(theme::RADIUS))
+                        .inner_margin(Margin::symmetric(14, 10))
+                        .shadow(egui::epaint::Shadow {
+                            offset: [0, 4],
+                            blur: 16,
+                            spread: 0,
+                            color: palette.shadow,
+                        })
+                        .show(ui, |ui| {
+                            ui.horizontal(|ui| {
+                                let (icon, color) = match toast.kind {
+                                    ToastKind::Info => (Icon::CircleCheck, palette.accent),
+                                    ToastKind::Error => (Icon::CircleAlert, palette.danger),
+                                };
+                                theme::icon(ui, icon, 16.0, color);
+                                // Laid out at its own width. The area
+                                // remembers its size, so after a short toast a
+                                // label left to wrap at the area's width broke
+                                // long messages on every word.
+                                let galley = ui.painter().layout(
+                                    toast.message.clone(),
+                                    theme::medium(13.5),
+                                    palette.text,
+                                    280.0,
+                                );
+                                ui.add(egui::Label::new(galley));
+                            });
                         });
-                    });
+                });
             }
         });
 }

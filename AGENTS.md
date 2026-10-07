@@ -76,6 +76,19 @@ The update checker (`src/updates.rs`) points at this repository's GitHub
 releases. Its Settings switches are hidden for now; only About's **Check for
 updates** button uses it. Keep it working so the switches can return.
 
+## Look and motion
+
+Spotsie follows the look and feel of Magpie (the maintainer's other egui
+app): calm, subtle, and never instant. Every animation goes through
+`src/motion.rs`, with its durations (`MICRO` hovers, `STANDARD` toggles and
+panels, `EMPHASIS` entrances, `GLIDE` values) and ease-out curves, and
+requests repaints only while something moves. Hovers fade, choices ease
+in, panels slide (`ui::sliding_panel`), pages rise into place, dialogs and
+toasts land, and themes crossfade. Menus of alternatives put their check at
+the right (`widgets::menu_choice`); dropdowns use `widgets::dropdown` and
+`widgets::option`. Motion is off on test threads and for `--demo-shot`
+(`motion::set_enabled`), so tests and screenshots see settled frames.
+
 ## Identity
 
 Spotsie has its own identity, so it can be installed beside Spotifast

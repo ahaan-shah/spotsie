@@ -30,6 +30,7 @@ pub mod mac_notch;
 #[cfg(target_os = "macos")]
 pub mod mac_touchbar_crash_guard;
 pub mod model;
+pub mod motion;
 pub mod notch;
 pub mod opener;
 pub mod output;

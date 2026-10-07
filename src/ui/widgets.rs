@@ -326,9 +326,18 @@ fn menu_item_response(
         },
     );
     if ui.is_rect_visible(rect) {
-        if (response.hovered() || highlighted) && enabled {
-            ui.painter()
-                .rect_filled(rect, CornerRadius::same(6), palette.surface_hover);
+        let lit = crate::motion::toggle(
+            ui.ctx(),
+            response.id.with("hover"),
+            (response.hovered() || highlighted) && enabled,
+            crate::motion::MICRO,
+        );
+        if lit > 0.0 {
+            ui.painter().rect_filled(
+                rect,
+                CornerRadius::same(6),
+                crate::motion::with_alpha(palette.surface_hover, lit),
+            );
         }
         let color = if enabled { palette.text } else { palette.dim };
         let mut x = rect.left() + 10.0;
@@ -381,6 +390,260 @@ fn menu_item_response(
         ui.close();
     }
     (response, clicked)
+}
+
+/// The fill under a list row or card: the current one's surface easing in
+/// when it becomes current, and a lighter wash fading in under the pointer.
+pub fn row_wash(
+    ui: &Ui,
+    id: egui::Id,
+    palette: &Palette,
+    rect: Rect,
+    radius: u8,
+    active: bool,
+    hovered: bool,
+) {
+    let chosen =
+        crate::motion::toggle(ui.ctx(), id.with("chosen"), active, crate::motion::STANDARD);
+    let hover = crate::motion::toggle(ui.ctx(), id.with("hover"), hovered, crate::motion::MICRO);
+    let wash = crate::motion::with_alpha(palette.surface_hover.gamma_multiply(0.6), hover);
+    let fill = crate::motion::lerp_color(wash, palette.surface, chosen);
+    if fill.a() > 0 {
+        ui.painter()
+            .rect_filled(rect, CornerRadius::same(radius), fill);
+    }
+}
+
+/// One choice in a menu of alternatives: its label where every other
+/// label starts, and a check at the right edge for the current one. Closes
+/// the menu when chosen.
+pub fn menu_choice(ui: &mut Ui, palette: &Palette, selected: bool, label: &str) -> bool {
+    let width = ui.available_width();
+    let (rect, response) = ui.allocate_exact_size(vec2(width, 28.0), Sense::click());
+    if ui.is_rect_visible(rect) {
+        let hover = crate::motion::toggle(
+            ui.ctx(),
+            response.id.with("hover"),
+            response.hovered() || response.has_focus(),
+            crate::motion::MICRO,
+        );
+        if hover > 0.0 {
+            ui.painter().rect_filled(
+                rect,
+                CornerRadius::same(6),
+                crate::motion::with_alpha(palette.surface_hover, hover),
+            );
+        }
+        let check = 16.0;
+        if selected {
+            let icon_rect = Rect::from_center_size(
+                pos2(rect.right() - 10.0 - check / 2.0, rect.center().y),
+                Vec2::splat(check),
+            );
+            Icon::Check
+                .image(palette.text, check)
+                .paint_at(ui, icon_rect);
+        }
+        let left = rect.left() + 10.0;
+        let galley = crate::bidi::layout(
+            ui.painter(),
+            label,
+            theme::regular(13.5),
+            palette.text,
+            (rect.right() - 20.0 - check - left).max(0.0),
+            1,
+            Some(crate::bidi::ELLIPSIS),
+        );
+        let text_rect = Rect::from_min_max(
+            pos2(left, rect.center().y - galley.size().y / 2.0),
+            pos2(
+                rect.right() - 20.0 - check,
+                rect.center().y + galley.size().y / 2.0,
+            ),
+        );
+        ui.painter().galley(
+            crate::bidi::galley_pos(text_rect, &galley),
+            galley,
+            palette.text,
+        );
+    }
+    response.widget_info(|| {
+        let mut info = egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), label);
+        info.selected = Some(selected);
+        info
+    });
+    theme::focus_ring(ui, &response);
+    let clicked = response.clicked();
+    if clicked {
+        ui.close();
+    }
+    clicked
+}
+
+/// A row in a dropdown list, as Magpie draws them: a soft wash under the
+/// pointer, and for the current choice a faint accent wash with a check at
+/// the right. Returns the row's response; the dropdown closes on a click.
+pub fn option(ui: &mut Ui, palette: &Palette, selected: bool, label: &str) -> egui::Response {
+    const PAD: f32 = 10.0;
+    const CHECK: f32 = 15.0;
+    let width = ui.available_width();
+    let galley = crate::bidi::layout(
+        ui.painter(),
+        label,
+        theme::regular(13.5),
+        palette.text,
+        (width - PAD * 3.0 - CHECK).max(0.0),
+        1,
+        Some(crate::bidi::ELLIPSIS),
+    );
+    let height = (galley.size().y + 14.0).max(32.0);
+    let (rect, response) = ui.allocate_exact_size(vec2(width, height), Sense::click());
+    if ui.is_rect_visible(rect) {
+        let hover = crate::motion::toggle(
+            ui.ctx(),
+            response.id.with("hover"),
+            response.hovered() || response.has_focus(),
+            crate::motion::MICRO,
+        );
+        let radius = CornerRadius::same(8);
+        let painter = ui.painter();
+        if selected {
+            let base = if palette.dark { 0.16 } else { 0.11 };
+            painter.rect_filled(
+                rect,
+                radius,
+                crate::motion::with_alpha(palette.accent, base + 0.05 * hover),
+            );
+            let icon_rect = Rect::from_center_size(
+                pos2(rect.right() - PAD - CHECK / 2.0, rect.center().y),
+                Vec2::splat(CHECK),
+            );
+            Icon::Check
+                .image(palette.accent, CHECK)
+                .paint_at(ui, icon_rect);
+        } else if hover > 0.0 {
+            painter.rect_filled(rect, radius, theme::hover_wash(palette, hover));
+        }
+        let text_rect = Rect::from_min_max(
+            pos2(rect.left() + PAD, rect.center().y - galley.size().y / 2.0),
+            pos2(
+                rect.right() - PAD * 2.0 - CHECK,
+                rect.center().y + galley.size().y / 2.0,
+            ),
+        );
+        ui.painter().galley(
+            crate::bidi::galley_pos(text_rect, &galley),
+            galley,
+            palette.text,
+        );
+    }
+    response.widget_info(|| {
+        let mut info = egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), label);
+        info.selected = Some(selected);
+        info
+    });
+    theme::focus_ring(ui, &response);
+    response
+}
+
+/// A field showing the current choice that opens a list of the others, as
+/// Magpie's dropdowns do: a quiet box whose edge warms to the accent under
+/// the pointer, a chevron that turns over while open, and a list that opens
+/// a little apart and scrolls within the window. `add` draws the rows,
+/// usually with [`option`]. The returned response is the field's.
+pub fn dropdown(
+    ui: &mut Ui,
+    palette: &Palette,
+    id_salt: impl std::hash::Hash + std::fmt::Debug,
+    label: &str,
+    selected: &str,
+    width: f32,
+    add: impl FnOnce(&mut Ui),
+) -> egui::Response {
+    let id = ui.make_persistent_id(id_salt);
+    let height = 34.0;
+    let (rect, response) = ui.allocate_exact_size(vec2(width, height), Sense::click());
+    let popup_id = egui::Popup::default_response_id(&response);
+    let open = egui::Popup::is_id_open(ui.ctx(), popup_id);
+    let hover = crate::motion::toggle(
+        ui.ctx(),
+        id.with("hover"),
+        response.hovered() || response.has_focus() || open,
+        crate::motion::MICRO,
+    );
+    let turn = crate::motion::toggle(ui.ctx(), id.with("turn"), open, crate::motion::STANDARD);
+    if ui.is_rect_visible(rect) {
+        let painter = ui.painter();
+        painter.rect(
+            rect,
+            CornerRadius::same(theme::RADIUS_SM),
+            crate::motion::lerp_color(palette.surface, palette.surface_hover, hover * 0.6),
+            Stroke::new(
+                1.0,
+                crate::motion::lerp_color(
+                    palette.outline,
+                    crate::motion::with_alpha(palette.accent, 0.7),
+                    hover,
+                ),
+            ),
+            egui::StrokeKind::Inside,
+        );
+        let chevron = 14.0;
+        let galley = crate::bidi::layout(
+            painter,
+            selected,
+            theme::regular(13.5),
+            palette.text,
+            (rect.width() - 34.0 - chevron).max(0.0),
+            1,
+            Some(crate::bidi::ELLIPSIS),
+        );
+        painter.galley(
+            pos2(rect.left() + 12.0, rect.center().y - galley.size().y / 2.0),
+            galley,
+            palette.text,
+        );
+        let centre = pos2(rect.right() - 12.0 - chevron / 2.0, rect.center().y);
+        let image = Icon::ChevronDown
+            .image(palette.secondary, chevron)
+            .rotate(std::f32::consts::PI * turn, Vec2::splat(0.5));
+        image.paint_at(ui, Rect::from_center_size(centre, Vec2::splat(chevron)));
+    }
+    response.widget_info(|| {
+        let mut info =
+            egui::WidgetInfo::labeled(egui::WidgetType::ComboBox, ui.is_enabled(), label);
+        info.current_text_value = Some(selected.to_owned());
+        info
+    });
+    theme::focus_ring(ui, &response);
+    let screen = ui.ctx().content_rect();
+    let gap = 6.0;
+    let room = (screen.bottom() - rect.bottom()).max(rect.top() - screen.top()) - gap - 40.0;
+    egui::Popup::menu(&response)
+        .width(width)
+        .gap(gap)
+        .frame(menu_frame(palette))
+        .show(|ui| {
+            ui.set_min_width(ui.available_width());
+            let appear = crate::motion::tween_from(
+                ui.ctx(),
+                id.with("list"),
+                0.0,
+                1.0,
+                crate::motion::STANDARD,
+            );
+            ui.set_opacity(appear);
+            egui::ScrollArea::vertical()
+                .max_height(room.clamp(96.0, 320.0))
+                .show(ui, |ui| {
+                    ui.spacing_mut().item_spacing.y = 2.0;
+                    add(ui);
+                });
+        });
+    if !open {
+        crate::motion::snap(ui.ctx(), id.with("list"));
+    }
+    response
 }
 
 /// One entry in a popup menu that opens a child submenu.
@@ -530,11 +793,11 @@ pub fn menu_frame(palette: &Palette) -> egui::Frame {
     egui::Frame::new()
         .fill(palette.overlay)
         .stroke(Stroke::new(1.0, palette.outline))
-        .corner_radius(CornerRadius::same(theme::RADIUS))
+        .corner_radius(CornerRadius::same(theme::RADIUS_MENU))
         .inner_margin(egui::Margin::same(6))
         .shadow(egui::epaint::Shadow {
-            offset: [0, 6],
-            blur: 20,
+            offset: [0, 8],
+            blur: 24,
             spread: 0,
             color: palette.shadow,
         })
@@ -1317,24 +1580,31 @@ fn track_row_contents(
             .is_some_and(|uri| uri == row.item.uri());
     let playing = is_current && app.believed_playing();
     let hovered = ui.rect_contains_pointer(rect) || response.has_focus();
-    if row.picked {
-        // Keep the existing translucent selection, using a neutral palette
-        // color so selecting a song does not mark it as playing.
-        ui.painter().rect_filled(
-            rect,
-            CornerRadius::same(6),
-            palette
-                .secondary
-                .gamma_multiply(if hovered { 0.30 } else { 0.20 }),
-        );
-    } else if hovered {
-        ui.painter().rect_filled(
-            rect,
-            CornerRadius::same(6),
-            palette
-                .surface_hover
-                .gamma_multiply(if palette.dark { 0.7 } else { 1.0 }),
-        );
+    // The pointer's wash and the selection both fade in and out. The
+    // selection keeps a neutral palette colour so selecting a song does not
+    // mark it as playing.
+    let hover = crate::motion::toggle(
+        ui.ctx(),
+        response.id.with("hover"),
+        hovered,
+        crate::motion::MICRO,
+    );
+    let picked = crate::motion::toggle(
+        ui.ctx(),
+        response.id.with("picked"),
+        row.picked,
+        crate::motion::MICRO,
+    );
+    let wash = crate::motion::with_alpha(
+        palette
+            .surface_hover
+            .gamma_multiply(if palette.dark { 0.7 } else { 1.0 }),
+        hover,
+    );
+    let selection = palette.secondary.gamma_multiply(0.20 + 0.10 * hover);
+    let fill = crate::motion::lerp_color(wash, selection, picked);
+    if fill.a() > 0 {
+        ui.painter().rect_filled(rect, CornerRadius::same(6), fill);
     }
     // The row highlight also shows keyboard focus. Do not add an outline
     // when a mouse click gives the row focus for arrow-key navigation.
@@ -2351,13 +2621,22 @@ pub fn card(
     let mut play = false;
     if ui.is_rect_visible(rect) {
         let hovered = ui.rect_contains_pointer(rect);
-        if hovered {
+        let hover = crate::motion::toggle(
+            ui.ctx(),
+            response.id.with("hover"),
+            hovered,
+            crate::motion::MICRO,
+        );
+        if hover > 0.0 {
             ui.painter().rect_filled(
                 rect,
                 CornerRadius::same(theme::RADIUS),
-                palette
-                    .surface_hover
-                    .gamma_multiply(if palette.dark { 0.8 } else { 1.0 }),
+                crate::motion::with_alpha(
+                    palette
+                        .surface_hover
+                        .gamma_multiply(if palette.dark { 0.8 } else { 1.0 }),
+                    hover,
+                ),
             );
         }
         let image_rect = Rect::from_min_size(rect.min + vec2(PAD, PAD), Vec2::splat(image_size));
@@ -2404,9 +2683,13 @@ pub fn card(
         ui.painter()
             .galley(subtitle_pos, subtitle_galley, palette.secondary);
 
-        if playable && hovered {
+        // The play button rises into its corner and fades in with the hover.
+        if playable && hover > 0.0 {
             let button_rect = Rect::from_center_size(
-                pos2(image_rect.right() - 26.0, image_rect.bottom() - 26.0),
+                pos2(
+                    image_rect.right() - 26.0,
+                    image_rect.bottom() - 26.0 + (1.0 - hover) * 8.0,
+                ),
                 Vec2::splat(44.0),
             );
             let mut child = ui.new_child(
@@ -2414,6 +2697,7 @@ pub fn card(
                     .max_rect(button_rect)
                     .layout(Layout::centered_and_justified(egui::Direction::LeftToRight)),
             );
+            child.set_opacity(hover);
             play = theme::circle_button(
                 &mut child,
                 if playing {
@@ -2865,25 +3149,37 @@ pub fn search_field(
     response
 }
 
-/// A toggle drawn as a switch.
+/// A toggle drawn as a switch, as Magpie draws it: the track warms to the
+/// accent while the knob glides across.
 pub fn switch(ui: &mut Ui, palette: &Palette, label: &str, on: &mut bool) -> egui::Response {
-    let size = vec2(40.0, 22.0);
+    let size = vec2(38.0, 22.0);
     let (rect, mut response) = ui.allocate_exact_size(size, Sense::click());
     if response.clicked() {
         *on = !*on;
         response.mark_changed();
     }
     if ui.is_rect_visible(rect) {
-        let t = ui.ctx().animate_bool(response.id, *on);
-        let fill = egui::lerp(
-            egui::Rgba::from(palette.surface_active)..=egui::Rgba::from(palette.accent),
-            t,
+        let t = crate::motion::toggle(ui.ctx(), response.id, *on, crate::motion::STANDARD);
+        let hover = crate::motion::toggle(
+            ui.ctx(),
+            response.id.with("hover"),
+            response.hovered(),
+            crate::motion::MICRO,
         );
-        ui.painter()
-            .rect_filled(rect, rect.height() / 2.0, Color32::from(fill));
-        let knob_x = egui::lerp(rect.left() + 11.0..=rect.right() - 11.0, t);
-        ui.painter()
-            .circle_filled(pos2(knob_x, rect.center().y), 8.0, Color32::WHITE);
+        let off = crate::motion::lerp_color(palette.surface_active, palette.dim, 0.25 * hover);
+        let painter = ui.painter();
+        painter.rect_filled(
+            rect,
+            rect.height() / 2.0,
+            crate::motion::lerp_color(off, palette.accent, t),
+        );
+        let knob_x = crate::motion::lerp(rect.left() + 11.0, rect.right() - 11.0, t);
+        painter.circle_filled(
+            pos2(knob_x, rect.center().y + 0.5),
+            8.5,
+            Color32::from_black_alpha(40),
+        );
+        painter.circle_filled(pos2(knob_x, rect.center().y), 8.0, Color32::WHITE);
     }
     response.widget_info(|| {
         egui::WidgetInfo::selected(egui::WidgetType::Checkbox, ui.is_enabled(), *on, label)
@@ -2926,12 +3222,12 @@ pub fn setting_row_sized(
 ) {
     let reserved = (control_width + 16.0).max(SETTING_CONTROL_WIDTH);
     let text = |ui: &mut Ui| {
-        theme::text(ui, label, theme::medium(14.0), palette.text);
+        theme::text(ui, label, theme::semibold(14.0), palette.text);
         if !description.is_empty() {
             ui.add(
                 egui::Label::new(
                     egui::RichText::new(description)
-                        .font(theme::regular(12.5))
+                        .font(theme::regular(13.0))
                         .color(palette.secondary),
                 )
                 .wrap(),
@@ -2958,7 +3254,7 @@ pub fn setting_row_sized(
             ui.with_layout(Layout::right_to_left(Align::Center), control);
         });
     }
-    ui.add_space(10.0);
+    ui.add_space(14.0);
 }
 
 /// A labelled text field: the caption sits above the box.

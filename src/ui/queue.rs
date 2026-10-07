@@ -53,7 +53,8 @@ pub fn side_panel(app: &mut App, ui: &mut egui::Ui) {
                 .fill(palette.panel)
                 .inner_margin(Margin::symmetric(12, 12)),
         );
-    let response = panel.show(ui, |ui| {
+    let mut open = app.show_queue_panel;
+    let shown = super::sliding_panel(ui, panel, "queue-panel", &mut open, |ui| {
         let window_controls = super::window_controls_reservation(
             ui.ctx(),
             app.show_queue_panel,
@@ -126,6 +127,12 @@ pub fn side_panel(app: &mut App, ui: &mut egui::Ui) {
             },
         );
     });
+    if open != app.show_queue_panel {
+        app.show_queue_panel = open;
+    }
+    let Some((response, true)) = shown else {
+        return;
+    };
     let width = response.response.rect.width();
     if (width - app.settings.queue_width).abs() > 1.0
         && super::panel_width_chosen(ui.ctx(), "queue-panel", &fit)

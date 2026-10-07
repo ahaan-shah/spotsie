@@ -562,7 +562,6 @@ struct PlaylistCacheWrite {
 }
 
 pub enum Command {
-    OpenThemesFolder,
     ProxyRestored {
         lease: CredentialLease,
         result: Result<crate::credentials::Loaded, crate::credentials::Error>,
@@ -1587,21 +1586,6 @@ impl Worker {
                 continue;
             }
             match command {
-                Command::OpenThemesFolder => {
-                    let directory = self.dirs.config.join("themes");
-                    let events = self.events.clone();
-                    let waker = self.waker.clone();
-                    tokio::task::spawn_blocking(move || {
-                        if let Err(error) = std::fs::create_dir_all(&directory)
-                            .and_then(|()| crate::opener::open(&directory))
-                        {
-                            let _ = events.send(Event::Error(format!(
-                                "Couldn't open the themes folder: {error}"
-                            )));
-                            waker.wake();
-                        }
-                    });
-                }
                 Command::ProxyRestored { lease, result } => self.on_proxy_restored(lease, result),
                 Command::CredentialsRestored {
                     slot,

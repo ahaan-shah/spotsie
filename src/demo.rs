@@ -1836,6 +1836,7 @@ mod tests {
                     );
                 }
             }
+            app.show_queue_panel = true;
             app.queue_tab = QueueTab::Recents;
             app.recents.items.clear();
             app.recents_view.clear();
@@ -4461,35 +4462,6 @@ mod tests {
         app.backend.shutdown();
     }
 
-    /// Beside the themes folder, a button opens the guide to writing a
-    /// theme.
-    #[test]
-    fn the_theme_row_links_to_the_guide_to_making_a_theme() {
-        // Only the page is drawn, so the click's action is collected and
-        // never opens a browser.
-        let (ctx, mut app) = accessible_app("theme-guide");
-        ctx.data_mut(|data| {
-            data.insert_temp(egui::Id::new("settings-filter"), "Appearance".to_string())
-        });
-        for _ in 0..3 {
-            view_frame(&ctx, &mut app, vec![], crate::ui::settings::show);
-        }
-        let painted = view_frame(&ctx, &mut app, vec![], crate::ui::settings::show);
-        let guide = sidebar_text(&painted, "How to make a theme").center();
-        let folder = sidebar_text(&painted, "Open themes folder").center();
-        assert!((guide.y - folder.y).abs() < 1.0, "side by side");
-        app.actions.clear();
-        view_frame(
-            &ctx,
-            &mut app,
-            pointer_click(guide, egui::PointerButton::Primary),
-            crate::ui::settings::show,
-        );
-        assert!(app.actions.iter().any(|action| matches!(action,
-            Action::OpenUrl(url) if url == "https://github.com/ahaan-shah/spotsie/blob/main/docs/_reference/settings-and-files.md#custom-themes")));
-        app.backend.shutdown();
-    }
-
     #[test]
     fn custom_theme_picker_applies_the_clicked_palette_and_exposes_its_name_and_value() {
         let (ctx, mut app) = accessible_app("custom-theme-picker");
@@ -4510,26 +4482,11 @@ mod tests {
             view_frame(&ctx, &mut app, vec![], App::frame_ui);
         }
         let painted = view_frame(&ctx, &mut app, vec![], App::frame_ui);
-        let picker = sidebar_text(&painted, "Follow system").center();
-        view_frame(
-            &ctx,
-            &mut app,
-            pointer_click(picker, egui::PointerButton::Primary),
-            App::frame_ui,
-        );
-        let painted = view_frame(&ctx, &mut app, vec![], App::frame_ui);
-        let menu_y = |name: &str| {
-            painted
-                .iter()
-                .filter(|(text, rect)| text == name && rect.center().y > picker.y)
-                .map(|(_, rect)| rect.center().y)
-                .next()
-                .expect("theme menu entry")
-        };
-        assert!(menu_y("Follow system") < menu_y("Light"));
-        assert!(menu_y("Light") < menu_y("Dark"));
-        // Listed by name, without `.json`.
-        assert!(menu_y("Dark") < menu_y("local"));
+        let tile_x = |name: &str| sidebar_text(&painted, name).center().x;
+        // One tile each, in order, the custom one by name without `.json`.
+        assert!(tile_x("Follow system") < tile_x("Light"));
+        assert!(tile_x("Light") < tile_x("Dark"));
+        assert!(tile_x("Dark") < tile_x("local"));
         let custom = sidebar_text(&painted, "local").center();
         view_frame(
             &ctx,
@@ -4545,48 +4502,19 @@ mod tests {
         );
         assert_eq!(ctx.theme(), egui::Theme::Light);
         let tree = accessible_frame(&ctx, &mut app, vec![]);
-        let id = accessible_node(&tree, "Theme", egui::accesskit::Role::ComboBox);
+        let id = accessible_node(&tree, "local", egui::accesskit::Role::RadioButton);
         let node = &tree
             .nodes
             .iter()
             .find(|(node_id, _)| *node_id == id)
             .unwrap()
             .1;
-        assert_eq!(node.value(), Some("local"), "read out as shown");
-        app.backend.shutdown();
-    }
-
-    #[test]
-    fn themes_folder_button_is_visible_accessible_and_emits_an_action() {
-        let (ctx, mut app) = accessible_app("themes-folder-button");
-        app.backend.shutdown();
-        ctx.data_mut(|data| {
-            data.insert_temp(egui::Id::new("settings-filter"), "Theme".to_string())
-        });
-        for _ in 0..3 {
-            view_frame(&ctx, &mut app, vec![], crate::ui::settings::show);
-        }
-        let painted = view_frame(&ctx, &mut app, vec![], crate::ui::settings::show);
-        let button = sidebar_text(&painted, "Open themes folder").center();
-        view_frame(
-            &ctx,
-            &mut app,
-            pointer_click(button, egui::PointerButton::Primary),
-            crate::ui::settings::show,
+        assert_eq!(
+            node.toggled(),
+            Some(egui::accesskit::Toggled::True),
+            "read out as chosen"
         );
-        assert!(matches!(app.actions.as_slice(), [Action::OpenThemesFolder]));
-        app.actions.clear();
-        app.open(Page::Settings);
-        ctx.data_mut(|data| {
-            data.insert_temp(egui::Id::new("settings-filter"), "Theme".to_string())
-        });
-        accessible_frame(&ctx, &mut app, vec![]);
-        let tree = accessible_frame(&ctx, &mut app, vec![]);
-        accessible_node(&tree, "Open themes folder", egui::accesskit::Role::Button);
-        assert!(
-            !app.dirs.config.join("themes").exists(),
-            "drawing cannot open or create folders"
-        );
+        app.backend.shutdown();
     }
 
     /// The painted rect of a sidebar label, for pointer tests against the

@@ -1,6 +1,8 @@
 //! Shared palette, typography, icons, and base widgets.
 //!
-//! Inter provides real font weights, and Lucide provides a consistent icon set.
+//! Inter draws the interface as Magpie draws it: regular, medium and
+//! semibold, with Inter Display for large titles. Lucide provides a
+//! consistent icon set.
 //! All colors use [`Palette`] so light, dark, and album-art-tinted themes stay
 //! consistent.
 
@@ -35,6 +37,32 @@ pub struct Palette {
 }
 
 impl Palette {
+    /// The palette `t` of the way from this one to `other`. Whether it is
+    /// dark follows whichever side the blend is nearer.
+    #[must_use]
+    pub fn lerp(&self, other: &Self, t: f32) -> Self {
+        let mix = |a: Color32, b: Color32| crate::motion::lerp_color(a, b, t);
+        Self {
+            dark: if t < 0.5 { self.dark } else { other.dark },
+            window: mix(self.window, other.window),
+            panel: mix(self.panel, other.panel),
+            surface: mix(self.surface, other.surface),
+            surface_hover: mix(self.surface_hover, other.surface_hover),
+            surface_active: mix(self.surface_active, other.surface_active),
+            outline: mix(self.outline, other.outline),
+            text: mix(self.text, other.text),
+            secondary: mix(self.secondary, other.secondary),
+            dim: mix(self.dim, other.dim),
+            accent: mix(self.accent, other.accent),
+            accent_hover: mix(self.accent_hover, other.accent_hover),
+            on_accent: mix(self.on_accent, other.on_accent),
+            danger: mix(self.danger, other.danger),
+            warning: mix(self.warning, other.warning),
+            overlay: mix(self.overlay, other.overlay),
+            shadow: mix(self.shadow, other.shadow),
+        }
+    }
+
     pub fn dark() -> Self {
         Self {
             dark: true,
@@ -187,6 +215,19 @@ pub fn catalog_detail(
 
 pub const RADIUS: u8 = 8;
 pub const RADIUS_SMALL: u8 = 4;
+/// Magpie's radii: fields and buttons, menus, and cards.
+pub const RADIUS_SM: u8 = 9;
+pub const RADIUS_MENU: u8 = 12;
+pub const RADIUS_CARD: u8 = 14;
+
+/// The wash under a hovered row or field, `amount` of the way in: a touch
+/// of the text colour, so it shows on every surface, as Magpie draws it.
+pub fn hover_wash(palette: &Palette, amount: f32) -> Color32 {
+    crate::motion::with_alpha(
+        palette.text,
+        if palette.dark { 0.075 } else { 0.06 } * amount.clamp(0.0, 1.0),
+    )
+}
 pub const ROW_HEIGHT: f32 = 56.0;
 pub const COMPACT_ROW_HEIGHT: f32 = 48.0;
 /// The compact track list: one line, no cover.
@@ -223,8 +264,20 @@ pub fn semibold(size: f32) -> egui::FontId {
     fastframe_fonts::Weight::SemiBold.font_id(size)
 }
 
+/// The family drawing large titles: Inter's display optical size at
+/// semibold, the cut Magpie uses for its headings.
+const DISPLAY_FAMILY: &str = "inter-display";
+/// From this size, titles use the display cut.
+const DISPLAY_FROM: f32 = 20.0;
+
+/// The heaviest weight the interface uses. As in Magpie, that is semibold:
+/// the display cut for large titles, and the text cut below that.
 pub fn bold(size: f32) -> egui::FontId {
-    fastframe_fonts::Weight::Bold.font_id(size)
+    if size >= DISPLAY_FROM {
+        egui::FontId::new(size, egui::FontFamily::Name(DISPLAY_FAMILY.into()))
+    } else {
+        semibold(size)
+    }
 }
 
 /// How the desktop renders text, read once per process.
@@ -363,19 +416,35 @@ fn apply_to_style(style: &mut egui::Style, palette: &Palette) {
     };
     style.interaction.selectable_labels = false;
     style.interaction.tooltip_delay = 0.4;
-    style.animation_time = 0.12;
+    // Magpie's pace: panels slide and scroll glides take about a fifth of a
+    // second.
+    style.animation_time = 0.2;
     style.url_in_tooltip = false;
 }
 
-/// Inter at its four weights with the monochrome emoji face right behind it
-/// (so every emoji wears the same style, ahead of egui's own pair), then the
-/// installed faces for the scripts Inter lacks, drawn the way the desktop
-/// renders text.
+/// Inter at regular, medium and semibold, and its display cut at semibold,
+/// each with the monochrome emoji face right behind it (so every emoji wears
+/// the same style, ahead of egui's own pair), then the installed faces for
+/// the scripts Inter lacks, drawn the way the desktop renders text.
 fn install_fonts(ctx: &egui::Context) {
+    use fastframe_fonts::Weight;
     let emoji = egui::FontData::from_static(include_bytes!("../assets/fonts/NotoEmoji.ttf"));
     let mut fonts = fastframe_fonts::FontSetup::default()
+        .weights(&[Weight::Regular, Weight::Medium, Weight::SemiBold])
         .companion("noto_emoji", std::sync::Arc::new(emoji))
         .definitions();
+    // The same variable font, at the optical size Inter Display is cut for.
+    let mut display = egui::FontData::from_static(fastframe_fonts::INTER);
+    display.tweak.coords =
+        egui::epaint::text::VariationCoords::new([(b"wght", 600.0), (b"opsz", 32.0)]);
+    fonts
+        .font_data
+        .insert(DISPLAY_FAMILY.to_owned(), std::sync::Arc::new(display));
+    let mut family = fonts.families[&Weight::SemiBold.family()].clone();
+    family[0] = DISPLAY_FAMILY.to_owned();
+    fonts
+        .families
+        .insert(egui::FontFamily::Name(DISPLAY_FAMILY.into()), family);
     text_rendering().apply_to(&mut fonts);
     ctx.set_fonts(fonts);
 }
@@ -428,6 +497,7 @@ fastframe_icons::icons! {
         ListMusic => "list-music",
         ListPlus => "list-plus",
         ListVideo => "list-video",
+        Lyrics => "lyrics",
         Loader => "loader-circle",
         Lock => lucide "lock",
         LogOut => lucide "log-out",
@@ -523,17 +593,20 @@ pub fn icon_button(
         egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), tooltip)
     });
     if ui.is_rect_visible(rect) {
-        let tint = if response.hovered() || response.has_focus() {
-            hover
-        } else {
-            color
-        };
-        let scale = if response.is_pointer_button_down_on() {
-            0.92
-        } else {
-            1.0
-        };
-        paint_icon(ui, icon, rect, size * scale, tint);
+        let lit = crate::motion::toggle(
+            ui.ctx(),
+            response.id.with("hover"),
+            response.hovered() || response.has_focus(),
+            crate::motion::MICRO,
+        );
+        let pressed = crate::motion::toggle(
+            ui.ctx(),
+            response.id.with("press"),
+            response.is_pointer_button_down_on(),
+            0.08,
+        );
+        let tint = crate::motion::lerp_color(color, hover, lit);
+        paint_icon(ui, icon, rect, size * (1.0 - 0.08 * pressed), tint);
     }
     focus_ring(ui, &response);
     if tooltip.is_empty() {
@@ -733,8 +806,7 @@ fn soft_button_inner(
     dismissible: bool,
 ) -> (Response, bool) {
     let font = medium(13.0);
-    let color = if active { palette.window } else { palette.text };
-    let galley = crate::bidi::layout_line(ui.painter(), label, font, color);
+    let galley = crate::bidi::layout_line(ui.painter(), label, font, palette.text);
     let icon_size = 15.0;
     let icon_width = if icon.is_some() { icon_size + 6.0 } else { 0.0 };
     let padding = Vec2::new(12.0, 7.0);
@@ -767,16 +839,35 @@ fn soft_button_inner(
     let over_dismiss = dismiss
         .as_ref()
         .is_some_and(|dismiss| dismiss.hovered() || dismiss.has_focus());
+    let hovered = response.hovered() || over_dismiss;
+    // Hover and choice both ease in, as Magpie's controls do.
+    let hover = crate::motion::toggle(
+        ui.ctx(),
+        response.id.with("hover"),
+        hovered || response.has_focus(),
+        crate::motion::MICRO,
+    );
+    let chosen = crate::motion::toggle(
+        ui.ctx(),
+        response.id.with("chosen"),
+        active,
+        crate::motion::STANDARD,
+    );
+    let press = crate::motion::toggle(
+        ui.ctx(),
+        response.id.with("press"),
+        response.is_pointer_button_down_on(),
+        0.08,
+    );
+    let color = crate::motion::lerp_color(palette.text, palette.window, chosen);
     if ui.is_rect_visible(rect) {
-        let hovered = response.hovered() || over_dismiss;
-        let fill = if active {
-            palette.text
-        } else if hovered {
-            palette.surface_hover
-        } else {
-            palette.surface
-        };
-        ui.painter().rect_filled(rect, rect.height() / 2.0, fill);
+        let fill = crate::motion::lerp_color(
+            crate::motion::lerp_color(palette.surface, palette.surface_hover, hover),
+            palette.text,
+            chosen,
+        );
+        let shape = rect.shrink(press);
+        ui.painter().rect_filled(shape, shape.height() / 2.0, fill);
         let mut x = rect.left() + padding.x;
         if let Some(icon) = icon {
             let icon = if dismiss.is_some() && hovered {
@@ -788,7 +879,8 @@ fn soft_button_inner(
             x += icon_width;
         }
         let pos = egui::pos2(x, rect.center().y - galley.size().y / 2.0);
-        ui.painter().galley(pos, galley, color);
+        ui.painter()
+            .galley_with_override_text_color(pos, galley, color);
     }
     focus_ring(ui, &response);
     if let Some(dismiss) = dismiss {
@@ -1081,10 +1173,16 @@ mod tests {
             .textures_delta
             .clear();
         let fonts = ctx.fonts(|fonts| fonts.definitions().clone());
-        for weight in fastframe_fonts::Weight::ALL {
+        use fastframe_fonts::Weight;
+        for weight in [Weight::Regular, Weight::Medium, Weight::SemiBold] {
             let family = &fonts.families[&weight.family()];
             assert_eq!(family[..2], [weight.name(), "noto_emoji"], "{weight:?}");
         }
+        assert_eq!(
+            fonts.families[&bold(28.0).family][..2],
+            [DISPLAY_FAMILY, "noto_emoji"]
+        );
+        assert_eq!(bold(14.0), semibold(14.0), "no 700 weight, as in Magpie");
         assert_eq!(
             fonts.families[&egui::FontFamily::Monospace][1],
             "noto_emoji"

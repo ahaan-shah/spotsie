@@ -636,7 +636,7 @@ fn extras(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>) {
     }
     if theme::icon_button(
         ui,
-        Icon::Mic,
+        Icon::Lyrics,
         18.0,
         if app.show_lyrics_panel {
             palette.accent

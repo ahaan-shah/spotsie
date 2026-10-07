@@ -356,22 +356,19 @@ or the current Omarchy palette on an Omarchy desktop. On Linux,
 the light/dark appearance comes from the desktop portal's `color-scheme`
 setting (GNOME, KDE and Flatpak), and since 0.10.0, the app follows
 it when it changes. Saved Dark,
-Light and custom choices are preserved when updating. The picker starts with
-**Follow system**, **Light**, and **Dark**, then a separator. **Omarchy** comes
-next when the integration is available, followed by the other local palettes.
-Themes change colors and keep the app's existing fonts.
-**How to make a theme**, beside the picker, opens this section. The
-**Open themes folder** icon button beside the picker creates the folder if
-needed and opens it in your file
-manager.
+Light and custom choices are preserved when updating. Each theme is a tile
+showing a miniature of Spotsie in its colours: **Follow system**, **Light**
+and **Dark** first, then **Omarchy** when the integration is available, then
+the other local palettes. Themes change colors and keep the app's existing
+fonts. Put palette files in `~/.config/spotsie/themes/`.
 After adding or editing a JSON file on macOS or Windows, run
 `spotsie reload-themes` to refresh the list and the selected palette without
 restarting playback. Since 0.10.2, Spotsie on Linux notices changes to the
 themes folder by itself.
 Choosing a built-in theme clears the custom selection.
-Since 0.11.0, whenever the colours change (a theme picked here, Omarchy
-switching themes, or the system going light or dark), the new colours open
-from the middle of the window outwards, as Omarchy's own theme change does.
+Whenever the colours change (a theme picked here, Omarchy switching themes,
+or the system going light or dark), every colour crossfades to the new ones
+over about a third of a second.
 
 For example, `themes/gruvbox.json`:
 

@@ -463,6 +463,8 @@ pub(crate) fn run() -> eframe::Result<()> {
     }
     #[cfg(feature = "demo")]
     if cli.demo_shot.is_some() {
+        // A screenshot is one settled frame: nothing mid-animation.
+        spotsie::motion::set_enabled(false);
         options = app::AppOptions {
             media_controls: false,
             restore_sign_in: false,

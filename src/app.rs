@@ -276,9 +276,12 @@ pub struct App {
     #[cfg(any(test, feature = "demo"))]
     pub demo_windows_controls: bool,
     applied_dark: Option<bool>,
-    /// Reveals new colours from the middle of the window outwards.
-    theme_transition: fastframe_theme::Transition,
-    /// Whether colour changes are revealed. Tests that check which palette
+    /// A change of theme in progress: every colour crossfades from the old
+    /// palette to the new one, as Magpie's themes do.
+    theme_fade: Option<ThemeFade>,
+    /// The palette the theme is heading to, or settled on.
+    theme_target: Option<Palette>,
+    /// Whether colour changes crossfade. Tests that check which palette
     /// applies, on a context that never draws, turn it off.
     pub(crate) reveal_theme_changes: bool,
     pub custom_themes: theme::Catalog,
@@ -639,6 +642,16 @@ fn tray_config() -> fastframe_tray::Config {
     }
 }
 
+/// How long a change of theme takes to crossfade, as in Magpie.
+const THEME_FADE_SECONDS: f32 = 0.35;
+
+/// A theme change under way: the palette it began from, and when.
+#[derive(Clone, Copy)]
+struct ThemeFade {
+    from: Palette,
+    started: f64,
+}
+
 impl App {
     pub fn new(waker: &Waker, dirs: AppDirs, mut settings: Settings, options: AppOptions) -> Self {
         // The legacy password file has no endpoint of its own. Keep the old
@@ -747,7 +760,8 @@ impl App {
             #[cfg(any(test, feature = "demo"))]
             demo_windows_controls: false,
             applied_dark: None,
-            theme_transition: fastframe_theme::Transition::default(),
+            theme_fade: None,
+            theme_target: None,
             reveal_theme_changes: true,
             auth: AuthStatus::Starting,
             user: None,
@@ -2977,19 +2991,37 @@ impl App {
                 Palette::light()
             }
         });
-        if self.applied_dark != Some(dark) || self.palette != palette {
-            // The first colours need no reveal.
-            if self.reveal_theme_changes && self.applied_dark.is_some() {
-                self.theme_transition.begin(ctx);
-                if self.theme_transition.holding(ctx) {
-                    return;
-                }
+        let now = ctx.input(|input| input.time);
+        if self.applied_dark != Some(dark) || self.theme_target != Some(palette) {
+            // The first colours need no fade.
+            if self.reveal_theme_changes && self.applied_dark.is_some() && crate::motion::enabled()
+            {
+                self.theme_fade = Some(ThemeFade {
+                    from: self.palette,
+                    started: now,
+                });
+            } else {
+                self.theme_fade = None;
+                self.palette = palette;
+                theme::apply(ctx, &self.palette);
             }
-            self.palette = palette;
-            theme::apply(ctx, &self.palette);
+            self.theme_target = Some(palette);
             self.applied_dark = Some(dark);
             self.accents.clear();
             self.accent_pending.clear();
+        }
+        if let Some(fade) = self.theme_fade {
+            let progress = ((now - fade.started) as f32 / THEME_FADE_SECONDS).clamp(0.0, 1.0);
+            self.palette = fade
+                .from
+                .lerp(&palette, crate::motion::ease_in_out(progress));
+            theme::apply(ctx, &self.palette);
+            if progress >= 1.0 {
+                self.theme_fade = None;
+                self.accents.clear();
+            } else {
+                ctx.request_repaint();
+            }
         }
     }
 
@@ -8833,9 +8865,6 @@ impl App {
                 waker.attach(ctx);
                 self.load_custom_themes(&waker);
             }
-            Action::OpenThemesFolder => {
-                self.backend.send(Command::OpenThemesFolder);
-            }
             Action::SettingsChanged => {
                 self.settings_dirty = true;
                 ctx.set_theme(self.theme_preference());
@@ -9439,7 +9468,6 @@ impl App {
             // Close the window and keep the process running in the tray.
             self.hide_intent = true;
         }
-        self.theme_transition.paint(ctx);
         self.frame_now = None;
     }
 
@@ -14458,12 +14486,13 @@ mod tests {
         app
     }
 
-    /// A change of colours keeps the old ones until the window's picture of
-    /// them arrives, or a short wait passes without one, then applies.
+    /// A change of colours crossfades: the first frame keeps the old
+    /// palette, the middle blends the two, and the end is the new one.
     #[test]
-    fn a_colour_change_waits_for_the_picture_of_the_old_colours() {
+    fn a_colour_change_crossfades_to_the_new_palette() {
+        crate::motion::set_enabled(true);
         let ctx = egui::Context::default();
-        let mut app = test_app("theme-reveal");
+        let mut app = test_app("theme-fade");
         app.reveal_theme_changes = true;
         let frame = |app: &mut App, time: f64| {
             let mut output = ctx.run_ui(
@@ -14474,25 +14503,20 @@ mod tests {
                 |ui| app.apply_theme(ui.ctx()),
             );
             output.textures_delta.clear();
-            output
         };
         ctx.set_theme(egui::ThemePreference::Dark);
         frame(&mut app, 0.0);
         assert_eq!(app.palette, Palette::dark(), "the first colours at once");
 
         ctx.set_theme(egui::ThemePreference::Light);
-        let output = frame(&mut app, 0.1);
-        assert_eq!(app.palette, Palette::dark(), "held for the picture");
-        assert!(
-            output.viewport_output[&egui::ViewportId::ROOT]
-                .commands
-                .iter()
-                .any(|command| matches!(command, egui::ViewportCommand::Screenshot(_)))
-        );
-        frame(&mut app, 0.2);
-        assert_eq!(app.palette, Palette::dark());
-        frame(&mut app, 0.5);
-        assert_eq!(app.palette, Palette::light(), "no picture came: apply");
+        frame(&mut app, 1.0);
+        assert_eq!(app.palette, Palette::dark(), "the fade starts from here");
+        frame(&mut app, 1.0 + f64::from(THEME_FADE_SECONDS) / 2.0);
+        assert_ne!(app.palette, Palette::dark());
+        assert_ne!(app.palette, Palette::light());
+        frame(&mut app, 2.0);
+        assert_eq!(app.palette, Palette::light());
+        crate::motion::set_enabled(false);
     }
 
     #[test]
