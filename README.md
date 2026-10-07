@@ -20,7 +20,7 @@ rework comes next.
 
 Spotsie has its own app ID (`io.github.ahaan_shah.Spotsie`), command,
 settings, sign-in and data folders, so it runs beside an installed Spotifast
-without sharing anything. Automatic update checks are off by default.
+without sharing anything. Spotsie never checks for updates on its own.
 
 ## Build and run
 

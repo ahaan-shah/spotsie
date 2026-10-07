@@ -4,7 +4,7 @@
 //! from -12 to +12 dB. The UI writes settings behind a mutex; the player reads
 //! them once per packet and rebuilds filters only after changes.
 //!
-//! This stage does not clip boosted samples. `vis::Tapped` limits the signal
+//! This stage does not clip boosted samples. `output::OutputStage` limits the signal
 //! later, after accounting for output volume.
 
 use std::sync::{Arc, Mutex};
@@ -430,7 +430,7 @@ impl Processor {
         // No ceiling here. These are floats with room to spare, and the one
         // ceiling in the chain sits at the end, past the volume: a boost that
         // would clip at full volume is fine three notches down, and holding
-        // it back here would take that away for good. See `vis::Tapped`.
+        // it back here would take that away for good. See `output::OutputStage`.
         for frame in samples.chunks_exact_mut(channels) {
             for (sample, chain) in frame.iter_mut().zip(self.chains.iter_mut()) {
                 let mut y = *sample * self.gain;

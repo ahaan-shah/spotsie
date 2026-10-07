@@ -42,9 +42,9 @@ Spotsie connects only to the services below.
 - **LRCLIB.** When the lyrics panel is open and Spotify has no lyrics for the
   song, Spotsie sends its artist, title, album and length to
   [lrclib.net](https://lrclib.net). Nothing identifying you is included.
-- **GitHub.** If you turn on automatic update checks in Settings, Spotsie
-  asks GitHub once a day for the latest release. Downloading an update also
-  fetches files from GitHub. No Spotify data is sent.
+- **GitHub.** When you press **Check for updates** in Settings, Spotsie asks
+  GitHub for the latest release. Downloading an update also fetches files
+  from GitHub. No Spotify data is sent.
 - **Your local network.** Spotsie looks for Spotify Connect speakers over
   mDNS and talks to the ones you choose.
 

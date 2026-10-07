@@ -67,28 +67,6 @@ pub struct HomeSettings {
     pub recommendations: HomeShelfSettings,
 }
 
-/// What moves behind the player bar's controls.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum PlayerBarVis {
-    #[default]
-    Off,
-    Spectrum,
-    Waveform,
-}
-
-impl PlayerBarVis {
-    /// The mode a click on the player bar moves to: spectrum, waveform,
-    /// then off, as Winamp's visualizer cycles.
-    pub fn next(self) -> Self {
-        match self {
-            Self::Off => Self::Spectrum,
-            Self::Spectrum => Self::Waveform,
-            Self::Waveform => Self::Off,
-        }
-    }
-}
-
 /// The interface language: the operating system's, or one chosen in Settings.
 ///
 /// Stored as `"system"` or a locale tag such as `"es"` or `"pt-BR"`. A file
@@ -241,8 +219,6 @@ pub struct Settings {
     pub home: HomeSettings,
     /// Tint the interface with the colour of the playing album's art.
     pub accent_from_art: bool,
-    /// A spectrum or waveform of the playing song behind the player bar.
-    pub player_bar_vis: PlayerBarVis,
     /// Last local volume, 0..=65535.
     pub volume: u16,
     /// Whether the library sidebar is visible.
@@ -363,7 +339,6 @@ impl Default for Settings {
             system_theme_cache: None,
             home: HomeSettings::default(),
             accent_from_art: true,
-            player_bar_vis: PlayerBarVis::Off,
             volume: (u16::MAX as u32 * 70 / 100) as u16,
             sidebar_visible: true,
             art_expanded: false,
@@ -998,7 +973,8 @@ mod tests {
     fn settings_from_the_winamp_and_milkdrop_days_still_load() {
         let settings: Settings = serde_json::from_str(
             r#"{"zoom": 1.2, "winamp_window": true, "skin": "A.wsz", "vis": "scope",
-                "balance": 0.5, "mono": true, "milkdrop_open": true, "eq_on": true}"#,
+                "balance": 0.5, "mono": true, "milkdrop_open": true, "eq_on": true,
+                "player_bar_vis": "spectrum"}"#,
         )
         .unwrap();
         assert_eq!(settings.zoom, 1.2);
@@ -1063,27 +1039,6 @@ mod tests {
         let json = serde_json::to_string(&settings).unwrap();
         let restored: Settings = serde_json::from_str(&json).unwrap();
         assert!(restored.tracklist_compact);
-    }
-
-    #[test]
-    fn the_player_bar_visualizer_is_opt_in_and_round_trips() {
-        use super::PlayerBarVis;
-        let settings: Settings = serde_json::from_str("{}").unwrap();
-        assert_eq!(settings.player_bar_vis, PlayerBarVis::Off);
-        for mode in [PlayerBarVis::Spectrum, PlayerBarVis::Waveform] {
-            let settings = Settings {
-                player_bar_vis: mode,
-                ..Settings::default()
-            };
-            let json = serde_json::to_string(&settings).unwrap();
-            let restored: Settings = serde_json::from_str(&json).unwrap();
-            assert_eq!(restored.player_bar_vis, mode);
-        }
-        let spectrum: Settings = serde_json::from_str(r#"{"player_bar_vis":"spectrum"}"#).unwrap();
-        assert_eq!(spectrum.player_bar_vis, PlayerBarVis::Spectrum);
-        assert_eq!(PlayerBarVis::Off.next(), PlayerBarVis::Spectrum);
-        assert_eq!(PlayerBarVis::Spectrum.next(), PlayerBarVis::Waveform);
-        assert_eq!(PlayerBarVis::Waveform.next(), PlayerBarVis::Off);
     }
 
     #[test]

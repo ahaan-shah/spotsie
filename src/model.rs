@@ -1123,8 +1123,6 @@ pub enum Action {
     ClearPlayHistory,
     /// Windows: draw Spotsie's own title bar instead of the standard one.
     SetCustomTitlebar(bool),
-    /// A click on the player bar's empty space: spectrum, waveform, off.
-    CyclePlayerBarVis,
     /// Switch the equalizer's effect on the sound on or off.
     ToggleEq,
     SetEqBand(usize, f32),

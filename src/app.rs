@@ -544,12 +544,8 @@ pub struct App {
     pub update_support: Option<Result<crate::updates::Installation, String>>,
     pub update_restart_arguments: Vec<String>,
     pub update_receipt: Option<fastframe_update::Receipt>,
-    /// The sound on its way out, for the player bar's visualizer.
-    pub audio_tap: std::sync::Arc<crate::vis::AudioTap>,
     /// The equalizer as the player's thread reads it.
     eq: crate::eq::SharedEq,
-    /// The spectrum behind the player bar, when that is chosen.
-    pub player_bar_analyser: crate::vis::WideAnalyser,
 }
 
 /// How many plays the Home shelf asks for: it shows sixteen cards.
@@ -649,7 +645,6 @@ impl App {
         // settings beside it until migration binds that password in the store.
         settings.proxy_password_legacy |= dirs.proxy_secret_file().try_exists().unwrap_or(true);
         let plays = crate::history::History::load(&dirs.history_file());
-        let tap = crate::vis::AudioTap::new();
         let eq = crate::eq::shared();
         if let Ok(mut shared) = eq.lock() {
             *shared = eq_settings(&settings);
@@ -663,7 +658,6 @@ impl App {
             &dirs,
             &settings,
             applied_proxy.clone(),
-            std::sync::Arc::clone(&tap),
             std::sync::Arc::clone(&eq),
         );
         let backend = Backend::spawn(
@@ -926,9 +920,7 @@ impl App {
             update_support: None,
             update_restart_arguments: Vec::new(),
             update_receipt: None,
-            audio_tap: tap,
             eq,
-            player_bar_analyser: crate::vis::WideAnalyser::default(),
         };
         app.local.volume = app.settings.volume;
         // What was played here is on disk and needs nothing from the
@@ -8854,7 +8846,6 @@ impl App {
                     &self.dirs,
                     &self.settings,
                     self.applied_proxy.clone(),
-                    std::sync::Arc::clone(&self.audio_tap),
                     std::sync::Arc::clone(&self.eq),
                 );
                 self.backend.send(Command::RestartEngine(config));
@@ -8978,10 +8969,6 @@ impl App {
             // The same request the window's own close button makes, so the
             // close-to-tray setting decides what follows.
             Action::CloseWindow => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
-            Action::CyclePlayerBarVis => {
-                self.settings.player_bar_vis = self.settings.player_bar_vis.next();
-                self.settings_dirty = true;
-            }
             Action::Quit => {
                 self.quit_requested = true;
                 ctx.send_viewport_cmd(egui::ViewportCommand::Close);
@@ -9709,11 +9696,9 @@ pub fn engine_config(
     dirs: &AppDirs,
     settings: &Settings,
     proxy: crate::settings::ProxyConfig,
-    tap: std::sync::Arc<crate::vis::AudioTap>,
     eq: crate::eq::SharedEq,
 ) -> EngineConfig {
     EngineConfig {
-        tap,
         eq,
         device_name: settings.device_name.trim().to_string(),
         bitrate_kbps: settings.bitrate,

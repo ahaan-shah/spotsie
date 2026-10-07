@@ -72,9 +72,9 @@ the story from before the user's action is stale, so hold the shown
 state and ask again rather than let the lagging answer undo what the
 user just did. Nothing the user did may ever flicker away and come back.
 
-Every visualiser shows the signal post-equalizer and pre-volume: the EQ
-shapes what is heard so the picture follows it, and the volume knob never
-moves the picture.
+The update checker (`src/updates.rs`) points at this repository's GitHub
+releases. Its Settings switches are hidden for now; only About's **Check for
+updates** button uses it. Keep it working so the switches can return.
 
 ## Identity
 

@@ -344,43 +344,41 @@ pub(crate) fn selected_sort(app: &App, shelf: Filter) -> LibrarySort {
     }
 }
 
-fn sort_menu(app: &mut App, ui: &mut egui::Ui, shelf: Filter, selected: LibrarySort) {
+/// The library's sort control, as Spotify draws it: a list icon, quiet
+/// until hovered, opening the orders to choose from with the current one
+/// checked. Its tooltip and accessible name are the current order.
+fn sort_button(app: &mut App, ui: &mut egui::Ui, shelf: Filter, selected: LibrarySort) {
+    const ICON: f32 = 16.0;
     let locale = app.locale;
+    let palette = app.palette;
+    let label = sort_label(locale, selected);
     let labels = [
-        (LibrarySort::Library, gettext(locale, "Library order")),
-        (
-            LibrarySort::RecentlyPlayed,
-            gettext(locale, "Recently played"),
-        ),
-        (LibrarySort::Name, gettext(locale, "Name")),
-        (
-            LibrarySort::RecentlyAdded,
-            gettext(locale, "Recently added"),
-        ),
-        (LibrarySort::Local, gettext(locale, "Local custom order")),
-        (
-            LibrarySort::Spotify,
-            gettext(locale, "Spotify custom order"),
-        ),
-    ];
-    let label = &labels
-        .iter()
-        .find(|(sort, _)| *sort == selected)
-        .expect("sort label")
-        .1;
-    ui.add_space(4.0);
-    let response = ui.add(
-        egui::Button::image_and_text(
-            Icon::ChevronDown.image(app.palette.text, 15.0),
-            egui::RichText::new(label.as_ref()).font(theme::medium(13.0)),
-        )
-        .wrap()
-        .fill(app.palette.surface)
-        .corner_radius(12)
-        .min_size(vec2(0.0, 28.0)),
-    );
+        LibrarySort::Library,
+        LibrarySort::RecentlyPlayed,
+        LibrarySort::Name,
+        LibrarySort::RecentlyAdded,
+        LibrarySort::Local,
+        LibrarySort::Spotify,
+    ]
+    .map(|sort| (sort, sort_label(locale, sort)));
+    let (rect, response) = ui.allocate_exact_size(Vec2::splat(ICON + 12.0), Sense::click());
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), label.as_ref())
+    });
+    let open = egui::Popup::is_id_open(ui.ctx(), egui::Popup::default_response_id(&response));
+    let tint = if response.hovered() || response.has_focus() || open {
+        palette.text
+    } else {
+        palette.secondary
+    };
+    if ui.is_rect_visible(rect) {
+        theme::paint_icon(ui, Icon::List, rect, ICON, tint);
+    }
+    theme::focus_ring(ui, &response);
+    let response = response.on_hover_text(label.as_ref());
     egui::Popup::menu(&response)
-        .frame(super::widgets::menu_frame(&app.palette))
+        .align(egui::RectAlign::BOTTOM_END)
+        .frame(super::widgets::menu_frame(&palette))
         .show(|ui| {
             let width = labels
                 .iter()
@@ -411,6 +409,18 @@ fn sort_menu(app: &mut App, ui: &mut egui::Ui, shelf: Filter, selected: LibraryS
                 }
             }
         });
+}
+
+/// The name of a library order, as the sort button and its menu show it.
+fn sort_label(locale: crate::i18n::Locale, sort: LibrarySort) -> std::borrow::Cow<'static, str> {
+    match sort {
+        LibrarySort::Library => gettext(locale, "Library order"),
+        LibrarySort::RecentlyPlayed => gettext(locale, "Recents"),
+        LibrarySort::Name => gettext(locale, "Name"),
+        LibrarySort::RecentlyAdded => gettext(locale, "Recently added"),
+        LibrarySort::Local => gettext(locale, "Local custom order"),
+        LibrarySort::Spotify => gettext(locale, "Spotify custom order"),
+    }
 }
 
 fn saved_time(value: Option<&str>) -> Option<i64> {
@@ -868,28 +878,43 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
         .unwrap_or(false);
 
     let mut focus_search = false;
+    let header_sort = selected_sort(app, filter);
+
+    // The Library icon and heading are the sidebar's collapse button, as
+    // Spotify's are; the top bar's button brings the sidebar back. Both
+    // brighten together, from the hover the last frame saw.
+    let hide_sidebar = super::keys::platform_shortcut(
+        &gettext(locale, "Hide sidebar (Ctrl+B)"),
+        &gettext(locale, "Hide sidebar (Cmd+B)"),
+    )
+    .to_owned();
+    let library_hover_id = egui::Id::new("sidebar-library-hover");
+    let library_was_hovered = ui
+        .data(|data| data.get_temp::<bool>(library_hover_id))
+        .unwrap_or(false);
+    let mut library_hovered = false;
+    let mut library_clicked = false;
 
     ui.horizontal(|ui| {
         ui.add_space(6.0);
-        theme::icon(ui, Icon::Library, 22.0, palette.secondary);
+        let (icon_rect, icon_response) = ui.allocate_exact_size(vec2(22.0, 22.0), Sense::click());
+        icon_response.widget_info(|| {
+            egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), &hide_sidebar)
+        });
+        let icon_tint =
+            if library_was_hovered || icon_response.hovered() || icon_response.has_focus() {
+                palette.text
+            } else {
+                palette.secondary
+            };
+        Icon::Library.image(icon_tint, 22.0).paint_at(ui, icon_rect);
+        theme::focus_ring(ui, &icon_response);
+        library_hovered |= icon_response.hovered();
+        library_clicked |= icon_response.on_hover_text(&hide_sidebar).clicked();
         ui.add_space(2.0);
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
             ui.spacing_mut().item_spacing.x = 2.0;
-            if theme::icon_button(
-                ui,
-                Icon::PanelLeft,
-                16.0,
-                palette.secondary,
-                palette.text,
-                super::keys::platform_shortcut(
-                    &gettext(locale, "Hide sidebar (Ctrl+B)"),
-                    &gettext(locale, "Hide sidebar (Cmd+B)"),
-                ),
-            )
-            .clicked()
-            {
-                app.actions.push(Action::ToggleSidebar);
-            }
+            sort_button(app, ui, filter, header_sort);
             let grid = app.settings.sidebar_grid;
             let (icon, label) = if grid {
                 (Icon::LayoutList, gettext(locale, "Show as list"))
@@ -949,11 +974,30 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
                         <= room
                 });
                 if let Some(size) = fits {
-                    theme::text(ui, heading, theme::bold(size), palette.text);
+                    let galley = ui.painter().layout_no_wrap(
+                        heading.to_string(),
+                        theme::bold(size),
+                        palette.text,
+                    );
+                    let (rect, response) = ui.allocate_exact_size(galley.size(), Sense::click());
+                    response.widget_info(|| {
+                        egui::WidgetInfo::labeled(
+                            egui::WidgetType::Button,
+                            ui.is_enabled(),
+                            &hide_sidebar,
+                        )
+                    });
+                    ui.painter().galley(rect.min, galley, palette.text);
+                    library_hovered |= response.hovered();
+                    library_clicked |= response.on_hover_text(&hide_sidebar).clicked();
                 }
             });
         });
     });
+    ui.data_mut(|data| data.insert_temp(library_hover_id, library_hovered));
+    if library_clicked {
+        app.actions.push(Action::ToggleSidebar);
+    }
     ui.add_space(6.0);
 
     ui.horizontal_wrapped(|ui| {
@@ -970,7 +1014,6 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
         }
     });
     let sort = selected_sort(app, filter);
-    sort_menu(app, ui, filter, sort);
     ui.data_mut(|data| {
         data.insert_temp(filter_id, filter);
         data.insert_temp(show_search_id, show_search);

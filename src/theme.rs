@@ -423,6 +423,7 @@ fastframe_icons::icons! {
         Library => "library",
         LayoutGrid => "layout-grid",
         LayoutList => "layout-list",
+        List => "list",
         ListEnd => "list-end",
         ListMusic => "list-music",
         ListPlus => "list-plus",

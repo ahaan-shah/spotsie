@@ -273,27 +273,21 @@ random token). Use the command rather than the channel itself.
 
 ## Updates
 
-The Windows installer, Mac app, and portable Windows and Linux downloads
-update from inside Spotsie. Click the green update button to download a
-release, then choose when to restart and install it. Settings can enable
-automatic background downloads; restarting always waits for your click.
-Closing the update window keeps a download running. You can also check for a
-new release from Settings, or on macOS from the application menu.
+On this computer, `scripts/install.sh` in the source folder builds the
+current code and replaces the installed copy; settings and sign-ins stay.
 
-Spotsie checks each download before installing it. An interrupted or damaged
-download leaves the running app alone, and a failed startup restores the
-previous installation. Updates keep your settings and sign-ins. On macOS,
-move Spotsie to Applications before updating it.
-
-Package-managed installations update through their package manager,
-including Homebrew, Flatpak, apt, dnf, pacman, Nix, and Cargo. Other
-installations, the AppImage among them, use the [Download page](https://github.com/ahaan-shah/spotsie/releases).
-Portable archives identify themselves with `spotsie-portable.txt`.
+Spotsie never checks for updates on its own. **Check for updates** in
+**Settings > About** asks this project's GitHub releases for a newer version.
+When one exists, the green update button downloads it and waits for you to
+choose when to restart. Spotsie checks each download before installing it,
+and a failed startup restores the previous installation.
 
 ## Library order
 
-Since 0.8.0, the menu below the Library filters selects an order
-for each section. **Name** and **Recently played** are available throughout.
+The list button at the right of the Library heading opens the orders for
+each section, with the current one checked; its tooltip names it. Clicking
+the Library icon or heading hides the sidebar, and the button at the left of
+the top bar brings it back. **Name** and **Recents** are available throughout.
 Albums and podcasts also offer **Recently added**, using their actual save
 dates. Spotify does not supply equivalent dates for followed playlists or
 artists, so those sections do not offer that choice. Entries with missing save
@@ -307,7 +301,7 @@ folder. Sorting or dragging Library items changes their order only in
 Spotsie; it does not rearrange your Spotify library.
 
 Drag playlists to choose **Local custom order**. New playlists appear below the
-pinned group. Selecting **Name**, **Recently played** or **Spotify custom order**
+pinned group. Selecting **Name**, **Recents** or **Spotify custom order**
 keeps the saved arrangement, so selecting **Local custom order** restores it.
 The playlist context menu's **Sort by recently played** also preserves it.
 
@@ -323,19 +317,11 @@ order**. Other pins can sit above it. Its right-click menu also offers **Unpin**
 and **Pin to top**; pinning adds it after your existing pins. The arrangement
 survives restarting Spotsie and switching sort choices.
 
-When unpinned, Liked Songs follows **Name** or **Recently played** like the other
+When unpinned, Liked Songs follows **Name** or **Recents** like the other
 rows. In **Spotify custom order**, it appears after the playlists because it
 has no place in Spotify's playlist tree. Returning to **Local custom order**
 restores its saved position. Dragging a song onto Liked Songs still saves that
 song, wherever the row sits.
-
-**Player bar visualizer** in **Settings > Appearance** shows the song moving
-behind the player bar's controls: **Spectrum** draws glowing bars from bass
-to treble with peaks that hang and fall, and **Waveform** draws the sound's
-wave as a glowing line, both in colours drawn from the cover. It follows the equalizer, not the volume, and moves only while the
-song plays on this computer. It is off by default. Clicking the player
-bar's empty space switches it, as Winamp's visualizer did: off, then
-Spectrum, then Waveform, then off again.
 
 In **Settings > Appearance**, **Compact track list** puts each song on one
 line. In narrow lists, the added date follows the artist credits with a spaced

@@ -382,11 +382,9 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     let autoplay = gettext(locale, "Autoplay");
     let gapless = gettext(locale, "Gapless playback");
     let keep_playing = gettext(locale, "Keep music playing when the window closes");
-    let update_checks = gettext(locale, "Automatic update checks");
     let audio_cache = gettext(locale, "Audio cache");
     let apply_playback = gettext(locale, "Apply and restart playback");
     let apply_playback_note = gettext(locale, "Restart local playback to apply these settings.");
-    let download_updates = gettext(locale, "Download updates automatically");
     let playback_rows = [
         RowText::new(
             // Translators: {status} is a playback state such as Ready or Not set up.
@@ -428,10 +426,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             .to_owned(),
         ),
         RowText::new(
-            update_checks.clone(),
-            gettext(locale, "Checks GitHub once a day. No personal data is sent."),
-        ),
-        RowText::new(
             gettext(locale, "Audio output"),
             gettext(
                 locale,
@@ -453,13 +447,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
         ),
         RowText::new(apply_playback.clone(), apply_playback_note.clone()).when(playback_dirty),
         RowText::new(gettext(locale, "Playback settings applied"), "").when(!playback_dirty),
-        RowText::new(
-            download_updates.clone(),
-            gettext(
-                locale,
-                "Downloads in the background. You choose when to restart.",
-            ),
-        ),
         RowText::new(
             gettext(locale, "MacBook notch widget"),
             gettext(
@@ -605,7 +592,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                 }
             });
             #[cfg(target_os = "macos")]
-            filtered_row(ui, &palette, &needle, &playback, &playback_rows[14], |ui| {
+            filtered_row(ui, &palette, &needle, &playback, &playback_rows[12], |ui| {
                 if widgets::switch(
                     ui,
                     &palette,
@@ -617,32 +604,8 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                     changed = true;
                 }
             });
-            filtered_row(ui, &palette, &needle, &playback, &playback_rows[7], |ui| {
-                if widgets::switch(
-                    ui,
-                    &palette,
-                    &update_checks,
-                    &mut app.settings.check_for_updates,
-                )
-                .changed()
-                {
-                    changed = true;
-                }
-            });
-            filtered_row(ui, &palette, &needle, &playback, &playback_rows[13], |ui| {
-                if widgets::switch(
-                    ui,
-                    &palette,
-                    &download_updates,
-                    &mut app.settings.download_updates_automatically,
-                )
-                .changed()
-                {
-                    changed = true;
-                }
-            });
             if cfg!(target_os = "linux") {
-                filtered_row(ui, &palette, &needle, &playback, &playback_rows[8], |ui| {
+                filtered_row(ui, &palette, &needle, &playback, &playback_rows[7], |ui| {
                     let current = app
                         .settings
                         .platform_backend()
@@ -668,7 +631,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                 });
             }
             #[cfg(windows)]
-            filtered_row(ui, &palette, &needle, &playback, &playback_rows[9], |ui| {
+            filtered_row(ui, &palette, &needle, &playback, &playback_rows[8], |ui| {
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 6.0;
                     let current = app.settings.audio_buffer_ms;
@@ -684,7 +647,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                     }
                 });
             });
-            filtered_row(ui, &palette, &needle, &playback, &playback_rows[10], |ui| {
+            filtered_row(ui, &palette, &needle, &playback, &playback_rows[9], |ui| {
                 // The control area lays out right-to-left: add the rightmost item first.
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 6.0;
@@ -717,8 +680,8 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             });
             ui.add_space(4.0);
             if playback_dirty
+                || playback_rows[10].matches(&needle, &playback)
                 || playback_rows[11].matches(&needle, &playback)
-                || playback_rows[12].matches(&needle, &playback)
             {
                 ui.horizontal(|ui| {
                     if playback_dirty {
@@ -744,7 +707,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     let tracklist_compact = gettext(locale, "Compact track list");
     let middle_click = gettext(locale, "Middle-click autoscroll");
     let custom_titlebar = gettext(locale, "Custom title bar");
-    let player_bar_vis = gettext(locale, "Player bar visualizer");
     let appearance_rows = [
         RowText::new(theme_title.clone(), {
             let detail = theme::catalog_detail(
@@ -815,13 +777,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             ),
         )
         .when(app.windows_controls_visible()),
-        RowText::new(
-            player_bar_vis.clone(),
-            gettext(
-                locale,
-                "Show the song moving behind the player bar's controls while it plays here.",
-            ),
-        ),
     ];
     if section_matches(&needle, &appearance, &appearance_rows) {
         any_visible = true;
@@ -951,61 +906,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                     }
                 },
             );
-            {
-                use crate::settings::PlayerBarVis;
-                let choices = [
-                    (PlayerBarVis::Off, gettext(locale, "Off")),
-                    (PlayerBarVis::Spectrum, gettext(locale, "Spectrum")),
-                    (PlayerBarVis::Waveform, gettext(locale, "Waveform")),
-                ];
-                let choice_gap = 6.0;
-                let choices_width = choices
-                    .iter()
-                    .map(|(_, label)| theme::soft_button_width(ui, label))
-                    .sum::<f32>()
-                    + choice_gap * (choices.len() - 1) as f32;
-                filtered_row_sized(
-                    ui,
-                    &palette,
-                    &needle,
-                    &appearance,
-                    &appearance_rows[8],
-                    choices_width,
-                    |ui| {
-                        let mut choose = |ui: &mut egui::Ui, mode: PlayerBarVis, label: &str| {
-                            if theme::soft_button(
-                                ui,
-                                &palette,
-                                None,
-                                label,
-                                app.settings.player_bar_vis == mode,
-                            )
-                            .clicked()
-                                && app.settings.player_bar_vis != mode
-                            {
-                                app.settings.player_bar_vis = mode;
-                                changed = true;
-                            }
-                        };
-                        if ui.available_width() >= choices_width {
-                            // Laid right to left, so the last choice goes first.
-                            ui.horizontal(|ui| {
-                                ui.spacing_mut().item_spacing.x = choice_gap;
-                                for (mode, label) in choices.iter().rev() {
-                                    choose(ui, *mode, label);
-                                }
-                            });
-                        } else {
-                            ui.with_layout(Layout::top_down(Align::Max), |ui| {
-                                ui.spacing_mut().item_spacing.y = choice_gap;
-                                for (mode, label) in &choices {
-                                    choose(ui, *mode, label);
-                                }
-                            });
-                        }
-                    },
-                );
-            }
             filtered_row(
                 ui,
                 &palette,
@@ -1356,10 +1256,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     }
 
     let about = gettext(locale, "About");
-    let built_with = gettext(
-        locale,
-        "Built with Rust, egui, and librespot. Not affiliated with Spotify.",
-    );
+    let not_affiliated = gettext(locale, "Not affiliated with Spotify.");
     let check_for_updates = gettext(locale, "Check for updates");
     let checking = gettext(locale, "Checking…");
     let keyboard_shortcuts = gettext(locale, "Keyboard shortcuts");
@@ -1367,7 +1264,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     let about_rows = [
         RowText::new(
             format!("Spotsie {}", env!("CARGO_PKG_VERSION")),
-            built_with.clone(),
+            not_affiliated.clone(),
         ),
         RowText::new(
             format!("{check_for_updates} {checking}"),
@@ -1378,22 +1275,15 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
         any_visible = true;
         section(ui, &palette, &about, |ui| {
             ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = 12.0;
                 let (logo, _) = ui.allocate_exact_size(Vec2::splat(40.0), egui::Sense::hover());
                 theme::logo(ui, logo.center(), 40.0);
-                ui.vertical(|ui| {
-                    theme::text(
-                        ui,
-                        format!("Spotsie {}", env!("CARGO_PKG_VERSION")),
-                        theme::semibold(15.0),
-                        palette.text,
-                    );
-                    theme::text(
-                        ui,
-                        built_with.as_ref(),
-                        theme::regular(13.0),
-                        palette.secondary,
-                    );
-                });
+                theme::text(
+                    ui,
+                    format!("Spotsie {}", env!("CARGO_PKG_VERSION")),
+                    theme::semibold(15.0),
+                    palette.text,
+                );
             });
             ui.add_space(8.0);
             ui.horizontal(|ui| {
@@ -1422,10 +1312,12 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                 }
             });
             ui.add_space(14.0);
-            if widgets::credit(ui, &palette, locale) {
-                app.actions
-                    .push(Action::OpenUrl(widgets::AUTHOR_URL.to_owned()));
-            }
+            theme::text(
+                ui,
+                not_affiliated.as_ref(),
+                theme::regular(13.0),
+                palette.secondary,
+            );
         });
     }
 

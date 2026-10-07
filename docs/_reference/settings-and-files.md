@@ -225,7 +225,6 @@ main fields are:
 | `custom_theme_cache` | absent | Last accepted custom palette; preserves appearance if its file is missing or invalid |
 | `system_theme_cache` | absent | Last accepted Omarchy palette for Follow system; retained across restarts |
 | `accent_from_art` | `true` | Tint pages with album art |
-| `player_bar_vis` | `off` | Since 0.11.0: what moves behind the player bar while a song plays on this computer: `off`, `spectrum` or `waveform` |
 | `library_sort` | `{}` | Per-section Library order overrides, since 0.8.0: `library`, `recently_played`, `name`, `recently_added`, `local`, or `spotify`, where supported |
 | `sidebar_order` | `[]` | Saved local playlist arrangement, including an unpinned Liked Songs, retained when another sort is selected |
 | `pinned_contexts` | `[]` | Local Library pin order; Liked Songs uses `spotsie:liked-songs`, a local key never sent to Spotify |
@@ -240,7 +239,8 @@ main fields are:
 | `eq_bands_db` | ten zeros | The bands from 60 Hz to 16 kHz, in decibels, -12 to 12 |
 | `keep_playing_in_background` | `true` | Close to tray |
 | `mac_notch_widget` | `false` | Show interactive Now Playing widget when hovering over the MacBook notch (macOS only) |
-| `check_for_updates` | `false` | Ask GitHub once a day for a newer release |
+| `check_for_updates` | `false` | Ask GitHub once a day for a newer release. Not shown in Settings; set it here |
+| `download_updates_automatically` | `false` | Download a found update in the background. Not shown in Settings; set it here |
 | `web_client_id` | none | Optional personal Spotify app id used alongside shared coverage |
 | `personal_app_nudge_at` | none | Legacy daily-reminder timestamp, retained for older releases |
 | `personal_app_intro_seen` | `false` | Whether the Premium personal-app introduction was dismissed or followed (available since 0.8.0) |
@@ -280,7 +280,7 @@ and `--demo-show` adds surfaces on top of it: a comma separated list of
 `focus`, `eq`, `compact`, `update`, `personal-app`,
 `collection-loading`, `shuffle-selected`, `shuffle-started`, `library-list`,
 `library-list-narrow`, `library-list-wide`, `library-grid`, `library-grid-narrow`,
-`library-grid-wide`, `rtl`, `player-bar-spectrum`, `player-bar-waveform`,
+`library-grid-wide`, `rtl`,
 `lyrics-fullscreen-view`, `lyrics-fullscreen-instrumental`, `signed-out`, and `connecting`. The Library variants show the list or cover grid with
 a normal, narrow, or wide sidebar and collapsed artwork for matching captures.
 `shuffle-selected` and `shuffle-started` capture the selected-mode and
@@ -289,8 +289,6 @@ update badge for checking its layout. `personal-app` shows the personal Spotify
 app introduction.
 `signed-out` and `connecting` show the sign-in card before and while the
 session connects.
-`player-bar-spectrum` and `player-bar-waveform` play a fixed, music-like
-sound on this computer with that player bar visualizer on.
 `lyrics-fullscreen-view` and `lyrics-fullscreen-instrumental` draw full-screen
 lyrics, with words or without, at the window's own size.
 `rtl` gives the first songs of `playlist:pl1` invented Hebrew and Arabic
