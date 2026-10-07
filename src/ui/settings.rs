@@ -726,7 +726,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     let accent_from_art = gettext(locale, "Colour from album art");
     let sidebar_compact = gettext(locale, "Compact library sidebar");
     let tracklist_compact = gettext(locale, "Compact track list");
-    let middle_click = gettext(locale, "Middle-click autoscroll");
+    let font_title = gettext(locale, "Font");
     let custom_titlebar = gettext(locale, "Custom title bar");
     let appearance_rows = [
         RowText::new(theme_title.clone(), {
@@ -783,13 +783,9 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             .to_owned(),
         ),
         RowText::new(
-            middle_click.clone(),
-            gettext(
-                locale,
-                "Middle-click a list, then move the pointer to scroll it. Off by default, because a middle click usually pastes on Linux.",
-            ),
-        )
-        .when(cfg!(target_os = "linux")),
+            font_title.clone(),
+            gettext(locale, "Every font is bundled with Spotsie and works offline."),
+        ),
         RowText::new(
             custom_titlebar.clone(),
             gettext(
@@ -811,35 +807,79 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                     |_| {},
                 );
                 ui.add_space(-4.0);
-                ui.horizontal_wrapped(|ui| {
-                    ui.spacing_mut().item_spacing = egui::vec2(12.0, 12.0);
-                    let current = app.settings.custom_theme.clone();
-                    for choice in ThemeChoice::ALL {
-                        let preview = match choice {
-                            ThemeChoice::Light => ThemePreview::One(Palette::light()),
-                            ThemeChoice::Dark => ThemePreview::One(Palette::dark()),
-                            ThemeChoice::System => {
-                                ThemePreview::Split(Palette::light(), Palette::dark())
-                            }
-                        };
-                        let selected = current.is_none() && app.settings.theme == choice;
-                        let label = choice.label(locale);
-                        if theme_tile(ui, &palette, &preview, &label, selected).clicked() {
-                            app.actions.push(Action::SetTheme(choice));
-                        }
+                // Follow system and the palette files first, then Spotsie's
+                // and Magpie's themes, light and dark, as Magpie groups them.
+                let custom = app.settings.custom_theme.clone();
+                let builtin = app.settings.builtin_theme.clone();
+                let plain = custom.is_none() && builtin.is_none();
+                let tiles = |ui: &mut egui::Ui, add: &mut dyn FnMut(&mut egui::Ui)| {
+                    ui.horizontal_wrapped(|ui| {
+                        ui.spacing_mut().item_spacing = egui::vec2(12.0, 12.0);
+                        add(ui);
+                    });
+                };
+                tiles(ui, &mut |ui| {
+                    let preview = match app.system_palette() {
+                        Some(desktop) => ThemePreview::One(desktop),
+                        None => ThemePreview::Split(Palette::light(), Palette::dark()),
+                    };
+                    let selected = plain && app.settings.theme == ThemeChoice::System;
+                    let label = ThemeChoice::System.label(locale);
+                    if theme_tile(ui, &palette, &preview, &label, selected).clicked() {
+                        app.actions.push(Action::SetTheme(ThemeChoice::System));
                     }
-                    for custom in app.custom_themes.picker_themes() {
-                        let selected = current.as_deref() == Some(custom.filename.as_str());
-                        let label = fastframe_theme::display_name(&custom.filename);
-                        let preview = ThemePreview::One(custom.palette);
+                    for theme in app.custom_themes.picker_themes() {
+                        let selected = custom.as_deref() == Some(theme.filename.as_str());
+                        let label = fastframe_theme::display_name(&theme.filename);
+                        let preview = ThemePreview::One(theme.palette);
                         if theme_tile(ui, &palette, &preview, label, selected).clicked() {
                             app.actions
-                                .push(Action::SetCustomTheme(custom.filename.clone()));
+                                .push(Action::SetCustomTheme(theme.filename.clone()));
                         }
                     }
                 });
+                for (choice, dark) in [(ThemeChoice::Light, false), (ThemeChoice::Dark, true)] {
+                    ui.add_space(14.0);
+                    let heading = choice.label(locale).to_uppercase();
+                    theme::text(ui, heading, theme::semibold(11.5), palette.dim);
+                    ui.add_space(6.0);
+                    tiles(ui, &mut |ui| {
+                        let own = if dark {
+                            Palette::dark()
+                        } else {
+                            Palette::light()
+                        };
+                        let selected = plain && app.settings.theme == choice;
+                        let label = choice.label(locale);
+                        if theme_tile(ui, &palette, &ThemePreview::One(own), &label, selected)
+                            .clicked()
+                        {
+                            app.actions.push(Action::SetTheme(choice));
+                        }
+                        for theme in theme::builtin_themes()
+                            .iter()
+                            .filter(|theme| theme.palette.dark == dark)
+                        {
+                            let selected =
+                                custom.is_none() && builtin.as_deref() == Some(theme.name);
+                            let preview = ThemePreview::One(theme.palette);
+                            if theme_tile(ui, &palette, &preview, theme.name, selected).clicked() {
+                                app.actions
+                                    .push(Action::SetBuiltinTheme(theme.name.to_owned()));
+                            }
+                        }
+                    });
+                }
                 ui.add_space(18.0);
             }
+            filtered_row(
+                ui,
+                &palette,
+                &needle,
+                &appearance,
+                &appearance_rows[6],
+                |ui| font_picker(app, ui, &font_title),
+            );
             filtered_row(
                 ui,
                 &palette,
@@ -935,27 +975,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                     });
                 },
             );
-            if cfg!(target_os = "linux") {
-                filtered_row(
-                    ui,
-                    &palette,
-                    &needle,
-                    &appearance,
-                    &appearance_rows[6],
-                    |ui| {
-                        if widgets::switch(
-                            ui,
-                            &palette,
-                            &middle_click,
-                            &mut app.settings.middle_click_autoscroll,
-                        )
-                        .changed()
-                        {
-                            changed = true;
-                        }
-                    },
-                );
-            }
             if app.windows_controls_visible() {
                 filtered_row(
                     ui,
@@ -1344,6 +1363,23 @@ fn language_picker(app: &mut App, ui: &mut egui::Ui) {
             }
         },
     );
+}
+
+/// The interface font, each offered in its own face.
+fn font_picker(app: &mut App, ui: &mut egui::Ui, name: &str) {
+    let palette = app.palette;
+    let current = theme::font_by_name(&app.settings.font).name;
+    let width = 220.0_f32.min(ui.available_width());
+    widgets::dropdown(ui, &palette, "interface_font", name, current, width, |ui| {
+        for font in theme::FONTS {
+            let face = egui::FontId::new(14.5, theme::preview_family(font.name));
+            if widgets::option_in(ui, &palette, font.name == current, font.name, face).clicked()
+                && font.name != current
+            {
+                app.actions.push(Action::SetFont(font.name.to_owned()));
+            }
+        }
+    });
 }
 
 fn hertz(hz: f32) -> String {

@@ -135,7 +135,9 @@ counts once, and the notification reports only the rows actually added.
     *Playing next* inserts it there, and dragging a row already in
     *Playing next* elsewhere in the same section moves it, only while this
     computer is the active player. Otherwise every drop still just adds to
-    the end, exactly like **Add to queue**. *Next up* is never a drop
-    target: it plays from the current context, not from a list Spotsie
-    can rewrite. While *Playing next* is empty, drop the song on the player
-    bar's Queue button instead.
+    the end, exactly like **Add to queue**. *Next up* plays from the
+    current context, not from a list Spotsie can rewrite, so a song is
+    never inserted among its rows: while *Playing next* is empty, dragging
+    a song over the queue opens *Playing next* at the top, and dropping it
+    anywhere on the queue puts it there. The player bar's Queue button
+    also takes a dropped song.

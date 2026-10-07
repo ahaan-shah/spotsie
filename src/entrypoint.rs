@@ -477,6 +477,7 @@ pub(crate) fn run() -> eframe::Result<()> {
     let mut app = app::App::new(&waker, dirs, settings, options);
     if guarded {
         app.enable_desktop_themes();
+        app.watch_pywal(&waker);
     }
     #[cfg(feature = "demo")]
     let load_themes = guarded || cli.demo_data.is_some();

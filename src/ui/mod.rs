@@ -65,7 +65,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
         // Each panel draws while it slides in or out, so these always run.
         sidebar::show(app, ui);
         queue::side_panel(app, ui);
-        lyrics::side_panel(app, ui);
         central(app, ui);
         keep_room_for_panels(app, ctx);
     }
@@ -131,7 +130,7 @@ fn keep_room_for_panels(app: &App, ctx: &Context) {
     let width = main_min_width(
         topbar::least_width(ctx),
         app.settings.sidebar_visible,
-        app.show_queue_panel || app.show_lyrics_panel,
+        app.show_queue_panel,
     )
     .round();
     let id = Id::new("main-min-width");
@@ -320,6 +319,13 @@ fn central(app: &mut App, ui: &mut egui::Ui) {
             // page casts a shadow under the header instead.
             ui.spacing_mut().scroll.fade.strength = 0.0;
             topbar::show(app, ui);
+            // The lyrics and the cover view take the main area, as Spotify
+            // shows them, with the top bar still above.
+            if app.show_lyrics_panel || app.show_cover_view {
+                lyrics::main_view(app, ui);
+                return;
+            }
+            lyrics::note_main_view_closed(ui.ctx());
             let page = app.page().clone();
             let shown_at = note_page_shown(ui.ctx(), &page);
             // A page rises into place as Magpie's do; Settings staggers its

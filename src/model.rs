@@ -1084,6 +1084,8 @@ pub enum Action {
     ToggleSidebar,
     ToggleQueuePanel,
     ToggleLyricsPanel,
+    /// Show or leave the cover view in the main area.
+    ToggleCoverView,
     SetLyricsFullscreen(bool),
     LyricsLineShown(Option<usize>),
     FollowLyrics,
@@ -1099,7 +1101,11 @@ pub enum Action {
     SetTheme(crate::settings::ThemeChoice),
     /// Draw the interface in this language from the next frame on.
     SetLanguage(crate::settings::LanguageChoice),
+    /// Draw the interface in this font, by name.
+    SetFont(String),
     SetCustomTheme(String),
+    /// Wear a theme that ships with Spotsie, by name.
+    SetBuiltinTheme(String),
     ReloadThemes,
     SetLibrarySort {
         shelf: crate::settings::LibraryShelf,

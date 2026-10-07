@@ -58,7 +58,7 @@ pub fn side_panel(app: &mut App, ui: &mut egui::Ui) {
         let window_controls = super::window_controls_reservation(
             ui.ctx(),
             app.show_queue_panel,
-            app.show_lyrics_panel,
+            false,
             ui.available_width(),
         );
         ui.add_space(window_controls.queue_top);
@@ -321,6 +321,38 @@ fn contents(app: &mut App, ui: &mut egui::Ui, compact: bool) {
     // context's rows follow under the usual heading. One numbering runs
     // through both, because that is the order things play.
     let queued_len = app.queued_rows_len().min(queue_len);
+    // Nothing queued by hand yet, but the context plays on: a song dragged
+    // over the queue would have nowhere to land, so Playing next opens for
+    // it at the top, and a drop anywhere on the queue puts it there.
+    if reorderable
+        && queued_len == 0
+        && egui::DragAndDrop::has_payload_of_type::<DragTrack>(ui.ctx())
+    {
+        theme::text(
+            ui,
+            gettext(
+                app.locale,
+                // Translators: Songs added manually, before the current playlist or album continues.
+                "Playing next",
+            ),
+            theme::semibold(14.0),
+            palette.text,
+        );
+        ui.add_space(6.0);
+        let y = ui.cursor().top();
+        ui.painter().hline(
+            ui.max_rect().x_range().shrink(8.0),
+            y,
+            egui::Stroke::new(2.0, palette.accent),
+        );
+        ui.add_space(SECTION_GAP);
+        if let Some(track) = queue_drop(ui, ui.clip_rect()) {
+            app.actions.push(Action::InsertInQueue {
+                items: track.items.clone(),
+                position: 0,
+            });
+        }
+    }
     if queued_len > 0 {
         // The trash sits with the songs it removes: only this section is
         // the user's to clear, the context below plays itself.

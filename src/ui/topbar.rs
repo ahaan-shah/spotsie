@@ -196,12 +196,8 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     let palette = app.palette;
     let locale = app.locale;
     let width = ui.available_width();
-    let window_controls = super::window_controls_reservation(
-        ui.ctx(),
-        app.show_queue_panel,
-        app.show_lyrics_panel,
-        width,
-    );
+    let window_controls =
+        super::window_controls_reservation(ui.ctx(), app.show_queue_panel, false, width);
     // Where the titlebar used to be: the bar grows upwards into that space and
     // its empty parts drag the window.
     let inset = theme::titlebar_inset(ui.ctx());

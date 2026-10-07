@@ -63,47 +63,89 @@ impl Palette {
         }
     }
 
+    /// Spotsie Dark: the record's vinyl black with a whisper of green in its
+    /// greys, and the label's green as the accent.
     pub fn dark() -> Self {
         Self {
             dark: true,
-            window: Color32::from_rgb(0x0f, 0x11, 0x14),
-            panel: Color32::from_rgb(0x15, 0x18, 0x1c),
-            surface: Color32::from_rgb(0x1d, 0x21, 0x27),
-            surface_hover: Color32::from_rgb(0x26, 0x2b, 0x33),
-            surface_active: Color32::from_rgb(0x2f, 0x35, 0x3f),
-            outline: Color32::from_rgb(0x2a, 0x30, 0x38),
-            text: Color32::from_rgb(0xf2, 0xf4, 0xf6),
-            secondary: Color32::from_rgb(0xa9, 0xb1, 0xbc),
-            dim: Color32::from_rgb(0x6e, 0x77, 0x84),
+            window: Color32::from_rgb(0x0d, 0x0f, 0x0e),
+            panel: Color32::from_rgb(0x13, 0x16, 0x15),
+            surface: Color32::from_rgb(0x1b, 0x1f, 0x1d),
+            surface_hover: Color32::from_rgb(0x24, 0x29, 0x27),
+            surface_active: Color32::from_rgb(0x2d, 0x33, 0x30),
+            outline: Color32::from_rgb(0x27, 0x2c, 0x29),
+            text: Color32::from_rgb(0xee, 0xf3, 0xef),
+            secondary: Color32::from_rgb(0xa5, 0xaf, 0xa9),
+            dim: Color32::from_rgb(0x6b, 0x75, 0x6f),
             accent: Color32::from_rgb(0x1e, 0xd7, 0x60),
-            accent_hover: Color32::from_rgb(0x3c, 0xe8, 0x7a),
-            on_accent: Color32::from_rgb(0x0a, 0x14, 0x0e),
+            accent_hover: Color32::from_rgb(0x5f, 0xf5, 0x9c),
+            on_accent: Color32::from_rgb(0x06, 0x12, 0x0b),
             danger: Color32::from_rgb(0xf5, 0x71, 0x7f),
             warning: Color32::from_rgb(0xf2, 0xb8, 0x5c),
-            overlay: Color32::from_rgb(0x22, 0x27, 0x2e),
+            overlay: Color32::from_rgb(0x1f, 0x24, 0x21),
             shadow: Color32::from_black_alpha(140),
         }
     }
 
+    /// Spotsie Light: the label's paper with the same green, deep enough to
+    /// read on white.
     pub fn light() -> Self {
         Self {
             dark: false,
-            window: Color32::from_rgb(0xf8, 0xf9, 0xfb),
+            window: Color32::from_rgb(0xf6, 0xf8, 0xf6),
             panel: Color32::from_rgb(0xff, 0xff, 0xff),
-            surface: Color32::from_rgb(0xee, 0xf0, 0xf3),
-            surface_hover: Color32::from_rgb(0xe3, 0xe6, 0xeb),
-            surface_active: Color32::from_rgb(0xd7, 0xdb, 0xe1),
-            outline: Color32::from_rgb(0xdd, 0xe1, 0xe6),
-            text: Color32::from_rgb(0x14, 0x17, 0x1a),
-            secondary: Color32::from_rgb(0x53, 0x5b, 0x66),
-            dim: Color32::from_rgb(0x8b, 0x93, 0x9e),
-            accent: Color32::from_rgb(0x15, 0xa6, 0x4a),
-            accent_hover: Color32::from_rgb(0x12, 0x8f, 0x40),
+            surface: Color32::from_rgb(0xec, 0xf0, 0xed),
+            surface_hover: Color32::from_rgb(0xe2, 0xe8, 0xe4),
+            surface_active: Color32::from_rgb(0xd6, 0xde, 0xd9),
+            outline: Color32::from_rgb(0xdb, 0xe2, 0xdd),
+            text: Color32::from_rgb(0x10, 0x15, 0x12),
+            secondary: Color32::from_rgb(0x51, 0x5c, 0x55),
+            dim: Color32::from_rgb(0x88, 0x92, 0x8c),
+            accent: Color32::from_rgb(0x12, 0xa1, 0x48),
+            accent_hover: Color32::from_rgb(0x0e, 0x8a, 0x3d),
             on_accent: Color32::WHITE,
             danger: Color32::from_rgb(0xd6, 0x3b, 0x4c),
             warning: Color32::from_rgb(0xb8, 0x7a, 0x14),
             overlay: Color32::from_rgb(0xff, 0xff, 0xff),
             shadow: Color32::from_black_alpha(50),
+        }
+    }
+
+    /// A palette from Magpie's design tokens, which name the same surfaces
+    /// differently; hovers are a touch of the text over the card, as there.
+    #[allow(clippy::too_many_arguments)]
+    fn from_magpie(
+        dark: bool,
+        [bg, sidebar, card, elevated, border]: [u32; 5],
+        [text, text2, text3]: [u32; 3],
+        [accent, on_accent, neg, warn]: [u32; 4],
+    ) -> Self {
+        let rgb = |v: u32| Color32::from_rgb((v >> 16) as u8, (v >> 8) as u8, v as u8);
+        let (card, text) = (rgb(card), rgb(text));
+        let wash = |amount: f32| crate::motion::lerp_color(card, text, amount);
+        let toward = if dark { Color32::WHITE } else { Color32::BLACK };
+        Self {
+            dark,
+            window: rgb(bg),
+            panel: rgb(sidebar),
+            surface: card,
+            surface_hover: wash(if dark { 0.08 } else { 0.06 }),
+            surface_active: wash(if dark { 0.14 } else { 0.11 }),
+            outline: rgb(border),
+            text,
+            secondary: rgb(text2),
+            dim: rgb(text3),
+            accent: rgb(accent),
+            accent_hover: crate::motion::lerp_color(rgb(accent), toward, 0.12),
+            on_accent: rgb(on_accent),
+            danger: rgb(neg),
+            warning: rgb(warn),
+            overlay: rgb(elevated),
+            shadow: if dark {
+                Color32::from_black_alpha(140)
+            } else {
+                Color32::from_rgba_premultiplied(20, 24, 40, 30)
+            },
         }
     }
 
@@ -164,6 +206,218 @@ impl fastframe_theme::Palette for Palette {
 /// installed into the themes folder as files on the first launch, and
 /// Omarchy's on Linux, with the packaged template and hook installed for the
 /// user.
+/// A theme that ships with Spotsie beside its own Light and Dark: the rest
+/// of Magpie's set.
+#[derive(Clone, Debug)]
+pub struct BuiltinTheme {
+    pub name: &'static str,
+    pub palette: Palette,
+}
+
+/// Magpie's themes, dark then light, as its picker lists them.
+pub fn builtin_themes() -> &'static [BuiltinTheme] {
+    static THEMES: std::sync::OnceLock<Vec<BuiltinTheme>> = std::sync::OnceLock::new();
+    THEMES.get_or_init(|| {
+        vec![
+            BuiltinTheme {
+                name: "Midnight",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x0E1016, 0x0A0C11, 0x151821, 0x1C202B, 0x242938],
+                    [0xE9EBF1, 0xA0A6B6, 0x686F82],
+                    [0x8AA4FF, 0x0B0E1A, 0xFF6B81, 0xFFB547],
+                ),
+            },
+            BuiltinTheme {
+                name: "Tokyo Night",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x1A1B26, 0x16161E, 0x1F2233, 0x262B40, 0x2C3148],
+                    [0xC8D1F7, 0x9AA3CC, 0x5E6690],
+                    [0x7AA2F7, 0x11131C, 0xF7768E, 0xE0AF68],
+                ),
+            },
+            BuiltinTheme {
+                name: "Mocha",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x1E1E2E, 0x181825, 0x252536, 0x313244, 0x35364A],
+                    [0xCDD6F4, 0xA6ADC8, 0x6C7086],
+                    [0xCBA6F7, 0x1E1E2E, 0xF38BA8, 0xF9E2AF],
+                ),
+            },
+            BuiltinTheme {
+                name: "Nord",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x2E3440, 0x2A2F3A, 0x353C4A, 0x3E4555, 0x444C5C],
+                    [0xECEFF4, 0xC2CAD8, 0x8690A4],
+                    [0x88C0D0, 0x242933, 0xD08770, 0xEBCB8B],
+                ),
+            },
+            BuiltinTheme {
+                name: "Gruvbox",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x1D2021, 0x191B1C, 0x282828, 0x32302F, 0x3C3836],
+                    [0xEBDBB2, 0xBDAE93, 0x7C6F64],
+                    [0xFABD2F, 0x1D2021, 0xFB4934, 0xFE8019],
+                ),
+            },
+            BuiltinTheme {
+                name: "Kanagawa",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x1F1F28, 0x16161D, 0x252530, 0x2A2A37, 0x363646],
+                    [0xDCD7BA, 0xA6A69C, 0x727169],
+                    [0x7E9CD8, 0x16161D, 0xE46876, 0xE6C384],
+                ),
+            },
+            BuiltinTheme {
+                name: "Everforest",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x2D353B, 0x232A2E, 0x343F44, 0x3D484D, 0x475258],
+                    [0xD3C6AA, 0x9DA9A0, 0x7A8478],
+                    [0xA7C080, 0x232A2E, 0xE67E80, 0xDBBC7F],
+                ),
+            },
+            BuiltinTheme {
+                name: "Daylight",
+                palette: Palette::from_magpie(
+                    false,
+                    [0xF5F6FA, 0xECEEF5, 0xFFFFFF, 0xFFFFFF, 0xE3E6EE],
+                    [0x141722, 0x5A6174, 0x949AAB],
+                    [0x4C66EE, 0xFFFFFF, 0xE0434C, 0xD08600],
+                ),
+            },
+            BuiltinTheme {
+                name: "Paper",
+                palette: Palette::from_magpie(
+                    false,
+                    [0xF8F5EF, 0xF0EBE1, 0xFFFEFB, 0xFFFEFB, 0xE6DFD2],
+                    [0x2A2521, 0x6B6158, 0xA2988C],
+                    [0xD2602A, 0xFFFFFF, 0xC4423A, 0xC0850F],
+                ),
+            },
+            BuiltinTheme {
+                name: "Latte",
+                palette: Palette::from_magpie(
+                    false,
+                    [0xEFF1F5, 0xE6E9EF, 0xFBFCFE, 0xFFFFFF, 0xD8DCE5],
+                    [0x4C4F69, 0x6C6F85, 0x9CA0B0],
+                    [0x8839EF, 0xFFFFFF, 0xD20F39, 0xDF8E1D],
+                ),
+            },
+            BuiltinTheme {
+                name: "Flexoki",
+                palette: Palette::from_magpie(
+                    false,
+                    [0xF2F0E5, 0xE6E4D9, 0xFFFCF0, 0xFFFCF0, 0xDAD8CE],
+                    [0x100F0F, 0x6F6E69, 0x878580],
+                    [0x24837B, 0xFFFFFF, 0xAF3029, 0xAD8301],
+                ),
+            },
+            BuiltinTheme {
+                name: "Rosé Pine Dawn",
+                palette: Palette::from_magpie(
+                    false,
+                    [0xFAF4ED, 0xF2E9E1, 0xFFFAF3, 0xFFFAF3, 0xDFDAD9],
+                    [0x575279, 0x797593, 0x9893A5],
+                    [0x907AA9, 0xFFFFFF, 0xB4637A, 0xEA9D34],
+                ),
+            },
+            BuiltinTheme {
+                name: "Lupine",
+                palette: Palette::from_magpie(
+                    false,
+                    [0xF7F6FB, 0xEFEDF7, 0xFFFFFF, 0xFFFFFF, 0xE3E0EE],
+                    [0x212121, 0x5F5B6E, 0x9E9E9E],
+                    [0x8A4AD7, 0xFFFFFF, 0xD6336C, 0xD08700],
+                ),
+            },
+            BuiltinTheme {
+                name: "Snow",
+                palette: Palette::from_magpie(
+                    false,
+                    [0xFAFAFA, 0xF4F4F5, 0xFFFFFF, 0xFFFFFF, 0xE4E4E7],
+                    [0x09090B, 0x52525B, 0xA1A1AA],
+                    [0x18181B, 0xFFFFFF, 0xDC2626, 0xCA8A04],
+                ),
+            },
+        ]
+    })
+}
+
+/// The built-in theme called `name`.
+pub fn builtin_theme(name: &str) -> Option<&'static BuiltinTheme> {
+    builtin_themes().iter().find(|theme| theme.name == name)
+}
+
+/// Where pywal writes the desktop's palette: on hyprahaan, the colours of
+/// the bar, dock, launcher and lock screen.
+pub fn pywal_file() -> Option<std::path::PathBuf> {
+    std::env::var_os("XDG_CACHE_HOME")
+        .map(std::path::PathBuf::from)
+        .or_else(|| std::env::var_os("HOME").map(|home| std::path::Path::new(&home).join(".cache")))
+        .map(|cache| cache.join("wal").join("colors.json"))
+}
+
+/// A palette from pywal's `colors.json`: its background and foreground,
+/// with slot 9 as the accent, as hyprahaan uses it, and the surfaces mixed
+/// between them. `None` if the file is not pywal's.
+pub fn palette_from_pywal(json: &str) -> Option<Palette> {
+    let json: serde_json::Value = serde_json::from_str(json).ok()?;
+    let color = |value: &serde_json::Value| -> Option<Color32> {
+        let hex = value.as_str()?.trim_start_matches('#');
+        let value = u32::from_str_radix(hex.get(..6)?, 16).ok()?;
+        Some(Color32::from_rgb(
+            (value >> 16) as u8,
+            (value >> 8) as u8,
+            value as u8,
+        ))
+    };
+    let background = color(&json["special"]["background"])?;
+    let foreground = color(&json["special"]["foreground"])?;
+    let slot = |n: u8| color(&json["colors"][format!("color{n}")]);
+    let accent = slot(9).or_else(|| slot(4))?;
+    let luminance = |c: Color32| {
+        let linear = egui::Rgba::from(c);
+        0.2126 * linear.r() + 0.7152 * linear.g() + 0.0722 * linear.b()
+    };
+    let dark = luminance(background) < 0.25;
+    let mix = |amount: f32| crate::motion::lerp_color(background, foreground, amount);
+    let toward = if dark { Color32::WHITE } else { Color32::BLACK };
+    let on_accent = if luminance(accent) > 0.45 {
+        crate::motion::lerp_color(background, Color32::BLACK, 0.4)
+    } else {
+        Color32::WHITE
+    };
+    Some(Palette {
+        dark,
+        window: background,
+        panel: mix(0.03),
+        surface: mix(0.06),
+        surface_hover: mix(0.11),
+        surface_active: mix(0.16),
+        outline: mix(0.12),
+        text: foreground,
+        secondary: mix(0.68),
+        dim: mix(0.45),
+        accent,
+        accent_hover: crate::motion::lerp_color(accent, toward, 0.15),
+        on_accent,
+        danger: slot(1).unwrap_or(Palette::dark().danger),
+        warning: slot(3).unwrap_or(Palette::dark().warning),
+        overlay: mix(0.08),
+        shadow: if dark {
+            Color32::from_black_alpha(140)
+        } else {
+            Color32::from_black_alpha(50)
+        },
+    })
+}
+
 pub fn enable_desktop_themes(catalog: &mut Catalog) {
     catalog.enable_desktop_themes(fastframe_theme::DesktopThemes {
         slug: "spotsie",
@@ -298,7 +552,7 @@ pub fn text_rendering() -> fastframe_text::TextRendering {
 
 /// Install fonts, icons, and the base style once.
 pub fn install(ctx: &egui::Context) {
-    install_fonts(ctx);
+    install_fonts(ctx, DEFAULT_FONT);
     egui_extras::install_image_loaders(ctx);
     fastframe_icons::install::<Icon>(ctx);
     // Colour emoji over every text egui draws (see `crate::emoji`).
@@ -424,11 +678,78 @@ fn apply_to_style(style: &mut egui::Style, palette: &Palette) {
     style.url_in_tooltip = false;
 }
 
-/// Inter at regular, medium and semibold, and its display cut at semibold,
-/// each with the monochrome emoji face right behind it (so every emoji wears
-/// the same style, ahead of egui's own pair), then the installed faces for
-/// the scripts Inter lacks, drawn the way the desktop renders text.
-fn install_fonts(ctx: &egui::Context) {
+/// A typeface the interface can be drawn in, as Magpie offers them.
+pub struct UiFont {
+    pub name: &'static str,
+    /// Every character the same width.
+    pub mono: bool,
+    /// Regular, medium and semibold. `None` is Inter, drawn from the full
+    /// variable font fastframe bundles.
+    faces: Option<[&'static [u8]; 3]>,
+}
+
+macro_rules! ui_font {
+    ($name:literal, $file:literal, $mono:literal) => {
+        UiFont {
+            name: $name,
+            mono: $mono,
+            faces: Some([
+                include_bytes!(concat!("../assets/fonts/", $file, "-Regular.ttf")),
+                include_bytes!(concat!("../assets/fonts/", $file, "-Medium.ttf")),
+                include_bytes!(concat!("../assets/fonts/", $file, "-SemiBold.ttf")),
+            ]),
+        }
+    };
+}
+
+/// The interface font unless another is chosen, as in Magpie.
+pub const DEFAULT_FONT: &str = "Inter";
+
+/// Every font Spotsie bundles: Magpie's set, all under the SIL Open Font
+/// License (`assets/fonts/OFL-LICENSES.txt`). They cover Latin; Inter stays
+/// behind each for every other script.
+pub const FONTS: &[UiFont] = &[
+    UiFont {
+        name: "Inter",
+        mono: false,
+        faces: None,
+    },
+    ui_font!("Geist", "Geist", false),
+    ui_font!("Onest", "Onest", false),
+    ui_font!("Plus Jakarta Sans", "PlusJakartaSans", false),
+    ui_font!("DM Sans", "DMSans", false),
+    ui_font!("Figtree", "Figtree", false),
+    ui_font!("Outfit", "Outfit", false),
+    ui_font!("IBM Plex Sans", "IBMPlexSans", false),
+    ui_font!("JetBrains Mono", "JetBrainsMono", true),
+];
+
+/// The font called `name`, or Inter for a name Spotsie does not know.
+pub fn font_by_name(name: &str) -> &'static UiFont {
+    FONTS
+        .iter()
+        .find(|font| font.name == name)
+        .unwrap_or(&FONTS[0])
+}
+
+/// A family that draws `name` at regular weight, for showing each font in
+/// its own face in the font menu.
+pub fn preview_family(name: &str) -> egui::FontFamily {
+    egui::FontFamily::Name(format!("preview-{}", font_by_name(name).name).into())
+}
+
+/// Draws the interface in `font` from the next frame on.
+pub fn set_font(ctx: &egui::Context, font: &str) {
+    install_fonts(ctx, font);
+}
+
+/// The chosen font at regular, medium and semibold, and at semibold for
+/// large titles (Inter's display cut, when Inter is the font), each with
+/// Inter behind it for the scripts the font lacks, then the monochrome emoji
+/// face (so every emoji wears the same style, ahead of egui's own pair),
+/// then the installed faces for the scripts Inter lacks, drawn the way the
+/// desktop renders text. Every bundled font also gets a preview family.
+fn install_fonts(ctx: &egui::Context, font: &str) {
     use fastframe_fonts::Weight;
     let emoji = egui::FontData::from_static(include_bytes!("../assets/fonts/NotoEmoji.ttf"));
     let mut fonts = fastframe_fonts::FontSetup::default()
@@ -447,6 +768,40 @@ fn install_fonts(ctx: &egui::Context) {
     fonts
         .families
         .insert(egui::FontFamily::Name(DISPLAY_FAMILY.into()), family);
+    // Previews, before the chosen font takes the interface's families.
+    let regular = fonts.families[&Weight::Regular.family()].clone();
+    for each in FONTS {
+        let mut family = regular.clone();
+        if let Some([face, ..]) = each.faces {
+            let key = format!("{}-regular", each.name);
+            fonts.font_data.insert(
+                key.clone(),
+                std::sync::Arc::new(egui::FontData::from_static(face)),
+            );
+            family.insert(0, key);
+        }
+        fonts.families.insert(preview_family(each.name), family);
+    }
+    if let Some(faces) = font_by_name(font).faces {
+        let weights = [Weight::Regular, Weight::Medium, Weight::SemiBold];
+        for (weight, face) in weights.into_iter().zip(faces) {
+            let key = format!("ui-{}", weight.name());
+            fonts.font_data.insert(
+                key.clone(),
+                std::sync::Arc::new(egui::FontData::from_static(face)),
+            );
+            if let Some(family) = fonts.families.get_mut(&weight.family()) {
+                family.insert(0, key.clone());
+            }
+            if weight == Weight::SemiBold
+                && let Some(family) = fonts
+                    .families
+                    .get_mut(&egui::FontFamily::Name(DISPLAY_FAMILY.into()))
+            {
+                family.insert(0, key);
+            }
+        }
+    }
     text_rendering().apply_to(&mut fonts);
     ctx.set_fonts(fonts);
 }
@@ -478,6 +833,7 @@ fastframe_icons::icons! {
         Clock => lucide "clock",
         Compass => "compass",
         Copy => lucide "copy",
+        CoverView => "cover-view",
         Disc => "disc-3",
         Ellipsis => lucide "ellipsis",
         Expand => "expand",
@@ -1164,6 +1520,56 @@ mod tests {
             assert!(galley.rows[0].glyphs.len() >= 5);
         });
         output.textures_delta.clear();
+    }
+
+    /// hyprahaan's pywal palette, as `wal` writes it: its background and
+    /// text, and slot 9 as the accent.
+    #[test]
+    fn a_pywal_palette_dresses_the_app_in_the_desktops_colours() {
+        let json = r##"{
+            "wallpaper": "None", "alpha": "100",
+            "special": {"background": "#1f1f28", "foreground": "#dcd7ba", "cursor": "#dcd7ba"},
+            "colors": {"color0": "#1f1f28", "color1": "#c34043", "color3": "#c0a36e",
+                       "color4": "#7e9cd8", "color9": "#dcd7ba"}
+        }"##;
+        let palette = palette_from_pywal(json).expect("a pywal palette");
+        assert!(palette.dark);
+        assert_eq!(palette.window, Color32::from_rgb(0x1f, 0x1f, 0x28));
+        assert_eq!(palette.text, Color32::from_rgb(0xdc, 0xd7, 0xba));
+        assert_eq!(palette.accent, Color32::from_rgb(0xdc, 0xd7, 0xba));
+        assert_eq!(palette.danger, Color32::from_rgb(0xc3, 0x40, 0x43));
+        assert!(palette_from_pywal("{}").is_none());
+        assert!(palette_from_pywal("not json").is_none());
+    }
+
+    /// Magpie's themes beyond its own pair, seven light and seven dark,
+    /// each found by its name.
+    #[test]
+    fn the_built_in_themes_are_magpies_set() {
+        let themes = builtin_themes();
+        assert_eq!(themes.len(), 14);
+        assert_eq!(themes.iter().filter(|theme| theme.palette.dark).count(), 7);
+        for theme in themes {
+            assert_eq!(builtin_theme(theme.name).unwrap().name, theme.name);
+        }
+        assert!(builtin_theme("Magpie Dark").is_none());
+    }
+
+    /// Every bundled font installs, draws text, and is offered in its own
+    /// face; an unknown name falls back to Inter.
+    #[test]
+    fn every_font_installs_and_has_a_preview() {
+        let ctx = egui::Context::default();
+        install(&ctx);
+        for font in FONTS {
+            set_font(&ctx, font.name);
+            let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
+                ui.label(egui::RichText::new("Spotsie").font(bold(28.0)));
+                ui.label(egui::RichText::new(font.name).family(preview_family(font.name)));
+            });
+            output.textures_delta.clear();
+        }
+        assert_eq!(font_by_name("Comic Sans").name, DEFAULT_FONT);
     }
 
     /// The monochrome emoji face comes right after Inter at every weight

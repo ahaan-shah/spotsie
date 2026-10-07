@@ -420,6 +420,34 @@ fn sort_label(locale: crate::i18n::Locale, sort: LibrarySort) -> std::borrow::Co
     }
 }
 
+const RESORTED_ID: &str = "library-resorted-at";
+/// How long the rows take to glide to their new order.
+const RESORT_SECONDS: f32 = 0.42;
+
+/// Marks that the library was just put in a new order, so its rows glide.
+pub(crate) fn note_resorted(ctx: &egui::Context) {
+    let now = ctx.input(|input| input.time);
+    ctx.data_mut(|data| data.insert_temp(egui::Id::new(RESORTED_ID), now));
+}
+
+/// How far an entry still sits from `place`, its position in the list or
+/// grid, while it glides there after a new sort. Outside a sort entries go
+/// straight to their place, so scrolling never animates.
+fn resort_glide(ctx: &egui::Context, id: egui::Id, place: Vec2) -> Vec2 {
+    let now = ctx.input(|input| input.time);
+    let resorting = ctx
+        .data(|data| data.get_temp::<f64>(egui::Id::new(RESORTED_ID)))
+        .is_some_and(|at| now - at < f64::from(RESORT_SECONDS) + 0.05);
+    let (x_id, y_id) = (id.with("glide-x"), id.with("glide-y"));
+    if !resorting {
+        crate::motion::snap(ctx, x_id);
+        crate::motion::snap(ctx, y_id);
+    }
+    let x = crate::motion::tween(ctx, x_id, place.x, RESORT_SECONDS);
+    let y = crate::motion::tween(ctx, y_id, place.y, RESORT_SECONDS);
+    vec2(x - place.x, y - place.y)
+}
+
 fn saved_time(value: Option<&str>) -> Option<i64> {
     value
         .and_then(|text| text.parse::<jiff::Timestamp>().ok())
@@ -485,7 +513,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     // The traffic lights float over the top-left of the sidebar now, so the
     // first nav row has to start below them.
     let top = 12 + theme::titlebar_inset(ui.ctx()) as i8;
-    let beside = if app.show_queue_panel || app.show_lyrics_panel {
+    let beside = if app.show_queue_panel {
         theme::SIDE_PANEL_MIN_WIDTH
     } else {
         0.0
@@ -1356,7 +1384,9 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
                     },
                     0.12,
                 );
-                let rect = rect.translate(vec2(0.0, shift));
+                // After a new sort, each row glides from its old place.
+                let glide = resort_glide(ui.ctx(), id, vec2(0.0, index as f32 * row_height));
+                let rect = rect.translate(vec2(0.0, shift) + glide);
                 // Set when the cover play button takes a click, so a double
                 // click on it does not also play from the row.
                 let mut cover_took_click = false;
@@ -1705,6 +1735,12 @@ fn library_grid(
                             },
                         )
                     });
+                    // After a new sort, each card glides from its old place.
+                    let place = vec2(
+                        (index - start) as f32 * layout.card_width,
+                        row as f32 * layout.row_height,
+                    );
+                    let rect = rect.translate(resort_glide(ui.ctx(), response.id, place));
                     let cover_rect = Rect::from_min_size(
                         rect.min + Vec2::splat(LIBRARY_ITEM_PADDING),
                         Vec2::splat(layout.card_width - LIBRARY_ITEM_PADDING * 2.0),

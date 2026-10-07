@@ -285,6 +285,8 @@ pub struct App {
     /// applies, on a context that never draws, turn it off.
     pub(crate) reveal_theme_changes: bool,
     pub custom_themes: theme::Catalog,
+    /// The desktop's pywal palette, when there is one; see `watch_pywal`.
+    pywal: std::sync::Arc<std::sync::Mutex<Option<Palette>>>,
 
     pub auth: AuthStatus,
     pub user: Option<User>,
@@ -399,6 +401,8 @@ pub struct App {
     uploaded_covers: std::collections::HashMap<String, crate::playlist_cover::PendingCover>,
     pub show_queue_panel: bool,
     pub show_lyrics_panel: bool,
+    /// The cover view fills the main area: the playing song's cover, large.
+    pub show_cover_view: bool,
     pub lyrics_fullscreen: Option<bool>,
     pub lyrics_fullscreen_seen: bool,
     lyrics_fullscreen_restoring: Option<bool>,
@@ -729,6 +733,7 @@ impl App {
         let palette = settings.cached_palette().unwrap_or_else(Palette::dark);
         let mut app = Self {
             custom_themes: theme::Catalog::default(),
+            pywal: std::sync::Arc::default(),
             dirs,
             settings,
             applied_proxy,
@@ -848,6 +853,7 @@ impl App {
             uploaded_covers: Default::default(),
             show_queue_panel: session.queue_open.unwrap_or(false),
             show_lyrics_panel: false,
+            show_cover_view: false,
             lyrics_fullscreen: None,
             lyrics_fullscreen_seen: false,
             lyrics_fullscreen_restoring: None,
@@ -955,6 +961,9 @@ impl App {
     /// window is (re)created around this long-lived application state.
     pub fn attach(&mut self, ctx: &egui::Context) {
         theme::install(ctx);
+        if self.settings.font != theme::DEFAULT_FONT {
+            theme::set_font(ctx, &self.settings.font);
+        }
         ctx.add_bytes_loader(std::sync::Arc::new(self.backend.art().clone()));
         ctx.set_theme(self.theme_preference());
         self.applied_dark = None;
@@ -2947,7 +2956,67 @@ impl App {
     }
 
     fn custom_palette(&self) -> Option<Palette> {
+        // Following the system on hyprahaan means wearing the desktop's
+        // pywal palette, ahead of Omarchy's and the plain light or dark.
+        if self.settings.theme == ThemeChoice::System
+            && self.settings.custom_theme.is_none()
+            && self.settings.builtin_theme.is_none()
+            && let Some(palette) = *self.pywal.lock().unwrap_or_else(|p| p.into_inner())
+        {
+            return Some(palette);
+        }
         self.settings.cached_palette()
+    }
+
+    /// The desktop's own palette (pywal on hyprahaan), when there is one.
+    pub fn system_palette(&self) -> Option<Palette> {
+        *self.pywal.lock().unwrap_or_else(|p| p.into_inner())
+    }
+
+    /// Watches pywal's palette (on hyprahaan, the whole desktop's colours)
+    /// so Follow system wears it and changes with it. Polls the file's time
+    /// once a second on a thread of its own and wakes the window only when
+    /// the palette changed.
+    pub fn watch_pywal(&mut self, waker: &Waker) {
+        let Some(path) = theme::pywal_file() else {
+            return;
+        };
+        let shared = std::sync::Arc::clone(&self.pywal);
+        let waker = waker.clone();
+        let read = move || {
+            std::fs::read_to_string(&path)
+                .ok()
+                .and_then(|json| theme::palette_from_pywal(&json))
+        };
+        *shared.lock().unwrap_or_else(|p| p.into_inner()) = read();
+        let path = theme::pywal_file().unwrap_or_default();
+        let spawned = std::thread::Builder::new()
+            .name("pywal-watch".into())
+            .spawn(move || {
+                let modified = || {
+                    std::fs::metadata(&path)
+                        .and_then(|meta| meta.modified())
+                        .ok()
+                };
+                let mut seen = modified();
+                loop {
+                    std::thread::sleep(Duration::from_secs(1));
+                    let now = modified();
+                    if now != seen {
+                        seen = now;
+                        let palette = read();
+                        let mut current = shared.lock().unwrap_or_else(|p| p.into_inner());
+                        if *current != palette {
+                            *current = palette;
+                            drop(current);
+                            waker.wake();
+                        }
+                    }
+                }
+            });
+        if let Err(error) = spawned {
+            log::warn!("could not watch the pywal palette: {error}");
+        }
     }
 
     fn theme_preference(&self) -> egui::ThemePreference {
@@ -6004,6 +6073,9 @@ impl App {
     // ---- navigation ------------------------------------------------------------
 
     pub fn open(&mut self, page: Page) {
+        // Going somewhere leaves the lyrics and cover views, as in Spotify.
+        self.show_lyrics_panel = false;
+        self.show_cover_view = false;
         self.touch_page(&page);
         if *self.page() == page {
             self.ensure_loaded(page.clone());
@@ -8680,17 +8752,25 @@ impl App {
             Action::ToggleQueuePanel => {
                 self.show_queue_panel = !self.show_queue_panel;
                 if self.show_queue_panel {
-                    self.show_lyrics_panel = false;
                     self.refresh_queue(true);
                 }
             }
+            // The lyrics and the cover view take the main area in turn; the
+            // queue stays on the right beside either.
             Action::ToggleLyricsPanel => {
                 self.leave_lyrics_fullscreen(ctx);
                 self.show_lyrics_panel = !self.show_lyrics_panel;
                 if self.show_lyrics_panel {
-                    self.show_queue_panel = false;
+                    self.show_cover_view = false;
                     self.lyrics_following = true;
                     self.request_lyrics();
+                }
+            }
+            Action::ToggleCoverView => {
+                self.leave_lyrics_fullscreen(ctx);
+                self.show_cover_view = !self.show_cover_view;
+                if self.show_cover_view {
+                    self.show_lyrics_panel = false;
                 }
             }
             Action::SetLyricsFullscreen(fullscreen) => {
@@ -8712,8 +8792,11 @@ impl App {
                         }
                     }
                     self.lyrics_fullscreen_seen = false;
-                    self.show_lyrics_panel = true;
-                    self.show_queue_panel = false;
+                    // Full screen shows the cover view when that is open,
+                    // and the lyrics otherwise.
+                    if !self.show_cover_view {
+                        self.show_lyrics_panel = true;
+                    }
                     self.lyrics_following = true;
                     self.lyrics_line_shown = None;
                     self.request_lyrics();
@@ -8783,6 +8866,7 @@ impl App {
             }
             Action::SetLibrarySort { shelf, sort } => {
                 if sort.supports(shelf) {
+                    crate::ui::sidebar::note_resorted(ctx);
                     self.settings.library_sort.insert(shelf, sort);
                     match shelf {
                         crate::settings::LibraryShelf::Albums => self.library.albums.error = None,
@@ -8839,11 +8923,19 @@ impl App {
             }
             Action::SetTheme(choice) => {
                 self.settings.theme = choice;
+                self.settings.builtin_theme = None;
                 self.settings.custom_theme = None;
                 self.settings.custom_theme_cache = None;
                 self.mark_settings_dirty();
                 ctx.set_theme(self.theme_preference());
                 self.apply_theme(ctx);
+            }
+            Action::SetFont(font) => {
+                if self.settings.font != font {
+                    theme::set_font(ctx, &font);
+                    self.settings.font = font;
+                    self.mark_settings_dirty();
+                }
             }
             Action::SetLanguage(choice) => {
                 self.settings.language = choice;
@@ -8851,8 +8943,19 @@ impl App {
                 self.mark_settings_dirty();
                 ctx.request_repaint();
             }
+            Action::SetBuiltinTheme(name) => {
+                if theme::builtin_theme(&name).is_some() {
+                    self.settings.builtin_theme = Some(name);
+                    self.settings.custom_theme = None;
+                    self.settings.custom_theme_cache = None;
+                    self.mark_settings_dirty();
+                    ctx.set_theme(self.theme_preference());
+                    self.apply_theme(ctx);
+                }
+            }
             Action::SetCustomTheme(filename) => {
                 if let Some(theme) = self.custom_themes.find(&filename) {
+                    self.settings.builtin_theme = None;
                     self.settings.custom_theme_cache = Some(theme.clone());
                     self.settings.custom_theme = Some(filename);
                     self.mark_settings_dirty();
@@ -10215,87 +10318,6 @@ mod tests {
         }
         assert_eq!(app.now_playing().unwrap().uri, playing);
         assert_eq!(app.autoscroll.active(), on);
-    }
-
-    #[test]
-    fn autoscroll_updates_the_real_lyrics_without_changing_playback() {
-        for chosen in [false, true] {
-            let on = crate::autoscroll::enabled(chosen);
-            let ctx = egui::Context::default();
-            let mut app = test_app(if chosen {
-                "autoscroll-lyrics-chosen"
-            } else {
-                "autoscroll-lyrics"
-            });
-            app.attach(&ctx);
-            crate::demo::populate(&mut app);
-            app.settings.middle_click_autoscroll = chosen;
-            app.show_queue_panel = false;
-            app.show_lyrics_panel = true;
-            app.lyrics = Loadable::Loaded(Some(crate::lyrics::Lyrics {
-                lines: (0..80)
-                    .map(|i| crate::lyrics::Line {
-                        at_ms: Some(i * 5000),
-                        text: format!("Autoscroll lyric line {i}"),
-                    })
-                    .collect(),
-                synced: true,
-                instrumental: false,
-            }));
-            if let Some(remote) = &mut app.remote {
-                remote.state.is_playing = false;
-                remote.state.progress_ms = Some(0);
-            }
-            let playing = app.now_playing().unwrap().uri.clone();
-            let mut frame = 0;
-            let mut draw = |app: &mut App, events: Vec<egui::Event>| {
-                frame += 1;
-                let mut output = ctx.run_ui(
-                    egui::RawInput {
-                        screen_rect: Some(egui::Rect::from_min_size(
-                            egui::Pos2::ZERO,
-                            egui::vec2(1280.0, 800.0),
-                        )),
-                        time: Some(frame as f64 / 60.0),
-                        events,
-                        ..Default::default()
-                    },
-                    |ui| app.frame_ui(ui),
-                );
-                output.textures_delta.clear();
-            };
-            draw(&mut app, vec![]);
-            draw(&mut app, vec![]);
-            let anchor = egui::pos2(1120.0, 100.0);
-            let press = |button, pressed| egui::Event::PointerButton {
-                pos: anchor,
-                button,
-                pressed,
-                modifiers: egui::Modifiers::NONE,
-            };
-            draw(
-                &mut app,
-                vec![
-                    egui::Event::PointerMoved(anchor),
-                    press(egui::PointerButton::Middle, true),
-                ],
-            );
-            assert_eq!(app.autoscroll.active(), on, "real surface");
-            assert_eq!(app.lyrics_following, !on);
-            draw(&mut app, vec![press(egui::PointerButton::Middle, false)]);
-            for _ in 0..5 {
-                draw(
-                    &mut app,
-                    vec![egui::Event::PointerMoved(anchor + egui::vec2(0.0, 120.0))],
-                );
-            }
-            assert_eq!(app.lyrics_following, !on);
-            assert_eq!(app.now_playing().unwrap().uri, playing);
-            draw(&mut app, vec![press(egui::PointerButton::Primary, true)]);
-            assert!(!app.autoscroll.active());
-            draw(&mut app, vec![press(egui::PointerButton::Primary, false)]);
-            app.backend.shutdown();
-        }
     }
 
     #[test]

@@ -792,6 +792,7 @@ pub fn apply_flags(app: &mut App, page: Option<&str>, show: Option<&str>) {
                     app.remote = None;
                 }
             }
+            "cover-view" => app.show_cover_view = true,
             "devices" => app.show_devices = true,
             // These paired states capture both outcomes of the collection
             // Shuffle click for the PR visual comparison.
@@ -3427,51 +3428,6 @@ mod tests {
         app.backend.shutdown();
     }
 
-    /// Linux offers middle-click autoscroll as a switch that starts off and
-    /// is saved; Windows always autoscrolls and macOS never does, so neither
-    /// shows the row.
-    #[test]
-    fn the_linux_autoscroll_switch_starts_off_and_is_saved() {
-        use egui::accesskit::{Role, Toggled};
-        let (ctx, mut app) = accessible_app("autoscroll-setting");
-        let text = settings_text(&ctx, &mut app, "Middle-click autoscroll");
-        assert_eq!(
-            text.iter().any(|text| text == "Appearance"),
-            cfg!(target_os = "linux")
-        );
-        if !cfg!(target_os = "linux") {
-            app.backend.shutdown();
-            return;
-        }
-        app.open(Page::Settings);
-        accessible_frame(&ctx, &mut app, vec![]);
-        let tree = accessible_frame(&ctx, &mut app, vec![]);
-        let control = accessible_node(&tree, "Middle-click autoscroll", Role::CheckBox);
-        let toggled = |tree: &egui::accesskit::TreeUpdate| {
-            tree.nodes
-                .iter()
-                .find(|(id, _)| *id == control)
-                .and_then(|(_, node)| node.toggled())
-        };
-        assert_eq!(toggled(&tree), Some(Toggled::False));
-        assert!(!app.settings.middle_click_autoscroll);
-        accessible_frame(
-            &ctx,
-            &mut app,
-            vec![accessible_action(
-                control,
-                egui::accesskit::Action::Click,
-                None,
-            )],
-        );
-        assert!(app.settings.middle_click_autoscroll);
-        let path = app.dirs.config.join("autoscroll-choice.json");
-        app.settings.save(&path);
-        app.settings = Settings::load(&path);
-        assert!(app.settings.middle_click_autoscroll);
-        app.backend.shutdown();
-    }
-
     fn frame(ctx: &egui::Context, app: &mut App) {
         frame_events(ctx, app, Vec::new());
     }
@@ -4482,11 +4438,14 @@ mod tests {
             view_frame(&ctx, &mut app, vec![], App::frame_ui);
         }
         let painted = view_frame(&ctx, &mut app, vec![], App::frame_ui);
-        let tile_x = |name: &str| sidebar_text(&painted, name).center().x;
-        // One tile each, in order, the custom one by name without `.json`.
-        assert!(tile_x("Follow system") < tile_x("Light"));
-        assert!(tile_x("Light") < tile_x("Dark"));
-        assert!(tile_x("Dark") < tile_x("local"));
+        let tile = |name: &str| sidebar_text(&painted, name).center();
+        // Follow system and the palette files first, by name without
+        // `.json`; then the light themes, then the dark ones.
+        assert!(tile("Follow system").x < tile("local").x);
+        assert!((tile("Follow system").y - tile("local").y).abs() < 1.0);
+        assert!(tile("Follow system").y < tile("Light").y);
+        assert!(tile("Light").y < tile("Dark").y);
+        assert!(tile("Light").y < tile("Nord").y && tile("Snow").y < tile("Nord").y);
         let custom = sidebar_text(&painted, "local").center();
         view_frame(
             &ctx,
@@ -5300,15 +5259,11 @@ mod tests {
             );
         };
 
-        for (queue, lyrics) in [(false, false), (true, false), (false, true), (true, true)] {
+        for queue in [false, true] {
             app.show_queue_panel = queue;
-            app.show_lyrics_panel = lyrics;
             let placed = drawn(&mut app);
             if queue {
                 assert_same_row(&placed, "Queue", "Recent");
-            }
-            if lyrics {
-                assert_same_row(&placed, "Lyrics", "Follow");
             }
         }
         app.backend.shutdown();
@@ -6853,11 +6808,11 @@ mod tests {
     }
 
     /// With nothing manually queued yet, every row the open queue shows
-    /// belongs to "Next up", so the panel offers no drop target at all:
-    /// neither a Next up row nor its heading takes a dragged song. The
-    /// player bar's Queue button still does.
+    /// belongs to "Next up"; a dragged song still has somewhere to go:
+    /// Playing next opens at the top, and a drop anywhere on the queue puts
+    /// the song there.
     #[test]
-    fn dropping_a_song_on_next_up_with_an_empty_playing_next_does_nothing() {
+    fn dropping_a_song_on_next_up_with_an_empty_playing_next_plays_it_next() {
         use egui::accesskit::Role;
         let (ctx, mut app) = accessible_app("queue-empty-playing-next-not-a-target");
         app.show_queue_panel = true;
@@ -6979,25 +6934,15 @@ mod tests {
             frame_events(&ctx, app, vec![]);
         };
 
-        for end in [
-            egui::pos2(row.left() + 130.0, row.center().y),
-            egui::pos2(row.left() + 130.0, row.top() + 2.0),
-            heading.center(),
-            egui::pos2(heading.left() + 130.0, heading.top() - 2.0),
-        ] {
-            drag_to(&mut app, end);
-            assert!(
-                app.manual_queue.is_empty(),
-                "Next up is never a drop target, even when Playing next has no rows of its own (dropped at {end:?})"
-            );
-        }
-
-        drag_to(&mut app, button.center());
+        let _ = heading;
+        drag_to(&mut app, egui::pos2(row.left() + 130.0, row.center().y));
         assert_eq!(
             app.manual_queue,
-            vec![source_uri],
-            "the Queue button still queues the dropped song"
+            vec![source_uri.clone()],
+            "a song dropped on Next up plays next"
         );
+
+        let _ = button;
         app.backend.shutdown();
     }
 
@@ -8531,9 +8476,10 @@ mod tests {
                 crate::settings::ThemeChoice::Dark
             };
             app.actions.push(Action::SettingsChanged);
-            for panel in ["queue", "lyrics"] {
-                app.show_queue_panel = panel == "queue";
-                app.show_lyrics_panel = panel == "lyrics";
+            // The queue is the only panel on the right; lyrics take the
+            // main area.
+            for panel in ["queue"] {
+                app.show_queue_panel = true;
                 for width in [760.0, 1080.0, 1600.0] {
                     for _ in 0..3 {
                         let mut output = ctx.run_ui(

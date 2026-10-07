@@ -223,6 +223,8 @@ main fields are:
 | `language` | `system` | Since 0.10.0: the interface language. `system` follows the operating system's preferred languages and falls back to English; a tag such as `es`, `de-DE`, `pt-BR` or `zh-Hant` selects that language. An unknown tag follows the system |
 | `custom_theme` | `null` | Selected JSON filename from the `themes` folder |
 | `custom_theme_cache` | absent | Last accepted custom palette; preserves appearance if its file is missing or invalid |
+| `builtin_theme` | none | A theme that ships with Spotsie besides Light and Dark, by name |
+| `font` | `Inter` | The interface font: Inter, Geist, Onest, Plus Jakarta Sans, DM Sans, Figtree, Outfit, IBM Plex Sans or JetBrains Mono |
 | `system_theme_cache` | absent | Last accepted Omarchy palette for Follow system; retained across restarts |
 | `accent_from_art` | `true` | Tint pages with album art |
 | `library_sort` | `{}` | Per-section Library order overrides, since 0.8.0: `library`, `recently_played`, `name`, `recently_added`, `local`, or `spotify`, where supported |
@@ -281,7 +283,7 @@ and `--demo-show` adds surfaces on top of it: a comma separated list of
 `collection-loading`, `shuffle-selected`, `shuffle-started`, `library-list`,
 `library-list-narrow`, `library-list-wide`, `library-grid`, `library-grid-narrow`,
 `library-grid-wide`, `rtl`,
-`lyrics-fullscreen-view`, `lyrics-fullscreen-instrumental`, `signed-out`, and `connecting`. The Library variants show the list or cover grid with
+`lyrics-fullscreen-view`, `lyrics-fullscreen-instrumental`, `cover-view`, `signed-out`, and `connecting`. The Library variants show the list or cover grid with
 a normal, narrow, or wide sidebar and collapsed artwork for matching captures.
 `shuffle-selected` and `shuffle-started` capture the selected-mode and
 playback-started outcomes of a collection Shuffle click. `update` shows a sample
@@ -351,15 +353,21 @@ To make your own, add JSON files to the `themes` folder.
 Run `spotsie reload-themes` if the app is already open, then select it
 under **Settings → Appearance → Theme**, where it is listed by its filename
 without `.json`.
-The default is **Follow system**. It uses your desktop’s light/dark appearance,
-or the current Omarchy palette on an Omarchy desktop. On Linux,
+The default is **Follow system**. It wears the desktop's pywal palette when
+there is one (`~/.cache/wal/colors.json`, as hyprahaan writes it, with slot 9
+as the accent) and changes with it; otherwise the current Omarchy palette on
+an Omarchy desktop, and otherwise your desktop's light or dark appearance,
+in Spotsie's own Light or Dark. On Linux,
 the light/dark appearance comes from the desktop portal's `color-scheme`
 setting (GNOME, KDE and Flatpak), and since 0.10.0, the app follows
 it when it changes. Saved Dark,
 Light and custom choices are preserved when updating. Each theme is a tile
-showing a miniature of Spotsie in its colours: **Follow system**, **Light**
-and **Dark** first, then **Omarchy** when the integration is available, then
-the other local palettes. Themes change colors and keep the app's existing
+showing a miniature of Spotsie in its colours: **Follow system** and the
+local palettes (**Omarchy** first when the integration is available), then
+the light themes and the dark ones. **Light** and **Dark** are Spotsie's
+own, in the colours of its record icon; the rest are Magpie's: Daylight,
+Paper, Latte, Flexoki, Rosé Pine Dawn, Lupine and Snow, and Midnight, Tokyo
+Night, Mocha, Nord, Gruvbox, Kanagawa and Everforest. Themes change colors and keep the app's existing
 fonts. Put palette files in `~/.config/spotsie/themes/`.
 After adding or editing a JSON file on macOS or Windows, run
 `spotsie reload-themes` to refresh the list and the selected palette without

@@ -202,6 +202,9 @@ pub struct Settings {
     pub language: LanguageChoice,
     /// Filename selected from the local themes directory.
     pub custom_theme: Option<String>,
+    /// A theme that ships with Spotsie besides Light and Dark, by name; see
+    /// `theme::builtin_themes`.
+    pub builtin_theme: Option<String>,
     /// Last accepted appearance, retained if its source file becomes unavailable.
     #[serde(
         default,
@@ -269,6 +272,8 @@ pub struct Settings {
     pub library_sort: std::collections::BTreeMap<LibraryShelf, LibrarySort>,
     /// Interface zoom, egui's zoom factor; Ctrl+plus/minus changes it.
     pub zoom: f32,
+    /// The interface font, by name; see `theme::FONTS`.
+    pub font: String,
     /// Windows: draw Spotsie's own title bar and window buttons instead of
     /// the standard Windows frame.
     pub custom_titlebar: bool,
@@ -335,6 +340,7 @@ impl Default for Settings {
             theme: ThemeChoice::System,
             language: LanguageChoice::System,
             custom_theme: None,
+            builtin_theme: None,
             custom_theme_cache: None,
             system_theme_cache: None,
             home: HomeSettings::default(),
@@ -366,6 +372,7 @@ impl Default for Settings {
             sidebar_order: Vec::new(),
             library_sort: std::collections::BTreeMap::new(),
             zoom: 1.0,
+            font: crate::theme::DEFAULT_FONT.into(),
             custom_titlebar: false,
             eq_on: false,
             eq_preamp_db: 0.0,
@@ -387,6 +394,14 @@ fn default_buffer_ms() -> u32 {
 
 impl Settings {
     pub(crate) fn cached_palette(&self) -> Option<crate::theme::Palette> {
+        if self.custom_theme.is_none()
+            && let Some(builtin) = self
+                .builtin_theme
+                .as_deref()
+                .and_then(crate::theme::builtin_theme)
+        {
+            return Some(builtin.palette);
+        }
         let theme = if self.custom_theme.is_some() {
             self.custom_theme_cache.as_ref()
         } else if self.theme == ThemeChoice::System {

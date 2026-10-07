@@ -650,6 +650,22 @@ fn extras(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>) {
     {
         app.actions.push(Action::ToggleLyricsPanel);
     }
+    if theme::icon_button(
+        ui,
+        Icon::CoverView,
+        18.0,
+        if app.show_cover_view {
+            palette.accent
+        } else {
+            palette.secondary
+        },
+        palette.text,
+        &gettext(app.locale, "Cover view"),
+    )
+    .clicked()
+    {
+        app.actions.push(Action::ToggleCoverView);
+    }
 }
 
 #[cfg(test)]

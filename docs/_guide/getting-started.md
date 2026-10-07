@@ -61,8 +61,12 @@ You can rename it in Settings.
 
 ## Match your desktop theme
 
-Open **Settings → Appearance → Theme** and choose **Light**, **Dark**, or
-**Follow system**. Follow system matches your desktop's appearance.
+Open **Settings → Appearance → Theme** and choose **Follow system**, Spotsie's
+**Light** or **Dark**, or one of Magpie's themes. Follow system wears your
+desktop's pywal palette when there is one (on hyprahaan, the bar's and
+dock's colours, following every change), and otherwise matches your
+desktop's light or dark appearance. **Font**, just below, offers Inter and
+Magpie's other bundled fonts.
 
 On Omarchy, Spotsie matches your desktop theme from the first time you open
 it; the AUR package also installs the theme hook. Choose **Follow system** or **Omarchy**, then change your

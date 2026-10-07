@@ -484,13 +484,25 @@ pub fn menu_choice(ui: &mut Ui, palette: &Palette, selected: bool, label: &str) 
 /// pointer, and for the current choice a faint accent wash with a check at
 /// the right. Returns the row's response; the dropdown closes on a click.
 pub fn option(ui: &mut Ui, palette: &Palette, selected: bool, label: &str) -> egui::Response {
+    option_in(ui, palette, selected, label, theme::regular(13.5))
+}
+
+/// An [`option`] whose label is drawn in `font`, as the font menu shows
+/// each font in its own face.
+pub fn option_in(
+    ui: &mut Ui,
+    palette: &Palette,
+    selected: bool,
+    label: &str,
+    font: egui::FontId,
+) -> egui::Response {
     const PAD: f32 = 10.0;
     const CHECK: f32 = 15.0;
     let width = ui.available_width();
     let galley = crate::bidi::layout(
         ui.painter(),
         label,
-        theme::regular(13.5),
+        font,
         palette.text,
         (width - PAD * 3.0 - CHECK).max(0.0),
         1,

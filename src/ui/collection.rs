@@ -296,6 +296,31 @@ pub fn actions_row(
         {
             app.actions.push(Action::SaveRadio(seed.clone()));
         }
+        // A radio's songs can go to the queue together, in the order shown.
+        if actions.save_radio.is_some()
+            && let Some(uris) = actions.view.as_ref().filter(|uris| !uris.is_empty())
+            && theme::icon_button(
+                ui,
+                Icon::ListPlus,
+                26.0,
+                palette.secondary,
+                palette.text,
+                &gettext(locale, "Add to queue"),
+            )
+            .clicked()
+        {
+            let songs = uris
+                .iter()
+                .map(|uri| {
+                    let name = crate::util::uri_id(uri)
+                        .and_then(|id| app.track_cache.get(id))
+                        .map(|track| track.name.clone())
+                        .unwrap_or_default();
+                    (uri.clone(), name)
+                })
+                .collect();
+            app.actions.push(Action::QueueMany { songs });
+        }
         if let Some(uri) = &actions.play_uri {
             let more = theme::icon_button(
                 ui,
