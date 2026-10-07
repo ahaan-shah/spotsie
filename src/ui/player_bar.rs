@@ -21,10 +21,41 @@ pub(crate) fn end_tint_session(ctx: &egui::Context) {
     ctx.data_mut(|data| data.remove::<u64>(egui::Id::new(TINT_SESSION_ID)));
 }
 
+/// How long the bar stays up over the cover or the lyrics after the pointer
+/// last moved over it.
+const REVEAL_SECONDS: f64 = 1.5;
+
+/// Whether the bar shows over the cover or the lyrics: for a moment after
+/// the pointer moves where the bar sits, and while a control is held or the
+/// device list is open.
+fn revealed(app: &App, ctx: &egui::Context) -> bool {
+    let id = egui::Id::new("player-bar-revealed-at");
+    let (now, active) = ctx.input(|input| {
+        let window = input.content_rect();
+        let near = input.pointer.hover_pos().is_some_and(|pos| {
+            pos.y >= window.bottom() - theme::PLAYER_BAR_HEIGHT && window.contains(pos)
+        });
+        let moved = input.pointer.delta() != Vec2::ZERO;
+        (input.time, near && (moved || input.pointer.any_down()))
+    });
+    if active || app.show_devices {
+        ctx.data_mut(|data| data.insert_temp(id, now));
+    }
+    let Some(at) = ctx.data(|data| data.get_temp::<f64>(id)) else {
+        return false;
+    };
+    let left = REVEAL_SECONDS - (now - at);
+    if left > 0.0 {
+        ctx.request_repaint_after(std::time::Duration::from_secs_f64(left));
+    }
+    left > 0.0
+}
+
 pub fn show(app: &mut App, ui: &mut egui::Ui) {
     let palette = app.palette;
     let fill = eased_fill(ui.ctx(), palette.panel, app.now_playing_tint());
-    egui::Panel::bottom("player-bar")
+    let mut open = !super::immersive(app) || revealed(app, ui.ctx());
+    let panel = egui::Panel::bottom("player-bar")
         .exact_size(theme::PLAYER_BAR_HEIGHT)
         .resizable(false)
         .show_separator_line(false)
@@ -32,40 +63,40 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             Frame::new()
                 .fill(fill)
                 .inner_margin(Margin::symmetric(16, 0)),
-        )
-        .show(ui, |ui| {
-            let rect = ui.max_rect();
-            let now = app.now_playing();
-            ui.painter().hline(
-                rect.x_range(),
-                rect.top() + 0.5,
-                egui::Stroke::new(1.0, palette.outline),
-            );
-            let width = rect.width();
-            let side = (width * 0.3).clamp(200.0, 420.0);
-            let cy = rect.center().y;
-            let left = Rect::from_min_max(rect.min, pos2(rect.left() + side, rect.bottom()));
-            let center = Rect::from_min_max(
-                pos2(rect.left() + side, rect.top()),
-                pos2(rect.right() - side, rect.bottom()),
-            );
+        );
+    super::sliding_panel(ui, panel, "player-bar", &mut open, |ui| {
+        let rect = ui.max_rect();
+        let now = app.now_playing();
+        ui.painter().hline(
+            rect.x_range(),
+            rect.top() + 0.5,
+            egui::Stroke::new(1.0, palette.outline),
+        );
+        let width = rect.width();
+        let side = (width * 0.3).clamp(200.0, 420.0);
+        let cy = rect.center().y;
+        let left = Rect::from_min_max(rect.min, pos2(rect.left() + side, rect.bottom()));
+        let center = Rect::from_min_max(
+            pos2(rect.left() + side, rect.top()),
+            pos2(rect.right() - side, rect.bottom()),
+        );
 
-            // egui's cross-axis centring is unreliable across nested layouts of
-            // mixed heights, so each region is placed in an explicit band that
-            // is sized to its content and centred on the bar's midline.
-            now_playing_block(app, ui, left, now.as_ref());
+        // egui's cross-axis centring is unreliable across nested layouts of
+        // mixed heights, so each region is placed in an explicit band that
+        // is sized to its content and centred on the bar's midline.
+        now_playing_block(app, ui, left, now.as_ref());
 
-            transport(app, ui, now.as_ref(), center);
+        transport(app, ui, now.as_ref(), center);
 
-            let right_band =
-                Rect::from_min_size(pos2(rect.right() - side, cy - 15.0), vec2(side, 30.0));
-            let mut right_ui = ui.new_child(
-                UiBuilder::new()
-                    .max_rect(right_band)
-                    .layout(Layout::right_to_left(Align::Center)),
-            );
-            extras(app, &mut right_ui, now.as_ref());
-        });
+        let right_band =
+            Rect::from_min_size(pos2(rect.right() - side, cy - 15.0), vec2(side, 30.0));
+        let mut right_ui = ui.new_child(
+            UiBuilder::new()
+                .max_rect(right_band)
+                .layout(Layout::right_to_left(Align::Center)),
+        );
+        extras(app, &mut right_ui, now.as_ref());
+    });
 }
 
 /// Ease the final fill's RGB. Untinted custom panels keep their alpha while

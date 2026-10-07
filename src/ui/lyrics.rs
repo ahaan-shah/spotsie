@@ -49,7 +49,7 @@ pub fn main_view(app: &mut App, ui: &mut egui::Ui) {
         egui::Id::new(("main-view", app.show_cover_view)),
         0.0,
         1.0,
-        crate::motion::STANDARD,
+        crate::motion::EMPHASIS,
     );
     view.set_opacity(shown);
     background(app, &mut view, rect);
@@ -172,7 +172,7 @@ fn cover_layout(app: &mut App, ui: &mut egui::Ui, rect: Rect, top: f32, place: P
 }
 
 /// The controls above a view. Full screen names the lyrics and offers to
-/// leave; in the window the view closes and goes full screen from here.
+/// leave; in the window the view goes full screen from here.
 /// The lyrics also offer to follow the song again once scrolled away.
 fn header(app: &mut App, ui: &mut egui::Ui, place: Place, cover: bool) {
     let palette = theme::Palette::dark();
@@ -202,22 +202,6 @@ fn header(app: &mut App, ui: &mut egui::Ui, place: Place, cover: bool) {
                     }
                 }
                 Place::Window => {
-                    if theme::icon_button(
-                        ui,
-                        Icon::X,
-                        18.0,
-                        palette.secondary,
-                        palette.text,
-                        &gettext(app.locale, "Close"),
-                    )
-                    .clicked()
-                    {
-                        app.actions.push(if cover {
-                            Action::ToggleCoverView
-                        } else {
-                            Action::ToggleLyricsPanel
-                        });
-                    }
                     if theme::icon_button(
                         ui,
                         Icon::Expand,

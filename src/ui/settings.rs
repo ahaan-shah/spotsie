@@ -123,7 +123,7 @@ fn section(
     ui.data_mut(|data| data.insert_temp(index_id, index + 1));
     let shown_at = super::page_shown_at(ui.ctx());
     let (opacity, lift) = crate::motion::reveal(ui.ctx(), shown_at, index);
-    let width = ui.available_width().min(800.0);
+    let width = ui.available_width().min(COLUMN_WIDTH);
     ui.scope(|ui| {
         ui.set_opacity(opacity);
         ui.add_space(lift);
@@ -156,7 +156,23 @@ fn section(
     });
 }
 
+/// The widest the settings column gets; wider pages centre it.
+const COLUMN_WIDTH: f32 = 800.0;
+
 pub fn show(app: &mut App, ui: &mut egui::Ui) {
+    let room = ui.available_rect_before_wrap();
+    let width = room.width().min(COLUMN_WIDTH);
+    let left = room.left() + (room.width() - width) / 2.0;
+    let column = egui::Rect::from_min_max(
+        egui::pos2(left, room.top()),
+        egui::pos2(left + width, room.bottom()),
+    );
+    ui.scope_builder(egui::UiBuilder::new().max_rect(column), |ui| {
+        column_contents(app, ui);
+    });
+}
+
+fn column_contents(app: &mut App, ui: &mut egui::Ui) {
     let palette = app.palette;
     let locale = app.locale;
     ui.data_mut(|data| data.insert_temp(egui::Id::new(SECTION_INDEX_ID), 0_usize));
@@ -807,18 +823,17 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                     |_| {},
                 );
                 ui.add_space(-4.0);
-                // Follow system and the palette files first, then Spotsie's
-                // and Magpie's themes, light and dark, as Magpie groups them.
-                let custom = app.settings.custom_theme.clone();
-                let builtin = app.settings.builtin_theme.clone();
-                let plain = custom.is_none() && builtin.is_none();
-                let tiles = |ui: &mut egui::Ui, add: &mut dyn FnMut(&mut egui::Ui)| {
-                    ui.horizontal_wrapped(|ui| {
-                        ui.spacing_mut().item_spacing = egui::vec2(12.0, 12.0);
-                        add(ui);
-                    });
-                };
-                tiles(ui, &mut |ui| {
+                // One set of tiles: Follow system, then the light themes,
+                // then the dark ones, each led by Spotsie's own.
+                let builtin = app
+                    .settings
+                    .builtin_theme
+                    .as_deref()
+                    .and_then(theme::builtin_theme)
+                    .map(|theme| theme.name);
+                let plain = app.settings.custom_theme.is_none() && builtin.is_none();
+                ui.horizontal_wrapped(|ui| {
+                    ui.spacing_mut().item_spacing = egui::vec2(12.0, 12.0);
                     let preview = match app.system_palette() {
                         Some(desktop) => ThemePreview::One(desktop),
                         None => ThemePreview::Split(Palette::light(), Palette::dark()),
@@ -828,29 +843,14 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                     if theme_tile(ui, &palette, &preview, &label, selected).clicked() {
                         app.actions.push(Action::SetTheme(ThemeChoice::System));
                     }
-                    for theme in app.custom_themes.picker_themes() {
-                        let selected = custom.as_deref() == Some(theme.filename.as_str());
-                        let label = fastframe_theme::display_name(&theme.filename);
-                        let preview = ThemePreview::One(theme.palette);
-                        if theme_tile(ui, &palette, &preview, label, selected).clicked() {
-                            app.actions
-                                .push(Action::SetCustomTheme(theme.filename.clone()));
-                        }
-                    }
-                });
-                for (choice, dark) in [(ThemeChoice::Light, false), (ThemeChoice::Dark, true)] {
-                    ui.add_space(14.0);
-                    let heading = choice.label(locale).to_uppercase();
-                    theme::text(ui, heading, theme::semibold(11.5), palette.dim);
-                    ui.add_space(6.0);
-                    tiles(ui, &mut |ui| {
+                    for (choice, dark) in [(ThemeChoice::Light, false), (ThemeChoice::Dark, true)] {
                         let own = if dark {
                             Palette::dark()
                         } else {
                             Palette::light()
                         };
                         let selected = plain && app.settings.theme == choice;
-                        let label = choice.label(locale);
+                        let label = format!("Spotsie {}", choice.label(locale));
                         if theme_tile(ui, &palette, &ThemePreview::One(own), &label, selected)
                             .clicked()
                         {
@@ -861,15 +861,15 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                             .filter(|theme| theme.palette.dark == dark)
                         {
                             let selected =
-                                custom.is_none() && builtin.as_deref() == Some(theme.name);
+                                app.settings.custom_theme.is_none() && builtin == Some(theme.name);
                             let preview = ThemePreview::One(theme.palette);
                             if theme_tile(ui, &palette, &preview, theme.name, selected).clicked() {
                                 app.actions
                                     .push(Action::SetBuiltinTheme(theme.name.to_owned()));
                             }
                         }
-                    });
-                }
+                    }
+                });
                 ui.add_space(18.0);
             }
             filtered_row(

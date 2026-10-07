@@ -536,7 +536,10 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             top,
             bottom: if expanded_art { 0 } else { 8 },
         }));
-    let mut open = app.settings.sidebar_visible;
+    // The cover and the lyrics put the sidebar away without forgetting
+    // whether it was open.
+    let immersive = super::immersive(app);
+    let mut open = app.settings.sidebar_visible && !immersive;
     let shown = super::sliding_panel(ui, panel, "sidebar", &mut open, |ui| {
         let art_rect = expanded_art.then(|| expanded_art_rect(ui));
         if let Some(rect) = art_rect.filter(|_| !floating_art) {
@@ -550,7 +553,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             paint_expanded_art(app, ui, rect);
         }
     });
-    if open != app.settings.sidebar_visible {
+    if !immersive && open != app.settings.sidebar_visible {
         app.settings.sidebar_visible = open;
         app.actions.push(Action::SettingsChanged);
     }

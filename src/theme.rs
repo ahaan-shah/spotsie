@@ -206,116 +206,26 @@ impl fastframe_theme::Palette for Palette {
 /// installed into the themes folder as files on the first launch, and
 /// Omarchy's on Linux, with the packaged template and hook installed for the
 /// user.
-/// A theme that ships with Spotsie beside its own Light and Dark: the rest
-/// of Magpie's set.
+/// A theme that ships with Spotsie beside its own Light and Dark.
 #[derive(Clone, Debug)]
 pub struct BuiltinTheme {
     pub name: &'static str,
     pub palette: Palette,
 }
 
-/// Magpie's themes, dark then light, as its picker lists them.
+/// The themes beside Spotsie's own Light and Dark, light then dark, as the
+/// picker lists them.
 pub fn builtin_themes() -> &'static [BuiltinTheme] {
     static THEMES: std::sync::OnceLock<Vec<BuiltinTheme>> = std::sync::OnceLock::new();
     THEMES.get_or_init(|| {
         vec![
             BuiltinTheme {
-                name: "Midnight",
-                palette: Palette::from_magpie(
-                    true,
-                    [0x0E1016, 0x0A0C11, 0x151821, 0x1C202B, 0x242938],
-                    [0xE9EBF1, 0xA0A6B6, 0x686F82],
-                    [0x8AA4FF, 0x0B0E1A, 0xFF6B81, 0xFFB547],
-                ),
-            },
-            BuiltinTheme {
-                name: "Tokyo Night",
-                palette: Palette::from_magpie(
-                    true,
-                    [0x1A1B26, 0x16161E, 0x1F2233, 0x262B40, 0x2C3148],
-                    [0xC8D1F7, 0x9AA3CC, 0x5E6690],
-                    [0x7AA2F7, 0x11131C, 0xF7768E, 0xE0AF68],
-                ),
-            },
-            BuiltinTheme {
-                name: "Mocha",
-                palette: Palette::from_magpie(
-                    true,
-                    [0x1E1E2E, 0x181825, 0x252536, 0x313244, 0x35364A],
-                    [0xCDD6F4, 0xA6ADC8, 0x6C7086],
-                    [0xCBA6F7, 0x1E1E2E, 0xF38BA8, 0xF9E2AF],
-                ),
-            },
-            BuiltinTheme {
-                name: "Nord",
-                palette: Palette::from_magpie(
-                    true,
-                    [0x2E3440, 0x2A2F3A, 0x353C4A, 0x3E4555, 0x444C5C],
-                    [0xECEFF4, 0xC2CAD8, 0x8690A4],
-                    [0x88C0D0, 0x242933, 0xD08770, 0xEBCB8B],
-                ),
-            },
-            BuiltinTheme {
-                name: "Gruvbox",
-                palette: Palette::from_magpie(
-                    true,
-                    [0x1D2021, 0x191B1C, 0x282828, 0x32302F, 0x3C3836],
-                    [0xEBDBB2, 0xBDAE93, 0x7C6F64],
-                    [0xFABD2F, 0x1D2021, 0xFB4934, 0xFE8019],
-                ),
-            },
-            BuiltinTheme {
-                name: "Kanagawa",
-                palette: Palette::from_magpie(
-                    true,
-                    [0x1F1F28, 0x16161D, 0x252530, 0x2A2A37, 0x363646],
-                    [0xDCD7BA, 0xA6A69C, 0x727169],
-                    [0x7E9CD8, 0x16161D, 0xE46876, 0xE6C384],
-                ),
-            },
-            BuiltinTheme {
-                name: "Everforest",
-                palette: Palette::from_magpie(
-                    true,
-                    [0x2D353B, 0x232A2E, 0x343F44, 0x3D484D, 0x475258],
-                    [0xD3C6AA, 0x9DA9A0, 0x7A8478],
-                    [0xA7C080, 0x232A2E, 0xE67E80, 0xDBBC7F],
-                ),
-            },
-            BuiltinTheme {
-                name: "Daylight",
-                palette: Palette::from_magpie(
-                    false,
-                    [0xF5F6FA, 0xECEEF5, 0xFFFFFF, 0xFFFFFF, 0xE3E6EE],
-                    [0x141722, 0x5A6174, 0x949AAB],
-                    [0x4C66EE, 0xFFFFFF, 0xE0434C, 0xD08600],
-                ),
-            },
-            BuiltinTheme {
-                name: "Paper",
-                palette: Palette::from_magpie(
-                    false,
-                    [0xF8F5EF, 0xF0EBE1, 0xFFFEFB, 0xFFFEFB, 0xE6DFD2],
-                    [0x2A2521, 0x6B6158, 0xA2988C],
-                    [0xD2602A, 0xFFFFFF, 0xC4423A, 0xC0850F],
-                ),
-            },
-            BuiltinTheme {
-                name: "Latte",
+                name: "Catppuccin Latte",
                 palette: Palette::from_magpie(
                     false,
                     [0xEFF1F5, 0xE6E9EF, 0xFBFCFE, 0xFFFFFF, 0xD8DCE5],
                     [0x4C4F69, 0x6C6F85, 0x9CA0B0],
                     [0x8839EF, 0xFFFFFF, 0xD20F39, 0xDF8E1D],
-                ),
-            },
-            BuiltinTheme {
-                name: "Flexoki",
-                palette: Palette::from_magpie(
-                    false,
-                    [0xF2F0E5, 0xE6E4D9, 0xFFFCF0, 0xFFFCF0, 0xDAD8CE],
-                    [0x100F0F, 0x6F6E69, 0x878580],
-                    [0x24837B, 0xFFFFFF, 0xAF3029, 0xAD8301],
                 ),
             },
             BuiltinTheme {
@@ -328,29 +238,79 @@ pub fn builtin_themes() -> &'static [BuiltinTheme] {
                 ),
             },
             BuiltinTheme {
-                name: "Lupine",
+                name: "Flexoki",
                 palette: Palette::from_magpie(
                     false,
-                    [0xF7F6FB, 0xEFEDF7, 0xFFFFFF, 0xFFFFFF, 0xE3E0EE],
-                    [0x212121, 0x5F5B6E, 0x9E9E9E],
-                    [0x8A4AD7, 0xFFFFFF, 0xD6336C, 0xD08700],
+                    [0xF2F0E5, 0xE6E4D9, 0xFFFCF0, 0xFFFCF0, 0xDAD8CE],
+                    [0x100F0F, 0x6F6E69, 0x878580],
+                    [0x24837B, 0xFFFFFF, 0xAF3029, 0xAD8301],
                 ),
             },
             BuiltinTheme {
-                name: "Snow",
+                name: "Catppuccin",
                 palette: Palette::from_magpie(
-                    false,
-                    [0xFAFAFA, 0xF4F4F5, 0xFFFFFF, 0xFFFFFF, 0xE4E4E7],
-                    [0x09090B, 0x52525B, 0xA1A1AA],
-                    [0x18181B, 0xFFFFFF, 0xDC2626, 0xCA8A04],
+                    true,
+                    [0x1E1E2E, 0x181825, 0x252536, 0x313244, 0x35364A],
+                    [0xCDD6F4, 0xA6ADC8, 0x6C7086],
+                    [0xCBA6F7, 0x1E1E2E, 0xF38BA8, 0xF9E2AF],
+                ),
+            },
+            BuiltinTheme {
+                name: "Rosé Pine",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x191724, 0x16141F, 0x1F1D2E, 0x26233A, 0x2A273F],
+                    [0xE0DEF4, 0x908CAA, 0x6E6A86],
+                    [0xC4A7E7, 0x191724, 0xEB6F92, 0xF6C177],
+                ),
+            },
+            BuiltinTheme {
+                name: "Nord",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x2E3440, 0x2A2F3A, 0x353C4A, 0x3E4555, 0x444C5C],
+                    [0xECEFF4, 0xC2CAD8, 0x8690A4],
+                    [0x88C0D0, 0x242933, 0xD08770, 0xEBCB8B],
+                ),
+            },
+            BuiltinTheme {
+                name: "Tokyo Night",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x1A1B26, 0x16161E, 0x1F2233, 0x262B40, 0x2C3148],
+                    [0xC8D1F7, 0x9AA3CC, 0x5E6690],
+                    [0x7AA2F7, 0x11131C, 0xF7768E, 0xE0AF68],
+                ),
+            },
+            BuiltinTheme {
+                name: "Everforest",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x2D353B, 0x232A2E, 0x343F44, 0x3D484D, 0x475258],
+                    [0xD3C6AA, 0x9DA9A0, 0x7A8478],
+                    [0xA7C080, 0x232A2E, 0xE67E80, 0xDBBC7F],
+                ),
+            },
+            BuiltinTheme {
+                name: "Gruvbox",
+                palette: Palette::from_magpie(
+                    true,
+                    [0x1D2021, 0x191B1C, 0x282828, 0x32302F, 0x3C3836],
+                    [0xEBDBB2, 0xBDAE93, 0x7C6F64],
+                    [0xFABD2F, 0x1D2021, 0xFB4934, 0xFE8019],
                 ),
             },
         ]
     })
 }
 
-/// The built-in theme called `name`.
+/// The built-in theme called `name`, also by the names older builds saved.
 pub fn builtin_theme(name: &str) -> Option<&'static BuiltinTheme> {
+    let name = match name {
+        "Mocha" => "Catppuccin",
+        "Latte" => "Catppuccin Latte",
+        name => name,
+    };
     builtin_themes().iter().find(|theme| theme.name == name)
 }
 
@@ -1542,13 +1502,14 @@ mod tests {
         assert!(palette_from_pywal("not json").is_none());
     }
 
-    /// Magpie's themes beyond its own pair, seven light and seven dark,
-    /// each found by its name.
+    /// Three light themes and six dark ones beside Spotsie's pair, each
+    /// found by its name, and older builds' names still found.
     #[test]
-    fn the_built_in_themes_are_magpies_set() {
+    fn the_built_in_themes_are_the_chosen_set() {
         let themes = builtin_themes();
-        assert_eq!(themes.len(), 14);
-        assert_eq!(themes.iter().filter(|theme| theme.palette.dark).count(), 7);
+        assert_eq!(themes.len(), 9);
+        assert_eq!(themes.iter().filter(|theme| theme.palette.dark).count(), 6);
+        assert_eq!(builtin_theme("Mocha").unwrap().name, "Catppuccin");
         for theme in themes {
             assert_eq!(builtin_theme(theme.name).unwrap().name, theme.name);
         }

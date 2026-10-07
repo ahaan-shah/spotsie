@@ -77,6 +77,12 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     window_resize(ui);
 }
 
+/// Whether the cover or the lyrics fill the window: the sidebar and the top
+/// bar step aside, and the player bar shows only when the pointer asks.
+pub(crate) fn immersive(app: &App) -> bool {
+    app.show_cover_view || app.show_lyrics_panel
+}
+
 /// The main window's narrowest width with these panels open: their least
 /// widths and the page's.
 fn main_min_width(page: f32, sidebar: bool, right_panel: bool) -> f32 {
@@ -129,7 +135,7 @@ fn keep_room_for_panels(app: &App, ctx: &Context) {
     }
     let width = main_min_width(
         topbar::least_width(ctx),
-        app.settings.sidebar_visible,
+        app.settings.sidebar_visible && !immersive(app),
         app.show_queue_panel,
     )
     .round();
@@ -318,10 +324,10 @@ fn central(app: &mut App, ui: &mut egui::Ui) {
             // colour, which shows as a pale band over a cover's tint; the
             // page casts a shadow under the header instead.
             ui.spacing_mut().scroll.fade.strength = 0.0;
-            topbar::show(app, ui);
+            sliding_topbar(app, ui);
             // The lyrics and the cover view take the main area, as Spotify
-            // shows them, with the top bar still above.
-            if app.show_lyrics_panel || app.show_cover_view {
+            // shows them.
+            if immersive(app) {
                 lyrics::main_view(app, ui);
                 return;
             }
@@ -374,6 +380,34 @@ fn central(app: &mut App, ui: &mut egui::Ui) {
             );
             header_shadow(ui, scroll.inner_rect, scroll.state.offset.y, palette.dark);
         });
+}
+
+/// The top bar, which slides up out of the way while the cover or the
+/// lyrics fill the window and slides back down when they close.
+fn sliding_topbar(app: &mut App, ui: &mut egui::Ui) {
+    let hidden = crate::motion::toggle(
+        ui.ctx(),
+        Id::new("topbar-hidden"),
+        immersive(app),
+        crate::motion::STANDARD,
+    );
+    if hidden >= 1.0 {
+        return;
+    }
+    let height_id = Id::new("topbar-height");
+    let height = ui
+        .ctx()
+        .data(|data| data.get_temp::<f32>(height_id))
+        .unwrap_or(0.0);
+    let shift = height * hidden;
+    let room = ui.available_rect_before_wrap();
+    let mut bar = ui.new_child(egui::UiBuilder::new().max_rect(room.translate(vec2(0.0, -shift))));
+    bar.set_clip_rect(room.intersect(ui.clip_rect()));
+    bar.set_opacity(1.0 - hidden);
+    topbar::show(app, &mut bar);
+    let drawn = bar.min_rect().height() + ui.spacing().item_spacing.y;
+    ui.ctx().data_mut(|data| data.insert_temp(height_id, drawn));
+    ui.add_space(drawn * (1.0 - hidden));
 }
 
 /// The shadow the header casts on a page scrolled under it, deepening over
