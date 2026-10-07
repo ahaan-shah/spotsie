@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spotsie\n"
 "Report-Msgid-Bugs-To: https://github.com/ahaan-shah/spotsie/issues/new\n"
-"POT-Creation-Date: 2026-10-07 12:21+0530\n"
+"POT-Creation-Date: 2026-10-07 17:54+0530\n"
 "PO-Revision-Date: 2026-10-02 20:30+0300\n"
 "Last-Translator: Barış Berke Çetin <brsberkectn@gmail.com>\n"
 "Language-Team: Turkish\n"
@@ -151,21 +151,21 @@ msgstr "Burada henüz bir şey yok."
 msgid "No matches."
 msgstr "Eşleşme bulunamadı."
 
-#: src/ui/sidebar.rs:1885
+#: src/ui/sidebar.rs:1886
 msgid "Sort by recently played"
 msgstr "Son çalınanlara göre sırala"
 
-#: src/ui/sidebar.rs:1906 src/ui/player_bar.rs:399 src/ui/widgets.rs:1260
+#: src/ui/sidebar.rs:1907 src/ui/player_bar.rs:399 src/ui/widgets.rs:1260
 #: src/ui/artist.rs:341 src/ui/collection.rs:214 src/ui/search.rs:390
 #: src/ui/show.rs:311
 msgid "Play"
 msgstr "Çal"
 
-#: src/ui/sidebar.rs:1924
+#: src/ui/sidebar.rs:1925
 msgid "Unpin"
 msgstr "Sabitlemeyi kaldır"
 
-#: src/ui/sidebar.rs:1926
+#: src/ui/sidebar.rs:1927
 msgid "Pin to top"
 msgstr "Başa sabitle"
 
@@ -579,27 +579,27 @@ msgstr "Yapıştır"
 msgid "Select all"
 msgstr "Tümünü seç"
 
-#: src/ui/widgets.rs:3141
+#: src/ui/widgets.rs:3169
 msgid "Clear"
 msgstr "Temizle"
 
-#: src/ui/widgets.rs:3319
+#: src/ui/widgets.rs:3347
 msgid "Host"
 msgstr "Sunucu"
 
-#: src/ui/widgets.rs:3336
+#: src/ui/widgets.rs:3364
 msgid "Port"
 msgstr "Port"
 
-#: src/ui/widgets.rs:3354
+#: src/ui/widgets.rs:3382
 msgid "Username"
 msgstr "Kullanıcı adı"
 
-#: src/ui/widgets.rs:3365
+#: src/ui/widgets.rs:3393
 msgid "Password"
 msgstr "Parola"
 
-#: src/ui/widgets.rs:3383
+#: src/ui/widgets.rs:3411
 msgid ""
 "Proxy login applies to Web requests. Local playback uses this proxy only "
 "without a login."
@@ -607,7 +607,7 @@ msgstr ""
 "Proxy girişi web istekleri için geçerlidir. Yerel çalma bu proxy'yi yalnızca "
 "kimlik doğrulamasız kullanır."
 
-#: src/ui/widgets.rs:3387
+#: src/ui/widgets.rs:3415
 msgid ""
 "Spotify hostnames are resolved by the proxy. Local playback connects "
 "directly."
@@ -661,7 +661,7 @@ msgstr "Yerel çalma: {error}"
 msgid "Spotify audio disconnected. Reconnecting local playback"
 msgstr "Spotify ses bağlantısı kesildi. Yerel çalma yeniden bağlanıyor"
 
-#: src/app.rs:2343 src/app/radio.rs:169 src/ui/radio.rs:35 src/ui/radio.rs:77
+#: src/app.rs:2343 src/app/radio.rs:171 src/ui/radio.rs:35 src/ui/radio.rs:79
 msgid "Radio"
 msgstr "Radyo"
 
@@ -1035,7 +1035,7 @@ msgstr "Kapak yüklenemedi: {error}. Yeniden deneyin."
 
 #. Translators: Keep {track} unchanged. It is the name of the song,
 #. playlist, album, or artist the radio is based on, not translated.
-#: src/app.rs:15665 src/app/radio.rs:38
+#: src/app.rs:15665 src/app/radio.rs:39
 #, rust-format
 msgid "{track} Radio"
 msgstr "{track} Radyosu"
@@ -2264,47 +2264,47 @@ msgstr "Önceki Boyut"
 msgid "Maximize"
 msgstr "Ekranı Kapla"
 
-#: src/ui/radio.rs:105
+#: src/ui/radio.rs:107
 msgid "Radio comes from playback on this computer. Turn it on in Settings."
 msgstr ""
 "Radyo bu bilgisayarda çalma özelliğinden gelir. Ayarlar'dan etkinleştirin."
 
-#: src/ui/radio.rs:202
+#: src/ui/radio.rs:204
 msgid "Based on this playlist"
 msgstr "Bu çalma listesine dayalı"
 
-#: src/ui/radio.rs:203
+#: src/ui/radio.rs:205
 msgid "Based on this album"
 msgstr "Bu albüme dayalı"
 
-#: src/ui/radio.rs:204
+#: src/ui/radio.rs:206
 msgid "Based on this artist"
 msgstr "Bu sanatçıya dayalı"
 
-#: src/ui/radio.rs:205
+#: src/ui/radio.rs:207
 msgid "Based on this song"
 msgstr "Bu şarkıya dayalı"
 
 #. Translators: {first} is an artist name.
-#: src/ui/radio.rs:224
+#: src/ui/radio.rs:226
 #, rust-format
 msgid "With {first}"
 msgstr "{first} ile"
 
 #. Translators: {first} and {second} are artist names.
-#: src/ui/radio.rs:227
+#: src/ui/radio.rs:229
 #, rust-format
 msgid "With {first} and {second}"
 msgstr "{first} ve {second} ile"
 
 #. Translators: {first}, {second} and {third} are artist names.
-#: src/ui/radio.rs:233
+#: src/ui/radio.rs:235
 #, rust-format
 msgid "With {first}, {second} and {third}"
 msgstr "{first}, {second} ve {third} ile"
 
 #. Translators: {first}, {second} and {third} are artist names; more follow.
-#: src/ui/radio.rs:240
+#: src/ui/radio.rs:242
 #, rust-format
 msgid "With {first}, {second}, {third} and more"
 msgstr "{first}, {second}, {third} ve daha fazlası ile"

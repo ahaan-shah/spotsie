@@ -723,7 +723,7 @@ pub enum Command {
         session_generation: u64,
         seed: String,
         generation: u64,
-        result: Result<Vec<crate::api::models::Track>, String>,
+        result: Result<crate::session_reads::Radio, String>,
     },
     /// Internal: an audiobook lookup finished for the session it started in.
     AudiobookShowsResolved {
@@ -827,11 +827,11 @@ pub enum Event {
     /// Saved shows that Spotify's metadata marks as audiobooks. librespot
     /// cannot play them, so the Podcasts shelf leaves them out.
     AudiobookShows(Vec<String>),
-    /// The songs of the radio seeded by `seed`, for the request `generation`.
+    /// The radio seeded by `seed`, for the request `generation`.
     Radio {
         seed: String,
         generation: u64,
-        result: Result<Vec<crate::api::models::Track>, String>,
+        result: Result<crate::session_reads::Radio, String>,
     },
     /// Whether Spotify's internal metadata positively identifies an album as an EP.
     AlbumType {
@@ -3056,23 +3056,22 @@ impl Worker {
             let engine = Arc::clone(&engine);
             let commands = self.commands.clone();
             tokio::spawn(async move {
-                let result = match crate::util::station_uri(&seed) {
-                    Some(station) => {
-                        match tokio::time::timeout(
-                            RADIO_TIMEOUT,
-                            session_reads::station(engine.session(), &station),
-                        )
-                        .await
-                        {
-                            Ok(Ok(tracks)) => Ok(tracks),
-                            Ok(Err(error)) => {
-                                log::warn!("radio {station} failed: {error:#}");
-                                Err("Couldn't load this radio. Try again.".to_string())
-                            }
-                            Err(_) => Err("Spotify took too long to answer. Try again.".into()),
+                let result = if crate::util::station_uri(&seed).is_some() {
+                    match tokio::time::timeout(
+                        RADIO_TIMEOUT,
+                        session_reads::radio(engine.session(), &seed),
+                    )
+                    .await
+                    {
+                        Ok(Ok(radio)) => Ok(radio),
+                        Ok(Err(error)) => {
+                            log::warn!("radio for {seed} failed: {error:#}");
+                            Err("Couldn't load this radio. Try again.".to_string())
                         }
+                        Err(_) => Err("Spotify took too long to answer. Try again.".into()),
                     }
-                    None => Err("There is no radio for this item.".into()),
+                } else {
+                    Err("There is no radio for this item.".into())
                 };
                 let _ = commands.send(Command::RadioResolved {
                     session_generation,

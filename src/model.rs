@@ -777,6 +777,9 @@ pub struct ArtistPage {
 #[derive(Default)]
 pub struct RadioPage {
     pub songs: Loadable<Vec<Track>>,
+    /// The context Spotify plays the radio in: its radio playlist, or a
+    /// station. Known once the songs are.
+    pub context: Option<String>,
     /// The name and artwork known when the page opened, kept should the
     /// seed's own details be let go while the page stays.
     pub name: Option<String>,

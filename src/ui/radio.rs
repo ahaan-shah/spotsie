@@ -39,6 +39,8 @@ pub fn radio(app: &mut App, ui: &mut egui::Ui, seed: &str) {
     }
     let generation = page.generation;
     let refreshing = page.refreshing;
+    // Play in Spotify's own context for this radio once it is known.
+    let station = page.context.clone().unwrap_or(station);
     let state = match &page.songs {
         Loadable::Loaded(songs) => Ok(Some((
             songs.len(),

@@ -1,8 +1,9 @@
 //! Radio pages: Spotify's station for a song, playlist, album, or artist.
 //!
-//! Spotify mixes a station afresh each time it is resolved, so the page
-//! keeps the songs it was given and its Play button plays exactly those,
-//! with the station as their context so the queue names the radio.
+//! The radio is the one Spotify's own "Go to radio" opens: Spotify names a
+//! radio playlist for the seed (a station, for playlists), and the page shows
+//! its songs. Its Play button plays exactly those, in that context, so the
+//! queue and other devices name the radio as Spotify does.
 
 use super::*;
 
@@ -122,7 +123,7 @@ impl App {
         &mut self,
         seed: &str,
         generation: u64,
-        result: Result<Vec<Track>, String>,
+        result: Result<crate::session_reads::Radio, String>,
     ) {
         let Some(page) = self
             .radio_pages
@@ -133,7 +134,8 @@ impl App {
         };
         let refreshing = std::mem::take(&mut page.refreshing);
         match result {
-            Ok(songs) => {
+            Ok(crate::session_reads::Radio { context, songs }) => {
+                page.context = Some(context);
                 let uris = songs.iter().map(|track| track.uri.clone()).collect();
                 for track in &songs {
                     if let Some(id) = &track.id {

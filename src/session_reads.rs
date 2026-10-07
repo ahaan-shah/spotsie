@@ -154,6 +154,51 @@ fn page(items: Vec<PlaylistItem>, total: u32, offset: u32, limit: u32) -> Page<P
 /// The songs of Spotify's radio `station`, in Spotify's order, with their
 /// details from one batched request. Spotify mixes a station afresh each
 /// time it is resolved, so the list returned here is the one to play.
+/// A radio as Spotify plays it: the context its songs come from, and the
+/// songs.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Radio {
+    /// Spotify's radio playlist for the seed (`spotify:playlist:37i9dQZF1E…`),
+    /// or a station where Spotify answers with one, as it does for playlists.
+    pub context: String,
+    pub songs: Vec<Track>,
+}
+
+/// The radio Spotify's own "Go to radio" opens for `seed` (a song, artist,
+/// album or playlist): it asks Spotify which radio that is, then reads its
+/// songs. Where Spotify names none, the seed's station stands in, the radio
+/// librespot's autoplay uses.
+pub async fn radio(session: &Session, seed: &str) -> anyhow::Result<Radio> {
+    let named = match SpotifyUri::from_uri(seed) {
+        Ok(uri) => match session.spclient().get_radio_for_track(&uri).await {
+            Ok(body) => radio_context(&body),
+            Err(error) => {
+                log::warn!("Spotify named no radio for {seed}: {error}");
+                None
+            }
+        },
+        Err(_) => None,
+    };
+    let context = named
+        .or_else(|| crate::util::station_uri(seed))
+        .ok_or_else(|| anyhow::anyhow!("there is no radio for {seed}"))?;
+    let songs = station(session, &context).await?;
+    Ok(Radio { context, songs })
+}
+
+/// The radio context in Spotify's answer to `seed_to_playlist`:
+/// `{"total": 1, "mediaItems": [{"uri": "spotify:playlist:…"}]}`.
+fn radio_context(body: &[u8]) -> Option<String> {
+    let json: serde_json::Value = serde_json::from_slice(body).ok()?;
+    json["mediaItems"]
+        .as_array()?
+        .iter()
+        .filter_map(|item| item["uri"].as_str())
+        .find(|uri| uri.starts_with("spotify:playlist:") || uri.starts_with("spotify:station:"))
+        .map(str::to_string)
+}
+
+/// The songs of a resolved radio context, in order, each once.
 pub async fn station(session: &Session, station: &str) -> anyhow::Result<Vec<Track>> {
     let context = session.spclient().get_context(station).await?;
     let uris = station_songs(&context);
@@ -627,6 +672,26 @@ mod tests {
     use librespot_protocol::playlist4_external::{Item, SelectedListContent};
 
     use super::*;
+
+    #[test]
+    fn spotifys_answer_names_the_radio_playlist_or_station() {
+        assert_eq!(
+            radio_context(
+                br#"{"total": 1,"mediaItems": [{"uri": "spotify:playlist:37i9dQZF1E8UJ1xRHXd2z2"}]}"#
+            )
+            .as_deref(),
+            Some("spotify:playlist:37i9dQZF1E8UJ1xRHXd2z2")
+        );
+        assert_eq!(
+            radio_context(
+                br#"{"total": 1,"mediaItems": [{"uri": "spotify:station:playlist:37i9dQZF1DXcBWIGoYBM5M"}]}"#
+            )
+            .as_deref(),
+            Some("spotify:station:playlist:37i9dQZF1DXcBWIGoYBM5M")
+        );
+        assert_eq!(radio_context(br#"{"total": 0,"mediaItems": []}"#), None);
+        assert_eq!(radio_context(b"not json"), None);
+    }
 
     const TRACK: &str = "spotify:track:4uLU6hMCjMI75M1A2tKUQC";
     const EPISODE: &str = "spotify:episode:7GhIk7Il098yCjg4BQjzvb";

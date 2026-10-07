@@ -15788,6 +15788,14 @@ mod tests {
         );
     }
 
+    /// Spotify's answer for a radio: its radio playlist and `songs`.
+    fn radio_mix(songs: Vec<Track>) -> crate::session_reads::Radio {
+        crate::session_reads::Radio {
+            context: "spotify:playlist:37i9dQZF1E8radio".into(),
+            songs,
+        }
+    }
+
     fn radio_song(id: &str, artist: &str) -> Track {
         Track {
             id: Some(id.into()),
@@ -15877,7 +15885,8 @@ mod tests {
     }
 
     /// Spotify mixes a station afresh each time it is asked, so the page's
-    /// Play plays the songs on screen, shuffled or not, as the radio.
+    /// Play plays the songs on screen, shuffled or not, in the radio
+    /// context Spotify named for the seed.
     #[test]
     fn a_radio_plays_the_songs_it_shows() {
         let ctx = egui::Context::default();
@@ -15894,7 +15903,7 @@ mod tests {
             app.apply(Action::Open(Page::Radio(seed.into())), &ctx);
             let generation = app.radio_pages[seed].generation;
             let songs = vec![radio_song("a", "Björk"), radio_song("b", "Arca")];
-            app.receive_radio(seed, generation, Ok(songs));
+            app.receive_radio(seed, generation, Ok(radio_mix(songs)));
             click_labelled(&ctx, &mut app, seed, "Play");
             assert_eq!(
                 app.queued_play.as_ref().expect("a play request").uris,
@@ -15903,8 +15912,8 @@ mod tests {
             );
             assert_eq!(
                 app.playing_context_uri().as_deref(),
-                Some("spotify:station:playlist:pl9"),
-                "the queue names the radio"
+                Some("spotify:playlist:37i9dQZF1E8radio"),
+                "the queue names Spotify's own radio"
             );
             app.backend.shutdown();
         }
@@ -15931,9 +15940,9 @@ mod tests {
         app.apply(Action::Reload(Page::Radio(seed.into())), &ctx);
         let second = app.radio_pages[seed].generation;
         assert_ne!(first, second);
-        app.receive_radio(seed, first, Ok(vec![radio_song("old", "Old")]));
+        app.receive_radio(seed, first, Ok(radio_mix(vec![radio_song("old", "Old")])));
         assert!(matches!(app.radio_pages[seed].songs, Loadable::Loading));
-        app.receive_radio(seed, second, Ok(vec![radio_song("new", "New")]));
+        app.receive_radio(seed, second, Ok(radio_mix(vec![radio_song("new", "New")])));
         let songs = app.radio_pages[seed].songs.get().expect("the latest mix");
         assert_eq!(songs[0].uri, "spotify:track:new");
         assert!(app.track_cache.contains_key("new"));
@@ -15953,7 +15962,11 @@ mod tests {
         let seed = "spotify:artist:art1";
         app.apply(Action::Open(Page::Radio(seed.into())), &ctx);
         let generation = app.radio_pages[seed].generation;
-        app.receive_radio(seed, generation, Ok(vec![radio_song("old", "Old")]));
+        app.receive_radio(
+            seed,
+            generation,
+            Ok(radio_mix(vec![radio_song("old", "Old")])),
+        );
         let rows = |app: &mut App| {
             draw_radio(&ctx, app, seed, Vec::new());
             app.table_rows[&Page::Radio(seed.into())].items[0]
@@ -15967,7 +15980,7 @@ mod tests {
         assert!(app.radio_pages[seed].refreshing);
         assert_eq!(rows(&mut app), "spotify:track:old", "the old mix stays");
         let asked = app.radio_pages[seed].generation;
-        app.receive_radio(seed, asked, Ok(vec![radio_song("new", "New")]));
+        app.receive_radio(seed, asked, Ok(radio_mix(vec![radio_song("new", "New")])));
         assert!(!app.radio_pages[seed].refreshing);
         assert_eq!(
             rows(&mut app),
@@ -16013,7 +16026,10 @@ mod tests {
         app.receive_radio(
             seed,
             generation,
-            Ok(vec![radio_song("b", "Camel"), radio_song("a", "Yes")]),
+            Ok(radio_mix(vec![
+                radio_song("b", "Camel"),
+                radio_song("a", "Yes"),
+            ])),
         );
         let tree = draw_radio(&ctx, &mut app, seed, Vec::new());
         assert_eq!(

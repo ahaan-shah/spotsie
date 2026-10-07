@@ -1521,12 +1521,13 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
                             .image(palette.accent, 16.0)
                             .paint_at(ui, icon_rect);
                     } else if pinned {
+                        // Spotify's pin: filled, tilted, and green.
                         let icon_rect = Rect::from_center_size(
                             pos2(rect.right() - 16.0, rect.center().y),
-                            Vec2::splat(13.0),
+                            Vec2::splat(14.0),
                         );
-                        Icon::Pin
-                            .image(palette.secondary, 13.0)
+                        Icon::PinFilled
+                            .image(palette.accent, 14.0)
                             .paint_at(ui, icon_rect);
                     }
                     // Rows that cannot take the song step back a little.
@@ -1789,7 +1790,7 @@ fn library_grid(
                                 pin_rect.width() / 2.0,
                                 egui::Color32::from_black_alpha(170),
                             );
-                            Icon::Pin.image(egui::Color32::WHITE, 12.0).paint_at(
+                            Icon::PinFilled.image(palette.accent, 12.0).paint_at(
                                 ui,
                                 Rect::from_center_size(pin_rect.center(), Vec2::splat(12.0)),
                             );

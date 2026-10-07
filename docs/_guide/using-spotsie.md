@@ -405,14 +405,15 @@ snap the window, and drag a window edge or corner to resize it.
 
 ## Radio
 
-Since 0.10.0, **Go to song radio** in a song's menu opens a page
-of songs Spotify picks to go with it, without starting playback. Playlist,
-album, and artist menus have **Go to playlist radio**, **Go to album radio**,
-and **Go to artist radio**.
+**Go to song radio** in a song's menu opens the same radio Spotify's own
+app opens for it, without starting playback. Playlist, album, and artist
+menus have **Go to playlist radio**, **Go to album radio**, and **Go to
+artist radio**. Spotify answers with its radio playlist for the song, album
+or artist (a station, for a playlist), and the page shows its songs.
 
-Spotify mixes a radio afresh each time it is asked, so the page keeps the
-songs it shows: **Play**, **Shuffle**, and a double-clicked row play those
-songs, and the queue names the radio. Choose **Refresh** in the page's **…**
+The page keeps the songs it shows: **Play**, **Shuffle**, and a
+double-clicked row play those songs, in Spotify's radio, so the queue and
+your other devices name it as Spotify does. Choose **Refresh** in the page's **…**
 menu for a new mix. **Save as playlist** creates a private playlist named
 after the radio with the songs on the page.
 

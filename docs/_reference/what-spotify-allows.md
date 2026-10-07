@@ -66,9 +66,9 @@ clients. Spotsie uses its session for:
 - **Lyrics** when Spotify has them.
 - **Display names** for the user IDs attached to songs in a playlist.
 - **Precise EP types** for releases that the Web API groups with singles.
-- **Radio and autoplay** through Spotify's context resolver: stations seeded
-  by a song, playlist, album, or artist. Each resolution is a fresh mix of 50
-  songs, so a radio page plays the songs it shows rather than asking again.
+- **Radio**, the one Spotify's own app opens: Spotify names a radio
+  playlist for a song, album or artist (a station for a playlist), and the
+  context resolver gives its 50 songs. **Autoplay** uses the seed's station.
 - **Audiobook detection** for saved shows, which the Web API lists as podcasts.
 
 ## librespot playback

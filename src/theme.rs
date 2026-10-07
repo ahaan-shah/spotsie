@@ -402,7 +402,9 @@ fn apply_to_style(style: &mut egui::Style, palette: &Palette) {
     style.spacing.scroll = egui::style::ScrollStyle {
         bar_width: 8.0,
         floating_width: 6.0,
-        floating_allocated_width: 0.0,
+        // A lane of its own, so the bar never sits over the end of a row's
+        // text.
+        floating_allocated_width: 10.0,
         handle_min_length: 28.0,
         bar_inner_margin: 3.0,
         bar_outer_margin: 2.0,
@@ -510,6 +512,7 @@ fastframe_icons::icons! {
         PauseFilled => "pause-filled",
         PanelLeft => lucide "panel-left",
         Pin => lucide "pin",
+        PinFilled => "pin-filled",
         PinOff => lucide "pin-off",
         Pencil => lucide "pencil",
         Play => lucide "play",

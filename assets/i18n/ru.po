@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spotsie\n"
 "Report-Msgid-Bugs-To: https://github.com/ahaan-shah/spotsie/issues/new\n"
-"POT-Creation-Date: 2026-10-07 12:21+0530\n"
+"POT-Creation-Date: 2026-10-07 17:54+0530\n"
 "PO-Revision-Date: 2026-09-23 20:00+0000\n"
 "Last-Translator: Spotsie contributors\n"
 "Language-Team: Russian\n"
@@ -152,21 +152,21 @@ msgstr "Здесь пока ничего нет."
 msgid "No matches."
 msgstr "Ничего не найдено."
 
-#: src/ui/sidebar.rs:1885
+#: src/ui/sidebar.rs:1886
 msgid "Sort by recently played"
 msgstr "Сортировать по недавно прослушанным"
 
-#: src/ui/sidebar.rs:1906 src/ui/player_bar.rs:399 src/ui/widgets.rs:1260
+#: src/ui/sidebar.rs:1907 src/ui/player_bar.rs:399 src/ui/widgets.rs:1260
 #: src/ui/artist.rs:341 src/ui/collection.rs:214 src/ui/search.rs:390
 #: src/ui/show.rs:311
 msgid "Play"
 msgstr "Воспроизвести"
 
-#: src/ui/sidebar.rs:1924
+#: src/ui/sidebar.rs:1925
 msgid "Unpin"
 msgstr "Открепить"
 
-#: src/ui/sidebar.rs:1926
+#: src/ui/sidebar.rs:1927
 msgid "Pin to top"
 msgstr "Закрепить сверху"
 
@@ -585,27 +585,27 @@ msgstr "Вставить"
 msgid "Select all"
 msgstr "Выделить всё"
 
-#: src/ui/widgets.rs:3141
+#: src/ui/widgets.rs:3169
 msgid "Clear"
 msgstr "Очистить"
 
-#: src/ui/widgets.rs:3319
+#: src/ui/widgets.rs:3347
 msgid "Host"
 msgstr "Хост"
 
-#: src/ui/widgets.rs:3336
+#: src/ui/widgets.rs:3364
 msgid "Port"
 msgstr "Порт"
 
-#: src/ui/widgets.rs:3354
+#: src/ui/widgets.rs:3382
 msgid "Username"
 msgstr "Имя пользователя"
 
-#: src/ui/widgets.rs:3365
+#: src/ui/widgets.rs:3393
 msgid "Password"
 msgstr "Пароль"
 
-#: src/ui/widgets.rs:3383
+#: src/ui/widgets.rs:3411
 msgid ""
 "Proxy login applies to Web requests. Local playback uses this proxy only "
 "without a login."
@@ -613,7 +613,7 @@ msgstr ""
 "Логин прокси применяется к веб-запросам. Локальное воспроизведение "
 "использует этот прокси только без логина."
 
-#: src/ui/widgets.rs:3387
+#: src/ui/widgets.rs:3415
 msgid ""
 "Spotify hostnames are resolved by the proxy. Local playback connects "
 "directly."
@@ -667,7 +667,7 @@ msgstr "Локальное воспроизведение: {error}"
 msgid "Spotify audio disconnected. Reconnecting local playback"
 msgstr "Звук Spotify отключился. Переподключаем локальное воспроизведение"
 
-#: src/app.rs:2343 src/app/radio.rs:169 src/ui/radio.rs:35 src/ui/radio.rs:77
+#: src/app.rs:2343 src/app/radio.rs:171 src/ui/radio.rs:35 src/ui/radio.rs:79
 msgid "Radio"
 msgstr "Радио"
 
@@ -1041,7 +1041,7 @@ msgstr "Не удалось загрузить обложку: {error}. Попр
 
 #. Translators: Keep {track} unchanged. It is the name of the song,
 #. playlist, album, or artist the radio is based on, not translated.
-#: src/app.rs:15665 src/app/radio.rs:38
+#: src/app.rs:15665 src/app/radio.rs:39
 #, rust-format
 msgid "{track} Radio"
 msgstr "Радио по треку «{track}»"
@@ -2275,48 +2275,48 @@ msgstr "Восстановить"
 msgid "Maximize"
 msgstr "Развернуть"
 
-#: src/ui/radio.rs:105
+#: src/ui/radio.rs:107
 msgid "Radio comes from playback on this computer. Turn it on in Settings."
 msgstr ""
 "Радио работает через воспроизведение на этом компьютере. Включи его в "
 "настройках."
 
-#: src/ui/radio.rs:202
+#: src/ui/radio.rs:204
 msgid "Based on this playlist"
 msgstr "На основе этого плейлиста"
 
-#: src/ui/radio.rs:203
+#: src/ui/radio.rs:205
 msgid "Based on this album"
 msgstr "На основе этого альбома"
 
-#: src/ui/radio.rs:204
+#: src/ui/radio.rs:206
 msgid "Based on this artist"
 msgstr "На основе этого исполнителя"
 
-#: src/ui/radio.rs:205
+#: src/ui/radio.rs:207
 msgid "Based on this song"
 msgstr "На основе этого трека"
 
 #. Translators: {first} is an artist name.
-#: src/ui/radio.rs:224
+#: src/ui/radio.rs:226
 #, rust-format
 msgid "With {first}"
 msgstr "С участием {first}"
 
 #. Translators: {first} and {second} are artist names.
-#: src/ui/radio.rs:227
+#: src/ui/radio.rs:229
 #, rust-format
 msgid "With {first} and {second}"
 msgstr "С участием {first} и {second}"
 
 #. Translators: {first}, {second} and {third} are artist names.
-#: src/ui/radio.rs:233
+#: src/ui/radio.rs:235
 #, rust-format
 msgid "With {first}, {second} and {third}"
 msgstr "С участием {first}, {second} и {third}"
 
 #. Translators: {first}, {second} and {third} are artist names; more follow.
-#: src/ui/radio.rs:240
+#: src/ui/radio.rs:242
 #, rust-format
 msgid "With {first}, {second}, {third} and more"
 msgstr "С участием {first}, {second}, {third} и других"

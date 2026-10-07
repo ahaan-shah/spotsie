@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spotsie\n"
 "Report-Msgid-Bugs-To: https://github.com/ahaan-shah/spotsie/issues/new\n"
-"POT-Creation-Date: 2026-10-07 12:21+0530\n"
+"POT-Creation-Date: 2026-10-07 17:54+0530\n"
 "PO-Revision-Date: 2026-09-09 13:30+0000\n"
 "Last-Translator: Spotsie contributors\n"
 "Language-Team: Spanish\n"
@@ -151,21 +151,21 @@ msgstr "Todavía no hay nada."
 msgid "No matches."
 msgstr "Sin coincidencias."
 
-#: src/ui/sidebar.rs:1885
+#: src/ui/sidebar.rs:1886
 msgid "Sort by recently played"
 msgstr "Ordenar por reproducido recientemente"
 
-#: src/ui/sidebar.rs:1906 src/ui/player_bar.rs:399 src/ui/widgets.rs:1260
+#: src/ui/sidebar.rs:1907 src/ui/player_bar.rs:399 src/ui/widgets.rs:1260
 #: src/ui/artist.rs:341 src/ui/collection.rs:214 src/ui/search.rs:390
 #: src/ui/show.rs:311
 msgid "Play"
 msgstr "Reproducir"
 
-#: src/ui/sidebar.rs:1924
+#: src/ui/sidebar.rs:1925
 msgid "Unpin"
 msgstr "Dejar de fijar"
 
-#: src/ui/sidebar.rs:1926
+#: src/ui/sidebar.rs:1927
 msgid "Pin to top"
 msgstr "Fijar arriba"
 
@@ -579,27 +579,27 @@ msgstr "Pegar"
 msgid "Select all"
 msgstr "Seleccionar todo"
 
-#: src/ui/widgets.rs:3141
+#: src/ui/widgets.rs:3169
 msgid "Clear"
 msgstr "Borrar"
 
-#: src/ui/widgets.rs:3319
+#: src/ui/widgets.rs:3347
 msgid "Host"
 msgstr "Host"
 
-#: src/ui/widgets.rs:3336
+#: src/ui/widgets.rs:3364
 msgid "Port"
 msgstr "Puerto"
 
-#: src/ui/widgets.rs:3354
+#: src/ui/widgets.rs:3382
 msgid "Username"
 msgstr "Usuario"
 
-#: src/ui/widgets.rs:3365
+#: src/ui/widgets.rs:3393
 msgid "Password"
 msgstr "Contraseña"
 
-#: src/ui/widgets.rs:3383
+#: src/ui/widgets.rs:3411
 msgid ""
 "Proxy login applies to Web requests. Local playback uses this proxy only "
 "without a login."
@@ -607,7 +607,7 @@ msgstr ""
 "El inicio de sesión del proxy se aplica a las peticiones web. La "
 "reproducción local usa este proxy solo sin inicio de sesión."
 
-#: src/ui/widgets.rs:3387
+#: src/ui/widgets.rs:3415
 msgid ""
 "Spotify hostnames are resolved by the proxy. Local playback connects "
 "directly."
@@ -661,7 +661,7 @@ msgstr "Reproducción local: {error}"
 msgid "Spotify audio disconnected. Reconnecting local playback"
 msgstr "Se desconectó el audio de Spotify. Reconectando la reproducción local"
 
-#: src/app.rs:2343 src/app/radio.rs:169 src/ui/radio.rs:35 src/ui/radio.rs:77
+#: src/app.rs:2343 src/app/radio.rs:171 src/ui/radio.rs:35 src/ui/radio.rs:79
 msgid "Radio"
 msgstr "Radio"
 
@@ -1036,7 +1036,7 @@ msgstr "No se pudo subir la portada: {error}. Vuelve a intentarlo."
 
 #. Translators: Keep {track} unchanged. It is the name of the song,
 #. playlist, album, or artist the radio is based on, not translated.
-#: src/app.rs:15665 src/app/radio.rs:38
+#: src/app.rs:15665 src/app/radio.rs:39
 #, rust-format
 msgid "{track} Radio"
 msgstr "Radio de {track}"
@@ -2267,47 +2267,47 @@ msgstr "Restaurar"
 msgid "Maximize"
 msgstr "Maximizar"
 
-#: src/ui/radio.rs:105
+#: src/ui/radio.rs:107
 msgid "Radio comes from playback on this computer. Turn it on in Settings."
 msgstr ""
 "La radio viene de la reproducción en esta computadora. Actívala en Ajustes."
 
-#: src/ui/radio.rs:202
+#: src/ui/radio.rs:204
 msgid "Based on this playlist"
 msgstr "Basada en esta playlist"
 
-#: src/ui/radio.rs:203
+#: src/ui/radio.rs:205
 msgid "Based on this album"
 msgstr "Basada en este álbum"
 
-#: src/ui/radio.rs:204
+#: src/ui/radio.rs:206
 msgid "Based on this artist"
 msgstr "Basada en este artista"
 
-#: src/ui/radio.rs:205
+#: src/ui/radio.rs:207
 msgid "Based on this song"
 msgstr "Basada en esta canción"
 
 #. Translators: {first} is an artist name.
-#: src/ui/radio.rs:224
+#: src/ui/radio.rs:226
 #, rust-format
 msgid "With {first}"
 msgstr "Con {first}"
 
 #. Translators: {first} and {second} are artist names.
-#: src/ui/radio.rs:227
+#: src/ui/radio.rs:229
 #, rust-format
 msgid "With {first} and {second}"
 msgstr "Con {first} y {second}"
 
 #. Translators: {first}, {second} and {third} are artist names.
-#: src/ui/radio.rs:233
+#: src/ui/radio.rs:235
 #, rust-format
 msgid "With {first}, {second} and {third}"
 msgstr "Con {first}, {second} y {third}"
 
 #. Translators: {first}, {second} and {third} are artist names; more follow.
-#: src/ui/radio.rs:240
+#: src/ui/radio.rs:242
 #, rust-format
 msgid "With {first}, {second}, {third} and more"
 msgstr "Con {first}, {second}, {third} y más"

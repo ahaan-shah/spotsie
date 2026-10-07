@@ -3052,7 +3052,7 @@ pub fn text_edit(ui: &mut Ui, locale: Locale, edit: egui::TextEdit<'_>) -> egui:
     output.response.response
 }
 
-/// A text field with a leading search icon.
+/// A text field with a leading search icon, its `hint` shown while empty.
 pub fn search_field(
     ui: &mut Ui,
     palette: &Palette,
@@ -3060,6 +3060,34 @@ pub fn search_field(
     id: egui::Id,
     text: &mut String,
     hint: &str,
+    width: f32,
+) -> egui::Response {
+    search_field_hinted(ui, palette, locale, id, text, hint, true, width)
+}
+
+/// A [`search_field`] that shows no hint, only the icon, while keeping
+/// `name` for screen readers.
+pub fn quiet_search_field(
+    ui: &mut Ui,
+    palette: &Palette,
+    locale: Locale,
+    id: egui::Id,
+    text: &mut String,
+    name: &str,
+    width: f32,
+) -> egui::Response {
+    search_field_hinted(ui, palette, locale, id, text, name, false, width)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn search_field_hinted(
+    ui: &mut Ui,
+    palette: &Palette,
+    locale: Locale,
+    id: egui::Id,
+    text: &mut String,
+    hint: &str,
+    show_hint: bool,
     width: f32,
 ) -> egui::Response {
     let height = 34.0;
@@ -3112,7 +3140,7 @@ pub fn search_field(
         locale,
         egui::TextEdit::singleline(text)
             .id(id)
-            .hint_text(egui::RichText::new(hint).color(palette.dim))
+            .hint_text(egui::RichText::new(if show_hint { hint } else { "" }).color(palette.dim))
             .font(theme::regular(14.0))
             .text_color(palette.text)
             .frame(egui::Frame::NONE)

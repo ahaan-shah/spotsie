@@ -66,6 +66,37 @@ fn main() -> anyhow::Result<()> {
                 Err(error) => println!("ERR: {error}"),
             }
         }
+        // What Spotify's own "Go to radio" asks: the seed's radio playlist.
+        for seed in std::env::args()
+            .skip(1)
+            .chain(std::iter::once(track.clone()))
+        {
+            let Ok(uri) = librespot_core::SpotifyUri::from_uri(&seed) else {
+                continue;
+            };
+            print!("seed_to_playlist({seed}) -> ");
+            match session.spclient().get_radio_for_track(&uri).await {
+                Ok(body) => {
+                    let text = String::from_utf8_lossy(&body);
+                    println!("ok: {text}");
+                    let playlist = serde_json::from_slice::<serde_json::Value>(&body)
+                        .ok()
+                        .and_then(|json| json["mediaItems"][0]["uri"].as_str().map(str::to_string));
+                    if let Some(playlist) = playlist {
+                        print!("  get_context({playlist}) -> ");
+                        match session.spclient().get_context(&playlist).await {
+                            Ok(ctx) => println!(
+                                "ok: pages={} tracks={}",
+                                ctx.pages.len(),
+                                ctx.pages.iter().map(|p| p.tracks.len()).sum::<usize>()
+                            ),
+                            Err(error) => println!("ERR: {error}"),
+                        }
+                    }
+                }
+                Err(error) => println!("ERR: {error}"),
+            }
+        }
         anyhow::Ok(())
     })?;
     Ok(())

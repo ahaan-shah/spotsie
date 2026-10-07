@@ -1499,7 +1499,7 @@ enum ThemePreview {
 
 /// One theme to choose, as Magpie offers them: a miniature of the app in its
 /// colours with the name below, lifting a little under the pointer, ringed
-/// in the accent with a check once chosen.
+/// in the accent once chosen.
 fn theme_tile(
     ui: &mut egui::Ui,
     palette: &Palette,
@@ -1573,15 +1573,6 @@ fn theme_tile(
             ),
             egui::StrokeKind::Inside,
         );
-        if chosen > 0.01 {
-            let centre = egui::pos2(inner.right() - 14.0, inner.bottom() - 15.0);
-            painter.circle_filled(centre, 8.0 * chosen, palette.accent);
-            let size = 11.0 * chosen;
-            Icon::Check.image(palette.on_accent, size).paint_at(
-                ui,
-                egui::Rect::from_center_size(centre, egui::Vec2::splat(size)),
-            );
-        }
     }
     theme::focus_ring(ui, &response);
     response
