@@ -183,12 +183,17 @@ h1 { font-size: clamp(36px, 5vw, 60px); line-height: 1.08; }
 .facts span { color: var(--text2); font-size: 14px; }
 
 /* Tour: sized so the screenshot and its caption fit on one screen. */
-/* Three columns: the screenshot in the middle, under the heading, with the
-   tabs pressed against its left edge and an empty column balancing them. */
-.tour-body { display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: start; }
-.tour-body .tabs { justify-self: end; }
-.stage { width: min(860px, calc((100vh - 270px) * 1.6), calc(100vw - 2 * (150px + 20px) - 32px)); }
-.stage { width: min(860px, calc((100svh - 270px) * 1.6), calc(100vw - 2 * (150px + 20px) - 32px)); }
+/* Tour, as Magpie's: the tabs sit just left of the screenshot, which takes
+   the rest of the row, so its right margin matches the tabs' left one. The
+   section is wider than the others, with side margins that grow with the
+   window, and the heading centres on the screenshot rather than the page. */
+.tour {
+  --tabs: 170px; --tabs-gap: 20px; --side: clamp(32px, 7vw, 100px);
+  max-width: calc(1080px + 2 * var(--side)); padding-inline: var(--side);
+}
+.tour > h2 { padding-left: calc(var(--tabs) + var(--tabs-gap)); }
+.tour-body { display: grid; grid-template-columns: var(--tabs) minmax(0, 1fr); gap: var(--tabs-gap); align-items: start; }
+.stage { min-width: 0; }
 .tabs { display: flex; flex-direction: column; gap: 2px; }
 .tabs button {
   appearance: none; border: 0; background: transparent; cursor: pointer;
@@ -316,9 +321,9 @@ footer a { color: var(--text2); }
 @media (max-width: 860px) {
   section { padding: 56px 16px; }
   .facts { grid-template-columns: 1fr 1fr; }
+  .tour { --side: 16px; }
+  .tour > h2 { padding-left: 0; }
   .tour-body { grid-template-columns: 1fr; gap: 16px; }
-  .tour-body .tabs { justify-self: stretch; }
-  .stage { width: 100%; }
   .tabs {
     flex-direction: row; overflow-x: auto; gap: 4px;
     margin: 0 -16px; padding: 0 16px; scrollbar-width: none;
