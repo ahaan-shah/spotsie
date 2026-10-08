@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spotsie\n"
 "Report-Msgid-Bugs-To: https://github.com/ahaan-shah/spotsie/issues/new\n"
-"POT-Creation-Date: 2026-10-08 20:52+0530\n"
+"POT-Creation-Date: 2026-10-09 00:21+0530\n"
 "PO-Revision-Date: 2026-09-09 13:30+0000\n"
 "Last-Translator: Spotsie contributors\n"
 "Language-Team: Dutch\n"
@@ -156,7 +156,7 @@ msgstr "Geen resultaten."
 msgid "Sort by recently played"
 msgstr "Sorteren op onlangs afgespeeld"
 
-#: src/ui/sidebar.rs:1946 src/ui/player_bar.rs:440 src/ui/widgets.rs:1272
+#: src/ui/sidebar.rs:1946 src/ui/player_bar.rs:431 src/ui/widgets.rs:1272
 #: src/ui/artist.rs:341 src/ui/collection.rs:214 src/ui/search.rs:390
 #: src/ui/show.rs:311
 msgid "Play"
@@ -214,85 +214,85 @@ msgstr "{name}, map, samengevouwen"
 msgid "{name}, folder, expanded"
 msgstr "{name}, map, uitgevouwen"
 
-#: src/ui/player_bar.rs:159 src/ui/lyrics.rs:227 src/ui/lyrics.rs:624
+#: src/ui/player_bar.rs:150 src/ui/lyrics.rs:241 src/ui/lyrics.rs:638
 msgid "Nothing playing"
 msgstr "Er wordt niets afgespeeld"
 
-#: src/ui/player_bar.rs:165 src/app.rs:7065
+#: src/ui/player_bar.rs:156 src/app.rs:7065
 msgid "Pick a song, album, or playlist"
 msgstr "Kies een nummer, album of playlist"
 
-#: src/ui/player_bar.rs:296 src/ui/widgets.rs:871 src/ui/widgets.rs:1102
+#: src/ui/player_bar.rs:287 src/ui/widgets.rs:871 src/ui/widgets.rs:1102
 #: src/ui/widgets.rs:2007
 msgid "Remove from Liked Songs"
 msgstr "Verwijderen uit Gelikete nummers"
 
-#: src/ui/player_bar.rs:302 src/ui/widgets.rs:874 src/ui/widgets.rs:1105
+#: src/ui/player_bar.rs:293 src/ui/widgets.rs:874 src/ui/widgets.rs:1105
 #: src/ui/widgets.rs:2009
 msgid "Save to Liked Songs"
 msgstr "Opslaan in Gelikete nummers"
 
-#: src/ui/player_bar.rs:384 src/ui/player_bar.rs:391 src/ui/collection.rs:260
+#: src/ui/player_bar.rs:375 src/ui/player_bar.rs:382 src/ui/collection.rs:260
 msgid "Shuffle"
 msgstr "Willekeurige volgorde"
 
-#: src/ui/player_bar.rs:405
+#: src/ui/player_bar.rs:396
 msgid "Previous"
 msgstr "Vorige"
 
-#: src/ui/player_bar.rs:438 src/ui/collection.rs:212
+#: src/ui/player_bar.rs:429 src/ui/collection.rs:212
 msgid "Pause"
 msgstr "Pauzeren"
 
-#: src/ui/player_bar.rs:456
+#: src/ui/player_bar.rs:447
 msgid "Next"
 msgstr "Volgende"
 
-#: src/ui/player_bar.rs:464
+#: src/ui/player_bar.rs:455
 msgid "Repeat"
 msgstr "Herhalen"
 
-#: src/ui/player_bar.rs:468
+#: src/ui/player_bar.rs:459
 msgid "Repeat one"
 msgstr "Eén nummer herhalen"
 
-#: src/ui/player_bar.rs:473
+#: src/ui/player_bar.rs:464
 msgid "Repeat off"
 msgstr "Herhalen uit"
 
-#: src/ui/player_bar.rs:534
+#: src/ui/player_bar.rs:525
 msgid "Playback position (%)"
 msgstr "Afspeelpositie (%)"
 
-#: src/ui/player_bar.rs:577
+#: src/ui/player_bar.rs:568
 msgid "Volume (%)"
 msgstr "Volume (%)"
 
-#: src/ui/player_bar.rs:610
+#: src/ui/player_bar.rs:601
 msgid "Unmute"
 msgstr "Geluid aan"
 
-#: src/ui/player_bar.rs:612
+#: src/ui/player_bar.rs:603
 msgid "Mute"
 msgstr "Dempen"
 
-#: src/ui/player_bar.rs:628
+#: src/ui/player_bar.rs:619
 msgid "This device's volume can't be changed from Spotsie"
 msgstr "Het volume van dit apparaat kan niet vanuit Spotsie worden gewijzigd"
 
-#: src/ui/player_bar.rs:643 src/ui/devices.rs:193
+#: src/ui/player_bar.rs:634 src/ui/devices.rs:193
 msgid "Connect to a device"
 msgstr "Verbinden met een apparaat"
 
-#: src/ui/player_bar.rs:662 src/ui/queue.rs:23 src/ui/queue.rs:80
+#: src/ui/player_bar.rs:653 src/ui/queue.rs:23 src/ui/queue.rs:80
 msgid "Queue"
 msgstr "Wachtrij"
 
-#: src/ui/player_bar.rs:688 src/ui/lyrics.rs:295
+#: src/ui/player_bar.rs:679 src/ui/lyrics.rs:309
 msgid "Lyrics"
 msgstr "Songtekst"
 
-#: src/ui/player_bar.rs:704
+#: src/ui/player_bar.rs:695
 msgid "Cover view"
 msgstr "Hoesweergave"
 
@@ -300,7 +300,7 @@ msgstr "Hoesweergave"
 msgid "Recent"
 msgstr "Recent"
 
-#: src/ui/queue.rs:93 src/ui/mod.rs:594
+#: src/ui/queue.rs:93 src/ui/mod.rs:570
 msgid "Close"
 msgstr "Sluiten"
 
@@ -355,60 +355,60 @@ msgstr "Afgespeelde nummers verschijnen hier."
 msgid "Load more"
 msgstr "Meer laden"
 
-#: src/ui/lyrics.rs:228
+#: src/ui/lyrics.rs:242
 msgid "Play a song to see it here."
 msgstr "Speel een nummer af om het hier te zien."
 
-#: src/ui/lyrics.rs:309
+#: src/ui/lyrics.rs:323
 msgid "Leave full screen (Esc)"
 msgstr "Volledig scherm verlaten (Esc)"
 
-#: src/ui/lyrics.rs:324
+#: src/ui/lyrics.rs:338
 msgid "Full screen"
 msgstr "Volledig scherm"
 
-#: src/ui/lyrics.rs:326
+#: src/ui/lyrics.rs:340
 msgid "Full screen lyrics"
 msgstr "Songtekst op volledig scherm"
 
-#: src/ui/lyrics.rs:342
+#: src/ui/lyrics.rs:356
 msgctxt "lyrics"
 msgid "Follow"
 msgstr "Volgen"
 
-#: src/ui/lyrics.rs:420 src/ui/lyrics.rs:665
+#: src/ui/lyrics.rs:434 src/ui/lyrics.rs:679
 msgid "Instrumental"
 msgstr "Instrumentaal"
 
-#: src/ui/lyrics.rs:421 src/ui/lyrics.rs:666
+#: src/ui/lyrics.rs:435 src/ui/lyrics.rs:680
 msgid "No timed lyrics for this track."
 msgstr "Geen gesynchroniseerde songtekst voor dit nummer."
 
-#: src/ui/lyrics.rs:424 src/ui/lyrics.rs:655
+#: src/ui/lyrics.rs:438 src/ui/lyrics.rs:669
 msgid "Lyrics not available"
 msgstr "Geen songtekst beschikbaar"
 
-#: src/ui/lyrics.rs:425 src/ui/lyrics.rs:656
+#: src/ui/lyrics.rs:439 src/ui/lyrics.rs:670
 msgid "No lyrics found for this track."
 msgstr "Geen songtekst gevonden voor dit nummer."
 
 #. Translators: Keep {error} unchanged. It is the original failure detail.
-#: src/ui/lyrics.rs:431 src/ui/lyrics.rs:638
+#: src/ui/lyrics.rs:445 src/ui/lyrics.rs:652
 #, rust-format
 msgid "Couldn't fetch the lyrics: {error}"
 msgstr "Kan de songtekst niet ophalen: {error}"
 
-#: src/ui/lyrics.rs:438 src/ui/widgets.rs:2775 src/app.rs:9821
+#: src/ui/lyrics.rs:452 src/ui/widgets.rs:2775 src/app.rs:9821
 #: src/ui/collection.rs:753
 msgid "Loading…"
 msgstr "Laden…"
 
-#: src/ui/lyrics.rs:458 src/ui/lyrics.rs:644 src/ui/settings.rs:408
+#: src/ui/lyrics.rs:472 src/ui/lyrics.rs:658 src/ui/settings.rs:408
 #: src/ui/login.rs:106
 msgid "Try again"
 msgstr "Opnieuw proberen"
 
-#: src/ui/lyrics.rs:625
+#: src/ui/lyrics.rs:639
 msgid "Play a song to see its lyrics."
 msgstr "Speel een nummer af om de songtekst te zien."
 
@@ -2268,15 +2268,15 @@ msgstr "Proxyinstellingen"
 msgid "Spotsie {version} • not affiliated with Spotify"
 msgstr "Spotsie {version} • niet verbonden aan Spotify"
 
-#: src/ui/mod.rs:580
+#: src/ui/mod.rs:556
 msgid "Minimize"
 msgstr "Minimaliseren"
 
-#: src/ui/mod.rs:586
+#: src/ui/mod.rs:562
 msgid "Restore"
 msgstr "Herstellen"
 
-#: src/ui/mod.rs:588
+#: src/ui/mod.rs:564
 msgid "Maximize"
 msgstr "Maximaliseren"
 

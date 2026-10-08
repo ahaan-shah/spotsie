@@ -38,10 +38,11 @@ enum Place {
     FullScreen,
 }
 
-/// How a view places the playing song's cover. When it changes (cover and
-/// lyrics swapping, the lyrics arriving, the queue opening past the width
-/// that holds both), the cover glides from where it was to its new place and
-/// everything else fades in around it.
+/// How a view places the playing song's cover. When the queue opens or
+/// closes past the width that holds the cover beside the lyrics, the cover
+/// glides between the two places and the lyrics fade in around it. Every
+/// other change (cover and lyrics swapping, the lyrics arriving) shows the
+/// new arrangement at once.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum Arrangement {
     /// The cover view: large in the middle.
@@ -80,7 +81,9 @@ fn arrange(ctx: &egui::Context, place: Place, arrangement: Arrangement) -> f32 {
         Some(stage) => Stage {
             arrangement,
             started: now,
-            from: stage.shown,
+            from: stage
+                .shown
+                .filter(|_| glides(stage.arrangement, arrangement)),
             shown: stage.shown,
         },
         None => Stage {
@@ -92,6 +95,15 @@ fn arrange(ctx: &egui::Context, place: Place, arrangement: Arrangement) -> f32 {
     };
     ctx.data_mut(|data| data.insert_temp(id, stage));
     stage_progress(ctx, &stage)
+}
+
+/// Only the queue's change of width glides the cover: between the large
+/// cover beside the lyrics and the small one above them.
+fn glides(from: Arrangement, to: Arrangement) -> bool {
+    matches!(
+        (from, to),
+        (Arrangement::Beside, Arrangement::Column) | (Arrangement::Column, Arrangement::Beside)
+    )
 }
 
 fn stage_progress(ctx: &egui::Context, stage: &Stage) -> f32 {
@@ -141,7 +153,7 @@ pub fn main_view(app: &mut App, ui: &mut egui::Ui) {
     // A view arriving fades in over the page it replaces.
     let shown = crate::motion::tween_from(
         ui.ctx(),
-        egui::Id::new("main-view"),
+        egui::Id::new(("main-view", app.show_cover_view)),
         0.0,
         1.0,
         crate::motion::EMPHASIS,
@@ -158,7 +170,9 @@ pub fn main_view(app: &mut App, ui: &mut egui::Ui) {
 
 /// Forgets a main view's entrance once it is gone, so it fades in again.
 pub fn note_main_view_closed(ctx: &egui::Context) {
-    crate::motion::snap(ctx, egui::Id::new("main-view"));
+    for cover in [false, true] {
+        crate::motion::snap(ctx, egui::Id::new(("main-view", cover)));
+    }
     ctx.data_mut(|data| data.remove::<Stage>(stage_id(Place::Window)));
 }
 
@@ -846,7 +860,7 @@ mod tests {
     use super::{fullscreen_content_width, preferred_backdrop_art};
 
     #[test]
-    fn a_new_arrangement_glides_the_cover_from_where_it_was() {
+    fn only_the_queues_change_of_width_glides_the_cover() {
         use super::{Arrangement, Place, arrange, glide};
         use egui::{Rect, pos2, vec2};
         let was = crate::motion::enabled();
@@ -884,9 +898,11 @@ mod tests {
         assert!(midway.width() < big.width() && midway.width() > small.width());
         assert!(faded > 0.0 && faded < 1.0);
         assert_eq!(frame(2.0, Arrangement::Column, small), (small, 1.0));
-        // Swapping to the cover view glides back from the small cover.
-        assert_eq!(frame(3.0, Arrangement::Cover, big).0, small);
-        assert_eq!(frame(4.0, Arrangement::Cover, big).0, big);
+        // Swapping to the cover view shows the large cover at once.
+        assert_eq!(frame(3.0, Arrangement::Cover, big), (big, 1.0));
+        // So does the lyrics arriving beside a centred cover.
+        assert_eq!(frame(4.0, Arrangement::Centred, small), (small, 1.0));
+        assert_eq!(frame(5.0, Arrangement::Beside, big), (big, 1.0));
         crate::motion::set_enabled(was);
     }
 

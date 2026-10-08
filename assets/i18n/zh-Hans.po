@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spotsie\n"
 "Report-Msgid-Bugs-To: https://github.com/ahaan-shah/spotsie/issues/new\n"
-"POT-Creation-Date: 2026-10-08 20:52+0530\n"
+"POT-Creation-Date: 2026-10-09 00:21+0530\n"
 "PO-Revision-Date: 2026-09-09 13:30+0000\n"
 "Last-Translator: Spotsie contributors\n"
 "Language-Team: Simplified Chinese\n"
@@ -156,7 +156,7 @@ msgstr "没有匹配项。"
 msgid "Sort by recently played"
 msgstr "按最近播放排序"
 
-#: src/ui/sidebar.rs:1946 src/ui/player_bar.rs:440 src/ui/widgets.rs:1272
+#: src/ui/sidebar.rs:1946 src/ui/player_bar.rs:431 src/ui/widgets.rs:1272
 #: src/ui/artist.rs:341 src/ui/collection.rs:214 src/ui/search.rs:390
 #: src/ui/show.rs:311
 msgid "Play"
@@ -210,85 +210,85 @@ msgstr "{name}，文件夹，已折叠"
 msgid "{name}, folder, expanded"
 msgstr "{name}，文件夹，已展开"
 
-#: src/ui/player_bar.rs:159 src/ui/lyrics.rs:227 src/ui/lyrics.rs:624
+#: src/ui/player_bar.rs:150 src/ui/lyrics.rs:241 src/ui/lyrics.rs:638
 msgid "Nothing playing"
 msgstr "暂无播放曲目"
 
-#: src/ui/player_bar.rs:165 src/app.rs:7065
+#: src/ui/player_bar.rs:156 src/app.rs:7065
 msgid "Pick a song, album, or playlist"
 msgstr "选择歌曲、专辑或歌单"
 
-#: src/ui/player_bar.rs:296 src/ui/widgets.rs:871 src/ui/widgets.rs:1102
+#: src/ui/player_bar.rs:287 src/ui/widgets.rs:871 src/ui/widgets.rs:1102
 #: src/ui/widgets.rs:2007
 msgid "Remove from Liked Songs"
 msgstr "从已点赞的歌曲中移除"
 
-#: src/ui/player_bar.rs:302 src/ui/widgets.rs:874 src/ui/widgets.rs:1105
+#: src/ui/player_bar.rs:293 src/ui/widgets.rs:874 src/ui/widgets.rs:1105
 #: src/ui/widgets.rs:2009
 msgid "Save to Liked Songs"
 msgstr "保存到已点赞的歌曲"
 
-#: src/ui/player_bar.rs:384 src/ui/player_bar.rs:391 src/ui/collection.rs:260
+#: src/ui/player_bar.rs:375 src/ui/player_bar.rs:382 src/ui/collection.rs:260
 msgid "Shuffle"
 msgstr "随机播放"
 
-#: src/ui/player_bar.rs:405
+#: src/ui/player_bar.rs:396
 msgid "Previous"
 msgstr "上一首"
 
-#: src/ui/player_bar.rs:438 src/ui/collection.rs:212
+#: src/ui/player_bar.rs:429 src/ui/collection.rs:212
 msgid "Pause"
 msgstr "暂停"
 
-#: src/ui/player_bar.rs:456
+#: src/ui/player_bar.rs:447
 msgid "Next"
 msgstr "下一首"
 
-#: src/ui/player_bar.rs:464
+#: src/ui/player_bar.rs:455
 msgid "Repeat"
 msgstr "列表循环"
 
-#: src/ui/player_bar.rs:468
+#: src/ui/player_bar.rs:459
 msgid "Repeat one"
 msgstr "单曲循环"
 
-#: src/ui/player_bar.rs:473
+#: src/ui/player_bar.rs:464
 msgid "Repeat off"
 msgstr "关闭循环"
 
-#: src/ui/player_bar.rs:534
+#: src/ui/player_bar.rs:525
 msgid "Playback position (%)"
 msgstr "播放进度 (%)"
 
-#: src/ui/player_bar.rs:577
+#: src/ui/player_bar.rs:568
 msgid "Volume (%)"
 msgstr "音量 (%)"
 
-#: src/ui/player_bar.rs:610
+#: src/ui/player_bar.rs:601
 msgid "Unmute"
 msgstr "取消静音"
 
-#: src/ui/player_bar.rs:612
+#: src/ui/player_bar.rs:603
 msgid "Mute"
 msgstr "静音"
 
-#: src/ui/player_bar.rs:628
+#: src/ui/player_bar.rs:619
 msgid "This device's volume can't be changed from Spotsie"
 msgstr "无法从 Spotsie 更改此设备的音量"
 
-#: src/ui/player_bar.rs:643 src/ui/devices.rs:193
+#: src/ui/player_bar.rs:634 src/ui/devices.rs:193
 msgid "Connect to a device"
 msgstr "连接到设备"
 
-#: src/ui/player_bar.rs:662 src/ui/queue.rs:23 src/ui/queue.rs:80
+#: src/ui/player_bar.rs:653 src/ui/queue.rs:23 src/ui/queue.rs:80
 msgid "Queue"
 msgstr "播放队列"
 
-#: src/ui/player_bar.rs:688 src/ui/lyrics.rs:295
+#: src/ui/player_bar.rs:679 src/ui/lyrics.rs:309
 msgid "Lyrics"
 msgstr "歌词"
 
-#: src/ui/player_bar.rs:704
+#: src/ui/player_bar.rs:695
 msgid "Cover view"
 msgstr "封面视图"
 
@@ -296,7 +296,7 @@ msgstr "封面视图"
 msgid "Recent"
 msgstr "最近播放"
 
-#: src/ui/queue.rs:93 src/ui/mod.rs:594
+#: src/ui/queue.rs:93 src/ui/mod.rs:570
 msgid "Close"
 msgstr "关闭"
 
@@ -351,60 +351,60 @@ msgstr "播放过的歌曲会显示在这里。"
 msgid "Load more"
 msgstr "加载更多"
 
-#: src/ui/lyrics.rs:228
+#: src/ui/lyrics.rs:242
 msgid "Play a song to see it here."
 msgstr "播放一首歌曲即可在此查看。"
 
-#: src/ui/lyrics.rs:309
+#: src/ui/lyrics.rs:323
 msgid "Leave full screen (Esc)"
 msgstr "退出全屏 (Esc)"
 
-#: src/ui/lyrics.rs:324
+#: src/ui/lyrics.rs:338
 msgid "Full screen"
 msgstr "全屏"
 
-#: src/ui/lyrics.rs:326
+#: src/ui/lyrics.rs:340
 msgid "Full screen lyrics"
 msgstr "全屏歌词"
 
-#: src/ui/lyrics.rs:342
+#: src/ui/lyrics.rs:356
 msgctxt "lyrics"
 msgid "Follow"
 msgstr "跟随歌词"
 
-#: src/ui/lyrics.rs:420 src/ui/lyrics.rs:665
+#: src/ui/lyrics.rs:434 src/ui/lyrics.rs:679
 msgid "Instrumental"
 msgstr "纯音乐"
 
-#: src/ui/lyrics.rs:421 src/ui/lyrics.rs:666
+#: src/ui/lyrics.rs:435 src/ui/lyrics.rs:680
 msgid "No timed lyrics for this track."
 msgstr "这首歌没有同步歌词。"
 
-#: src/ui/lyrics.rs:424 src/ui/lyrics.rs:655
+#: src/ui/lyrics.rs:438 src/ui/lyrics.rs:669
 msgid "Lyrics not available"
 msgstr "暂无歌词"
 
-#: src/ui/lyrics.rs:425 src/ui/lyrics.rs:656
+#: src/ui/lyrics.rs:439 src/ui/lyrics.rs:670
 msgid "No lyrics found for this track."
 msgstr "未找到这首歌的歌词。"
 
 #. Translators: Keep {error} unchanged. It is the original failure detail.
-#: src/ui/lyrics.rs:431 src/ui/lyrics.rs:638
+#: src/ui/lyrics.rs:445 src/ui/lyrics.rs:652
 #, rust-format
 msgid "Couldn't fetch the lyrics: {error}"
 msgstr "无法获取歌词：{error}"
 
-#: src/ui/lyrics.rs:438 src/ui/widgets.rs:2775 src/app.rs:9821
+#: src/ui/lyrics.rs:452 src/ui/widgets.rs:2775 src/app.rs:9821
 #: src/ui/collection.rs:753
 msgid "Loading…"
 msgstr "加载中…"
 
-#: src/ui/lyrics.rs:458 src/ui/lyrics.rs:644 src/ui/settings.rs:408
+#: src/ui/lyrics.rs:472 src/ui/lyrics.rs:658 src/ui/settings.rs:408
 #: src/ui/login.rs:106
 msgid "Try again"
 msgstr "再试一次"
 
-#: src/ui/lyrics.rs:625
+#: src/ui/lyrics.rs:639
 msgid "Play a song to see its lyrics."
 msgstr "播放歌曲以查看歌词。"
 
@@ -2190,15 +2190,15 @@ msgstr "代理设置"
 msgid "Spotsie {version} • not affiliated with Spotify"
 msgstr "Spotsie {version} • 与 Spotify 无关"
 
-#: src/ui/mod.rs:580
+#: src/ui/mod.rs:556
 msgid "Minimize"
 msgstr "最小化"
 
-#: src/ui/mod.rs:586
+#: src/ui/mod.rs:562
 msgid "Restore"
 msgstr "还原"
 
-#: src/ui/mod.rs:588
+#: src/ui/mod.rs:564
 msgid "Maximize"
 msgstr "最大化"
 
