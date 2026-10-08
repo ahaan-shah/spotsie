@@ -38,113 +38,6 @@ enum Place {
     FullScreen,
 }
 
-/// How a view places the playing song's cover. When the queue opens or
-/// closes past the width that holds the cover beside the lyrics, the cover
-/// glides between the two places and the lyrics fade in around it. Every
-/// other change (cover and lyrics swapping, the lyrics arriving) shows the
-/// new arrangement at once.
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-enum Arrangement {
-    /// The cover view: large in the middle.
-    Cover,
-    /// The lyrics beside a large cover.
-    Beside,
-    /// A large cover alone in the middle, while there are no words to show.
-    Centred,
-    /// One column of lyrics under a small cover.
-    Column,
-}
-
-#[derive(Clone, Copy)]
-struct Stage {
-    arrangement: Arrangement,
-    /// When the arrangement began, in egui's time.
-    started: f64,
-    /// Where the cover was when it began, if it was on screen.
-    from: Option<(Rect, f32)>,
-    /// Where the cover was last drawn.
-    shown: Option<(Rect, f32)>,
-}
-
-fn stage_id(place: Place) -> egui::Id {
-    egui::Id::new(("immersive-stage", place == Place::FullScreen))
-}
-
-/// Notes the arrangement drawn this frame and returns how far its entrance
-/// has come, from 0 to 1. A view's first arrangement has nothing to glide
-/// from: the view's own entrance shows it.
-fn arrange(ctx: &egui::Context, place: Place, arrangement: Arrangement) -> f32 {
-    let now = ctx.input(|input| input.time);
-    let id = stage_id(place);
-    let stage = match ctx.data(|data| data.get_temp::<Stage>(id)) {
-        Some(stage) if stage.arrangement == arrangement => stage,
-        Some(stage) => Stage {
-            arrangement,
-            started: now,
-            from: stage
-                .shown
-                .filter(|_| glides(stage.arrangement, arrangement)),
-            shown: stage.shown,
-        },
-        None => Stage {
-            arrangement,
-            started: f64::NEG_INFINITY,
-            from: None,
-            shown: None,
-        },
-    };
-    ctx.data_mut(|data| data.insert_temp(id, stage));
-    stage_progress(ctx, &stage)
-}
-
-/// Only the queue's change of width glides the cover: between the large
-/// cover beside the lyrics and the small one above them.
-fn glides(from: Arrangement, to: Arrangement) -> bool {
-    matches!(
-        (from, to),
-        (Arrangement::Beside, Arrangement::Column) | (Arrangement::Column, Arrangement::Beside)
-    )
-}
-
-fn stage_progress(ctx: &egui::Context, stage: &Stage) -> f32 {
-    if !crate::motion::enabled() || stage.from.is_none() {
-        return 1.0;
-    }
-    let elapsed = (ctx.input(|input| input.time) - stage.started) as f32;
-    let progress = (elapsed / crate::motion::EMPHASIS).clamp(0.0, 1.0);
-    if progress < 1.0 {
-        ctx.request_repaint();
-    }
-    progress
-}
-
-/// Where to draw the cover whose place this frame is `target`, with corners
-/// of `radius`: on its way there from where the last arrangement left it.
-fn glide(ctx: &egui::Context, place: Place, target: Rect, radius: f32) -> (Rect, f32) {
-    let id = stage_id(place);
-    let Some(mut stage) = ctx.data(|data| data.get_temp::<Stage>(id)) else {
-        return (target, radius);
-    };
-    let shown = match stage.from {
-        Some((from, from_radius)) => {
-            let t = crate::motion::ease_in_out(stage_progress(ctx, &stage));
-            (
-                Rect::from_min_max(from.min.lerp(target.min, t), from.max.lerp(target.max, t)),
-                crate::motion::lerp(from_radius, radius, t),
-            )
-        }
-        None => (target, radius),
-    };
-    stage.shown = Some(shown);
-    ctx.data_mut(|data| data.insert_temp(id, stage));
-    shown
-}
-
-/// How opaque what surrounds the cover is, `progress` into an arrangement.
-fn fade(progress: f32) -> f32 {
-    crate::motion::ease_out(progress)
-}
-
 /// The lyrics or the cover view in the window's main area, under the top
 /// bar, on the cover's colours, as Spotify shows them.
 pub fn main_view(app: &mut App, ui: &mut egui::Ui) {
@@ -173,13 +66,6 @@ pub fn note_main_view_closed(ctx: &egui::Context) {
     for cover in [false, true] {
         crate::motion::snap(ctx, egui::Id::new(("main-view", cover)));
     }
-    ctx.data_mut(|data| data.remove::<Stage>(stage_id(Place::Window)));
-}
-
-/// Forgets full screen's arrangement once it closes, so coming back never
-/// glides the cover from where it last was.
-pub fn note_fullscreen_closed(ctx: &egui::Context) {
-    ctx.data_mut(|data| data.remove::<Stage>(stage_id(Place::FullScreen)));
 }
 
 pub fn fullscreen(app: &mut App, ui: &mut egui::Ui) {
@@ -208,17 +94,11 @@ fn lyrics_layout(app: &mut App, ui: &mut egui::Ui, rect: Rect, top: f32, place: 
         pos2(rect.center().x - width / 2.0, rect.top() + top),
         pos2(rect.center().x + width / 2.0, rect.bottom()),
     );
-    let progress = if app.now_playing().is_some() {
-        arrange(ui.ctx(), place, Arrangement::Column)
-    } else {
-        1.0
-    };
     let mut content = ui.new_child(UiBuilder::new().max_rect(region));
     header(app, &mut content, place, false);
     content.add_space(20.0);
-    track_heading(app, &mut content, place, fade(progress));
+    track_heading(app, &mut content);
     content.add_space(16.0);
-    content.set_opacity(fade(progress));
     fullscreen_contents(app, &mut content);
 }
 
@@ -250,13 +130,8 @@ fn cover_layout(app: &mut App, ui: &mut egui::Ui, rect: Rect, top: f32, place: P
         pos2(outer.right(), outer.bottom() - words - 24.0),
     );
     let side = below.height().min(below.width() * 0.6).clamp(120.0, 720.0);
-    let progress = arrange(ui.ctx(), place, Arrangement::Cover);
-    let (cover, radius) = glide(
-        ui.ctx(),
-        place,
-        Rect::from_center_size(below.center(), vec2(side, side)),
-        12.0,
-    );
+    let cover = Rect::from_center_size(below.center(), vec2(side, side));
+    let radius = 12.0;
     ui.painter().add(
         egui::epaint::Shadow {
             offset: [0, 20],
@@ -277,7 +152,6 @@ fn cover_layout(app: &mut App, ui: &mut egui::Ui, rect: Rect, top: f32, place: P
     );
     let text = Rect::from_min_max(pos2(outer.left(), outer.bottom() - words), outer.max);
     let mut text = ui.new_child(UiBuilder::new().max_rect(text));
-    text.set_opacity(fade(progress));
     text.spacing_mut().item_spacing.y = 4.0;
     text.add(
         egui::Label::new(
@@ -389,16 +263,6 @@ fn with_cover(app: &mut App, ui: &mut egui::Ui, rect: Rect, top: f32, place: Pla
     // stays in the middle, so a song that turns out to have none never
     // moves at all.
     let words = matches!(&app.lyrics, Loadable::Loaded(Some(lyrics)) if !lyrics.instrumental);
-    let progress = arrange(
-        ui.ctx(),
-        place,
-        if words {
-            Arrangement::Beside
-        } else {
-            Arrangement::Centred
-        },
-    );
-    let shown = fade(progress);
     if words {
         // The cover and the lyrics are one group, centred in the window.
         let gap = 64.0;
@@ -411,22 +275,19 @@ fn with_cover(app: &mut App, ui: &mut egui::Ui, rect: Rect, top: f32, place: Pla
             pos2(left, below.center().y - (side + 90.0) / 2.0),
             vec2(side, side + 90.0),
         );
-        big_cover(app, ui, column, Align::Min, place, shown);
+        big_cover(app, ui, column, Align::Min);
         let lyrics = Rect::from_min_max(
             pos2(column.right() + gap, below.top()),
             pos2(column.right() + gap + lyrics_width, below.bottom()),
         );
         let mut content = ui.new_child(UiBuilder::new().max_rect(lyrics));
-        content.set_opacity(shown);
         fullscreen_contents(app, &mut content);
     } else {
         let side = (below.height() - 140.0)
             .min(below.width() * 0.5)
             .clamp(200.0, 560.0);
         let column = Rect::from_center_size(below.center(), vec2(side, side + 90.0));
-        big_cover(app, ui, column, Align::Center, place, shown);
-        let ui = &mut ui.new_child(UiBuilder::new().max_rect(below));
-        ui.set_opacity(shown);
+        big_cover(app, ui, column, Align::Center);
         // Why there are no words, quietly, under the song, or that they
         // are still being fetched.
         let (heading, detail) = match &app.lyrics {
@@ -487,17 +348,13 @@ fn with_cover(app: &mut App, ui: &mut egui::Ui, rect: Rect, top: f32, place: Pla
 
 /// The playing song's cover filling the top of `column`, with its title and
 /// artists beneath, aligned to its left edge or centred.
-fn big_cover(app: &App, ui: &mut egui::Ui, column: Rect, align: Align, place: Place, shown: f32) {
+fn big_cover(app: &App, ui: &mut egui::Ui, column: Rect, align: Align) {
     let Some(now) = app.now_playing() else {
         return;
     };
     let side = column.width();
-    let (cover, radius) = glide(
-        ui.ctx(),
-        place,
-        Rect::from_min_size(column.min, vec2(side, side)),
-        10.0,
-    );
+    let cover = Rect::from_min_size(column.min, vec2(side, side));
+    let radius = 10.0;
     ui.painter().add(
         egui::epaint::Shadow {
             offset: [0, 18],
@@ -516,13 +373,12 @@ fn big_cover(app: &App, ui: &mut egui::Ui, column: Rect, align: Align, place: Pl
         Icon::Music,
         Some(app.backend.art()),
     );
-    let words = Rect::from_min_max(pos2(column.left(), column.top() + side + 18.0), column.max);
+    let words = Rect::from_min_max(pos2(column.left(), cover.bottom() + 18.0), column.max);
     let mut text = ui.new_child(
         UiBuilder::new()
             .max_rect(words)
             .layout(Layout::top_down(align)),
     );
-    text.set_opacity(shown);
     text.spacing_mut().item_spacing.y = 4.0;
     text.add(
         egui::Label::new(
@@ -587,26 +443,21 @@ fn cover_uv(view: egui::Vec2, image: egui::Vec2) -> Rect {
     Rect::from_center_size(pos2(0.5, 0.5), size)
 }
 
-/// The small cover and the song's names above a single column of lyrics.
-/// The cover glides in from wherever the last arrangement had it; the names
-/// fade in at `shown`.
-fn track_heading(app: &App, ui: &mut egui::Ui, place: Place, shown: f32) {
+fn track_heading(app: &App, ui: &mut egui::Ui) {
     if let Some(now) = app.now_playing() {
         ui.horizontal(|ui| {
             let size = 52.0;
             let (rect, _) = ui.allocate_exact_size(vec2(size, size), Sense::hover());
-            let (rect, radius) = glide(ui.ctx(), place, rect, 4.0);
             widgets::paint_cover(
                 ui,
                 &theme::Palette::dark(),
                 now.art_small.as_deref().or(now.art_url.as_deref()),
                 rect,
-                radius,
+                4.0,
                 Icon::Music,
                 Some(app.backend.art()),
             );
             ui.vertical(|ui| {
-                ui.set_opacity(shown);
                 ui.add(
                     egui::Label::new(
                         egui::RichText::new(&now.title)
@@ -858,53 +709,6 @@ fn fullscreen_contents(app: &mut App, ui: &mut egui::Ui) {
 #[cfg(test)]
 mod tests {
     use super::{fullscreen_content_width, preferred_backdrop_art};
-
-    #[test]
-    fn only_the_queues_change_of_width_glides_the_cover() {
-        use super::{Arrangement, Place, arrange, glide};
-        use egui::{Rect, pos2, vec2};
-        let was = crate::motion::enabled();
-        crate::motion::set_enabled(true);
-        let ctx = egui::Context::default();
-        let big = Rect::from_min_size(pos2(100.0, 100.0), vec2(400.0, 400.0));
-        let small = Rect::from_min_size(pos2(40.0, 60.0), vec2(52.0, 52.0));
-        let frame = |time: f64, arrangement: Arrangement, target: Rect| {
-            let mut drawn = (Rect::NOTHING, 0.0);
-            let mut faded = 0.0;
-            let mut output = ctx.run_ui(
-                egui::RawInput {
-                    time: Some(time),
-                    ..Default::default()
-                },
-                |ui| {
-                    faded = arrange(ui.ctx(), Place::Window, arrangement);
-                    drawn = glide(ui.ctx(), Place::Window, target, 10.0);
-                },
-            );
-            output.textures_delta.clear();
-            (drawn.0, faded)
-        };
-        // The first arrangement is simply there.
-        assert_eq!(frame(0.0, Arrangement::Beside, big), (big, 1.0));
-        assert_eq!(frame(0.5, Arrangement::Beside, big), (big, 1.0));
-        // The queue opens past the width that holds both: the cover starts
-        // where it was, then travels, and the words fade in on the way.
-        assert_eq!(frame(1.0, Arrangement::Column, small), (big, 0.0));
-        let (midway, faded) = frame(
-            1.0 + f64::from(crate::motion::EMPHASIS) / 2.0,
-            Arrangement::Column,
-            small,
-        );
-        assert!(midway.width() < big.width() && midway.width() > small.width());
-        assert!(faded > 0.0 && faded < 1.0);
-        assert_eq!(frame(2.0, Arrangement::Column, small), (small, 1.0));
-        // Swapping to the cover view shows the large cover at once.
-        assert_eq!(frame(3.0, Arrangement::Cover, big), (big, 1.0));
-        // So does the lyrics arriving beside a centred cover.
-        assert_eq!(frame(4.0, Arrangement::Centred, small), (small, 1.0));
-        assert_eq!(frame(5.0, Arrangement::Beside, big), (big, 1.0));
-        crate::motion::set_enabled(was);
-    }
 
     #[test]
     fn fullscreen_backdrop_prefers_small_art_with_large_art_as_fallback() {

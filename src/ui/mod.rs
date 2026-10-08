@@ -62,7 +62,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     if app.lyrics_fullscreen.is_some() {
         lyrics::fullscreen(app, ui);
     } else {
-        lyrics::note_fullscreen_closed(ctx);
         // Each panel draws while it slides in or out, so these always run.
         sidebar::show(app, ui);
         queue::side_panel(app, ui);

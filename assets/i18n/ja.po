@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spotsie\n"
 "Report-Msgid-Bugs-To: https://github.com/ahaan-shah/spotsie/issues/new\n"
-"POT-Creation-Date: 2026-10-09 00:21+0530\n"
+"POT-Creation-Date: 2026-10-09 01:19+0530\n"
 "PO-Revision-Date: 2026-09-09 13:30+0000\n"
 "Last-Translator: Spotsie contributors\n"
 "Language-Team: Japanese\n"
@@ -210,7 +210,7 @@ msgstr "{name}、フォルダ、折りたたみ"
 msgid "{name}, folder, expanded"
 msgstr "{name}、フォルダ、展開"
 
-#: src/ui/player_bar.rs:150 src/ui/lyrics.rs:241 src/ui/lyrics.rs:638
+#: src/ui/player_bar.rs:150 src/ui/lyrics.rs:121 src/ui/lyrics.rs:489
 msgid "Nothing playing"
 msgstr "再生していません"
 
@@ -284,7 +284,7 @@ msgstr "デバイスに接続"
 msgid "Queue"
 msgstr "再生待ちリスト"
 
-#: src/ui/player_bar.rs:679 src/ui/lyrics.rs:309
+#: src/ui/player_bar.rs:679 src/ui/lyrics.rs:183
 msgid "Lyrics"
 msgstr "歌詞"
 
@@ -296,7 +296,7 @@ msgstr "カバービュー"
 msgid "Recent"
 msgstr "履歴"
 
-#: src/ui/queue.rs:93 src/ui/mod.rs:570
+#: src/ui/queue.rs:93 src/ui/mod.rs:569
 msgid "Close"
 msgstr "閉じる"
 
@@ -351,60 +351,60 @@ msgstr "再生した曲がここに表示されます。"
 msgid "Load more"
 msgstr "さらに読み込む"
 
-#: src/ui/lyrics.rs:242
+#: src/ui/lyrics.rs:122
 msgid "Play a song to see it here."
 msgstr "曲を再生するとここに表示されます。"
 
-#: src/ui/lyrics.rs:323
+#: src/ui/lyrics.rs:197
 msgid "Leave full screen (Esc)"
 msgstr "全画面表示を終了 (Esc)"
 
-#: src/ui/lyrics.rs:338
+#: src/ui/lyrics.rs:212
 msgid "Full screen"
 msgstr "全画面"
 
-#: src/ui/lyrics.rs:340
+#: src/ui/lyrics.rs:214
 msgid "Full screen lyrics"
 msgstr "歌詞を全画面表示"
 
-#: src/ui/lyrics.rs:356
+#: src/ui/lyrics.rs:230
 msgctxt "lyrics"
 msgid "Follow"
 msgstr "追従"
 
-#: src/ui/lyrics.rs:434 src/ui/lyrics.rs:679
+#: src/ui/lyrics.rs:295 src/ui/lyrics.rs:530
 msgid "Instrumental"
 msgstr "インストゥルメンタル"
 
-#: src/ui/lyrics.rs:435 src/ui/lyrics.rs:680
+#: src/ui/lyrics.rs:296 src/ui/lyrics.rs:531
 msgid "No timed lyrics for this track."
 msgstr "この曲には同期された歌詞がありません。"
 
-#: src/ui/lyrics.rs:438 src/ui/lyrics.rs:669
+#: src/ui/lyrics.rs:299 src/ui/lyrics.rs:520
 msgid "Lyrics not available"
 msgstr "歌詞を利用できません"
 
-#: src/ui/lyrics.rs:439 src/ui/lyrics.rs:670
+#: src/ui/lyrics.rs:300 src/ui/lyrics.rs:521
 msgid "No lyrics found for this track."
 msgstr "この曲の歌詞は見つかりませんでした。"
 
 #. Translators: Keep {error} unchanged. It is the original failure detail.
-#: src/ui/lyrics.rs:445 src/ui/lyrics.rs:652
+#: src/ui/lyrics.rs:306 src/ui/lyrics.rs:503
 #, rust-format
 msgid "Couldn't fetch the lyrics: {error}"
 msgstr "歌詞を取得できませんでした：{error}"
 
-#: src/ui/lyrics.rs:452 src/ui/widgets.rs:2775 src/app.rs:9821
+#: src/ui/lyrics.rs:313 src/ui/widgets.rs:2775 src/app.rs:9821
 #: src/ui/collection.rs:753
 msgid "Loading…"
 msgstr "読み込み中…"
 
-#: src/ui/lyrics.rs:472 src/ui/lyrics.rs:658 src/ui/settings.rs:408
+#: src/ui/lyrics.rs:333 src/ui/lyrics.rs:509 src/ui/settings.rs:408
 #: src/ui/login.rs:106
 msgid "Try again"
 msgstr "もう一度試す"
 
-#: src/ui/lyrics.rs:639
+#: src/ui/lyrics.rs:490
 msgid "Play a song to see its lyrics."
 msgstr "曲を再生すると歌詞が表示されます。"
 
@@ -2247,15 +2247,15 @@ msgstr "プロキシ設定"
 msgid "Spotsie {version} • not affiliated with Spotify"
 msgstr "Spotsie {version} • Spotifyとは関係ありません"
 
-#: src/ui/mod.rs:556
+#: src/ui/mod.rs:555
 msgid "Minimize"
 msgstr "最小化"
 
-#: src/ui/mod.rs:562
+#: src/ui/mod.rs:561
 msgid "Restore"
 msgstr "元に戻す"
 
-#: src/ui/mod.rs:564
+#: src/ui/mod.rs:563
 msgid "Maximize"
 msgstr "最大化"
 
