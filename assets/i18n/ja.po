@@ -382,7 +382,7 @@ msgstr "この曲には同期された歌詞がありません。"
 
 #: src/ui/lyrics.rs:424 src/ui/lyrics.rs:655
 msgid "Lyrics not available"
-msgstr ""
+msgstr "歌詞を利用できません"
 
 #: src/ui/lyrics.rs:425 src/ui/lyrics.rs:656
 msgid "No lyrics found for this track."
@@ -968,7 +968,7 @@ msgstr "アートワークを削除できませんでした：{error}"
 
 #: src/app.rs:9204
 msgid "Spotsie is offline."
-msgstr ""
+msgstr "Spotsieはオフラインです。"
 
 #: src/app.rs:9911
 msgid "Couldn't start playback"
@@ -2372,21 +2372,21 @@ msgstr "再生済み"
 
 #: src/ui/topbar.rs:161
 msgid "Restart Spotsie"
-msgstr ""
+msgstr "Spotsieを再起動"
 
 #: src/ui/topbar.rs:162
 msgid "Restarting…"
-msgstr ""
+msgstr "再起動中…"
 
 #. Translators: {percent} is a whole number from 0 to 100.
 #: src/ui/topbar.rs:170
 #, rust-format
 msgid "Updating… {percent}%"
-msgstr ""
+msgstr "アップデート中… {percent}%"
 
 #: src/ui/topbar.rs:173
 msgid "Update available"
-msgstr ""
+msgstr "アップデートがあります"
 
 #: src/ui/topbar.rs:353
 msgid "Show sidebar (Ctrl+B)"
@@ -2418,19 +2418,19 @@ msgstr "別のデバイスで再生中"
 #: src/ui/topbar.rs:598
 #, rust-format
 msgid "Spotsie {version} is installed. Click to restart."
-msgstr ""
+msgstr "Spotsie {version}をインストールしました。クリックして再起動します。"
 
 #. Translators: {version} is a version number such as 1.2.0.
 #: src/ui/topbar.rs:603
 #, rust-format
 msgid "Installing Spotsie {version}"
-msgstr ""
+msgstr "Spotsie {version}をインストール中"
 
 #. Translators: {version} is a version number such as 1.2.0.
 #: src/ui/topbar.rs:607
 #, rust-format
 msgid "Spotsie {version} is out. Click to update."
-msgstr ""
+msgstr "Spotsie {version}が公開されました。クリックしてアップデートします。"
 
 #: src/ui/topbar.rs:629
 msgid "Waiting for Spotify…"
@@ -2632,20 +2632,3 @@ msgstr "こんにちは"
 #: src/util.rs:259
 msgid "Good evening"
 msgstr "こんばんは"
-
-#~ msgid "No lyrics"
-#~ msgstr "歌詞はありません"
-
-#~ msgid "Update ready"
-#~ msgstr "アップデートの準備完了"
-
-#, rust-format
-#~ msgid "Update to {version}"
-#~ msgstr "{version}にアップデート"
-
-#~ msgid "What do you want to play?"
-#~ msgstr "何を再生しますか？"
-
-#, rust-format
-#~ msgid "Version {version} is available."
-#~ msgstr "バージョン{version}が利用可能です。"

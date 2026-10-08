@@ -386,7 +386,7 @@ msgstr "Geen gesynchroniseerde songtekst voor dit nummer."
 
 #: src/ui/lyrics.rs:424 src/ui/lyrics.rs:655
 msgid "Lyrics not available"
-msgstr ""
+msgstr "Geen songtekst beschikbaar"
 
 #: src/ui/lyrics.rs:425 src/ui/lyrics.rs:656
 msgid "No lyrics found for this track."
@@ -976,7 +976,7 @@ msgstr "Kan covers niet wissen: {error}"
 
 #: src/app.rs:9204
 msgid "Spotsie is offline."
-msgstr ""
+msgstr "Spotsie is offline."
 
 #: src/app.rs:9911
 msgid "Couldn't start playback"
@@ -2394,21 +2394,21 @@ msgstr "Afgespeeld"
 
 #: src/ui/topbar.rs:161
 msgid "Restart Spotsie"
-msgstr ""
+msgstr "Spotsie herstarten"
 
 #: src/ui/topbar.rs:162
 msgid "Restarting…"
-msgstr ""
+msgstr "Herstarten…"
 
 #. Translators: {percent} is a whole number from 0 to 100.
 #: src/ui/topbar.rs:170
 #, rust-format
 msgid "Updating… {percent}%"
-msgstr ""
+msgstr "Bijwerken… {percent}%"
 
 #: src/ui/topbar.rs:173
 msgid "Update available"
-msgstr ""
+msgstr "Update beschikbaar"
 
 #: src/ui/topbar.rs:353
 msgid "Show sidebar (Ctrl+B)"
@@ -2440,19 +2440,19 @@ msgstr "Afspelen op een ander apparaat"
 #: src/ui/topbar.rs:598
 #, rust-format
 msgid "Spotsie {version} is installed. Click to restart."
-msgstr ""
+msgstr "Spotsie {version} is geïnstalleerd. Klik om te herstarten."
 
 #. Translators: {version} is a version number such as 1.2.0.
 #: src/ui/topbar.rs:603
 #, rust-format
 msgid "Installing Spotsie {version}"
-msgstr ""
+msgstr "Spotsie {version} installeren"
 
 #. Translators: {version} is a version number such as 1.2.0.
 #: src/ui/topbar.rs:607
 #, rust-format
 msgid "Spotsie {version} is out. Click to update."
-msgstr ""
+msgstr "Spotsie {version} is uit. Klik om bij te werken."
 
 #: src/ui/topbar.rs:629
 msgid "Waiting for Spotify…"
@@ -2659,20 +2659,3 @@ msgstr "Goedemiddag"
 #: src/util.rs:259
 msgid "Good evening"
 msgstr "Goedenavond"
-
-#~ msgid "No lyrics"
-#~ msgstr "Geen songtekst"
-
-#~ msgid "Update ready"
-#~ msgstr "Update klaar"
-
-#, rust-format
-#~ msgid "Update to {version}"
-#~ msgstr "Bijwerken naar {version}"
-
-#~ msgid "What do you want to play?"
-#~ msgstr "Wat wil je afspelen?"
-
-#, rust-format
-#~ msgid "Version {version} is available."
-#~ msgstr "Versie {version} is beschikbaar."

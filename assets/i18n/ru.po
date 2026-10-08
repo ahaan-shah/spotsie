@@ -391,7 +391,7 @@ msgstr "Для этого трека нет синхронизированног
 
 #: src/ui/lyrics.rs:424 src/ui/lyrics.rs:655
 msgid "Lyrics not available"
-msgstr ""
+msgstr "Текст песни недоступен"
 
 #: src/ui/lyrics.rs:425 src/ui/lyrics.rs:656
 msgid "No lyrics found for this track."
@@ -985,7 +985,7 @@ msgstr "Не удалось удалить обложки: {error}"
 
 #: src/app.rs:9204
 msgid "Spotsie is offline."
-msgstr ""
+msgstr "Spotsie не в сети."
 
 #: src/app.rs:9911
 msgid "Couldn't start playback"
@@ -2404,21 +2404,21 @@ msgstr "Прослушано"
 
 #: src/ui/topbar.rs:161
 msgid "Restart Spotsie"
-msgstr ""
+msgstr "Перезапустить Spotsie"
 
 #: src/ui/topbar.rs:162
 msgid "Restarting…"
-msgstr ""
+msgstr "Перезапуск…"
 
 #. Translators: {percent} is a whole number from 0 to 100.
 #: src/ui/topbar.rs:170
 #, rust-format
 msgid "Updating… {percent}%"
-msgstr ""
+msgstr "Обновление… {percent}%"
 
 #: src/ui/topbar.rs:173
 msgid "Update available"
-msgstr ""
+msgstr "Доступно обновление"
 
 #: src/ui/topbar.rs:353
 msgid "Show sidebar (Ctrl+B)"
@@ -2450,19 +2450,19 @@ msgstr "Играет на другом устройстве"
 #: src/ui/topbar.rs:598
 #, rust-format
 msgid "Spotsie {version} is installed. Click to restart."
-msgstr ""
+msgstr "Spotsie {version} установлен. Нажмите, чтобы перезапустить."
 
 #. Translators: {version} is a version number such as 1.2.0.
 #: src/ui/topbar.rs:603
 #, rust-format
 msgid "Installing Spotsie {version}"
-msgstr ""
+msgstr "Установка Spotsie {version}"
 
 #. Translators: {version} is a version number such as 1.2.0.
 #: src/ui/topbar.rs:607
 #, rust-format
 msgid "Spotsie {version} is out. Click to update."
-msgstr ""
+msgstr "Вышел Spotsie {version}. Нажмите, чтобы обновить."
 
 #: src/ui/topbar.rs:629
 msgid "Waiting for Spotify…"
@@ -2674,20 +2674,3 @@ msgstr "Добрый день"
 #: src/util.rs:259
 msgid "Good evening"
 msgstr "Добрый вечер"
-
-#~ msgid "No lyrics"
-#~ msgstr "Нет текста песни"
-
-#~ msgid "Update ready"
-#~ msgstr "Обновление готово"
-
-#, rust-format
-#~ msgid "Update to {version}"
-#~ msgstr "Обновить до {version}"
-
-#~ msgid "What do you want to play?"
-#~ msgstr "Что хочешь послушать?"
-
-#, rust-format
-#~ msgid "Version {version} is available."
-#~ msgstr "Доступна версия {version}."

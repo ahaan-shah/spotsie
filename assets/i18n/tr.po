@@ -386,7 +386,7 @@ msgstr "Bu parça için senkronize şarkı sözü yok."
 
 #: src/ui/lyrics.rs:424 src/ui/lyrics.rs:655
 msgid "Lyrics not available"
-msgstr ""
+msgstr "Şarkı sözleri yok"
 
 #: src/ui/lyrics.rs:425 src/ui/lyrics.rs:656
 msgid "No lyrics found for this track."
@@ -976,7 +976,7 @@ msgstr "Albüm kapakları temizlenemedi: {error}"
 
 #: src/app.rs:9204
 msgid "Spotsie is offline."
-msgstr ""
+msgstr "Spotsie çevrimdışı."
 
 #: src/app.rs:9911
 msgid "Couldn't start playback"
@@ -2393,21 +2393,21 @@ msgstr "Oynatıldı"
 
 #: src/ui/topbar.rs:161
 msgid "Restart Spotsie"
-msgstr ""
+msgstr "Spotsie'yi yeniden başlat"
 
 #: src/ui/topbar.rs:162
 msgid "Restarting…"
-msgstr ""
+msgstr "Yeniden başlatılıyor…"
 
 #. Translators: {percent} is a whole number from 0 to 100.
 #: src/ui/topbar.rs:170
 #, rust-format
 msgid "Updating… {percent}%"
-msgstr ""
+msgstr "Güncelleniyor… %{percent}"
 
 #: src/ui/topbar.rs:173
 msgid "Update available"
-msgstr ""
+msgstr "Güncelleme var"
 
 #: src/ui/topbar.rs:353
 msgid "Show sidebar (Ctrl+B)"
@@ -2439,19 +2439,19 @@ msgstr "Başka bir cihazda çalınıyor"
 #: src/ui/topbar.rs:598
 #, rust-format
 msgid "Spotsie {version} is installed. Click to restart."
-msgstr ""
+msgstr "Spotsie {version} yüklendi. Yeniden başlatmak için tıklayın."
 
 #. Translators: {version} is a version number such as 1.2.0.
 #: src/ui/topbar.rs:603
 #, rust-format
 msgid "Installing Spotsie {version}"
-msgstr ""
+msgstr "Spotsie {version} yükleniyor"
 
 #. Translators: {version} is a version number such as 1.2.0.
 #: src/ui/topbar.rs:607
 #, rust-format
 msgid "Spotsie {version} is out. Click to update."
-msgstr ""
+msgstr "Spotsie {version} çıktı. Güncellemek için tıklayın."
 
 #: src/ui/topbar.rs:629
 msgid "Waiting for Spotify…"
@@ -2658,20 +2658,3 @@ msgstr "İyi günler"
 #: src/util.rs:259
 msgid "Good evening"
 msgstr "İyi akşamlar"
-
-#~ msgid "No lyrics"
-#~ msgstr "Şarkı sözü yok"
-
-#~ msgid "Update ready"
-#~ msgstr "Güncelleme hazır"
-
-#, rust-format
-#~ msgid "Update to {version}"
-#~ msgstr "{version} sürümüne güncelle"
-
-#~ msgid "What do you want to play?"
-#~ msgstr "Ne çalmak istersiniz?"
-
-#, rust-format
-#~ msgid "Version {version} is available."
-#~ msgstr "Sürüm {version} hazır."

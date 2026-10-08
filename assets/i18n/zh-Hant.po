@@ -382,7 +382,7 @@ msgstr "這首歌沒有同步歌詞。"
 
 #: src/ui/lyrics.rs:424 src/ui/lyrics.rs:655
 msgid "Lyrics not available"
-msgstr ""
+msgstr "暫無歌詞"
 
 #: src/ui/lyrics.rs:425 src/ui/lyrics.rs:656
 msgid "No lyrics found for this track."
@@ -955,7 +955,7 @@ msgstr "無法清除封面圖片：{error}"
 
 #: src/app.rs:9204
 msgid "Spotsie is offline."
-msgstr ""
+msgstr "Spotsie 目前離線。"
 
 #: src/app.rs:9911
 msgid "Couldn't start playback"
@@ -2321,21 +2321,21 @@ msgstr "已播放"
 
 #: src/ui/topbar.rs:161
 msgid "Restart Spotsie"
-msgstr ""
+msgstr "重新啟動 Spotsie"
 
 #: src/ui/topbar.rs:162
 msgid "Restarting…"
-msgstr ""
+msgstr "正在重新啟動…"
 
 #. Translators: {percent} is a whole number from 0 to 100.
 #: src/ui/topbar.rs:170
 #, rust-format
 msgid "Updating… {percent}%"
-msgstr ""
+msgstr "正在更新… {percent}%"
 
 #: src/ui/topbar.rs:173
 msgid "Update available"
-msgstr ""
+msgstr "有可用的更新"
 
 #: src/ui/topbar.rs:353
 msgid "Show sidebar (Ctrl+B)"
@@ -2367,19 +2367,19 @@ msgstr "正在其他裝置上播放"
 #: src/ui/topbar.rs:598
 #, rust-format
 msgid "Spotsie {version} is installed. Click to restart."
-msgstr ""
+msgstr "Spotsie {version} 已安裝。按一下以重新啟動。"
 
 #. Translators: {version} is a version number such as 1.2.0.
 #: src/ui/topbar.rs:603
 #, rust-format
 msgid "Installing Spotsie {version}"
-msgstr ""
+msgstr "正在安裝 Spotsie {version}"
 
 #. Translators: {version} is a version number such as 1.2.0.
 #: src/ui/topbar.rs:607
 #, rust-format
 msgid "Spotsie {version} is out. Click to update."
-msgstr ""
+msgstr "Spotsie {version} 已推出。按一下以更新。"
 
 #: src/ui/topbar.rs:629
 msgid "Waiting for Spotify…"
@@ -2581,20 +2581,3 @@ msgstr "午安"
 #: src/util.rs:259
 msgid "Good evening"
 msgstr "晚安"
-
-#~ msgid "No lyrics"
-#~ msgstr "暫無歌詞"
-
-#~ msgid "Update ready"
-#~ msgstr "更新已就緒"
-
-#, rust-format
-#~ msgid "Update to {version}"
-#~ msgstr "更新至 {version}"
-
-#~ msgid "What do you want to play?"
-#~ msgstr "想播放什麼？"
-
-#, rust-format
-#~ msgid "Version {version} is available."
-#~ msgstr "版本 {version} 現已推出。"
