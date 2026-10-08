@@ -888,6 +888,11 @@ pub fn apply_flags(app: &mut App, page: Option<&str>, show: Option<&str>) {
                 app.settings.theme = crate::settings::ThemeChoice::Dark;
                 app.actions.push(Action::SettingsChanged);
             }
+            // One of the built-in themes by name, e.g. `theme:Nord`.
+            theme if theme.starts_with("theme:") => {
+                app.actions
+                    .push(Action::SetBuiltinTheme(theme["theme:".len()..].to_owned()));
+            }
             "song-top-result" => {
                 if let Loadable::Loaded(results) = &mut app.search.results {
                     results.artists = None;
