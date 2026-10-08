@@ -1095,6 +1095,9 @@ pub enum Action {
     /// Ask GitHub for the latest release and report the result to the user.
     CheckForUpdates,
     ShowUpdate,
+    /// The top bar's "Update available": download the release when this
+    /// copy can replace itself, or explain how to update it when it cannot.
+    StartUpdate,
     DownloadUpdate,
     InstallUpdate,
     SettingsChanged,

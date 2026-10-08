@@ -276,10 +276,11 @@ random token). Use the command rather than the channel itself.
 On this computer, `scripts/install.sh` in the source folder builds the
 current code and replaces the installed copy; settings and sign-ins stay.
 
-Spotsie never checks for updates on its own. **Check for updates** in
-**Settings > About** asks this project's GitHub releases for a newer version.
-When one exists, the green update button downloads it and waits for you to
-choose when to restart. Spotsie checks each download before installing it,
+Spotsie looks for a newer release each time it starts. When there is one,
+a quiet **Update available** appears beside Settings in the top bar; nothing
+downloads until you click it. Then it shows how far the download has come,
+and turns into **Restart Spotsie** when the new version is installed and
+ready. **Check for updates** in **Settings > About** asks at any time. Spotsie checks each download before installing it,
 and a failed startup restores the previous installation.
 
 ## Library order

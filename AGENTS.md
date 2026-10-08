@@ -73,8 +73,10 @@ state and ask again rather than let the lagging answer undo what the
 user just did. Nothing the user did may ever flicker away and come back.
 
 The update checker (`src/updates.rs`) points at this repository's GitHub
-releases. Its Settings switches are hidden for now; only About's **Check for
-updates** button uses it. Keep it working so the switches can return.
+releases. It asks on every launch, with no setting; a found release shows a
+quiet **Update available** in the top bar that downloads on click and then
+becomes **Restart Spotsie**, as Magpie's does. About's **Check for updates**
+asks by hand.
 
 ## Look and motion
 

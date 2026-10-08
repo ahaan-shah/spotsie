@@ -257,8 +257,6 @@ pub struct Settings {
     pub keep_playing_in_background: bool,
     /// Show the interactive Now Playing widget when hovering over the MacBook notch.
     pub mac_notch_widget: bool,
-    /// Ask GitHub once a day whether a newer release exists.
-    pub check_for_updates: bool,
     pub download_updates_automatically: bool,
     /// Context URIs and the local Liked Songs key, in pin order.
     pub pinned_contexts: Vec<String>,
@@ -365,7 +363,6 @@ impl Default for Settings {
             mac_notch_widget: false,
             // Spotsie releases come from a private repository the anonymous
             // update check cannot read, so checks are opt-in.
-            check_for_updates: false,
             download_updates_automatically: false,
             pinned_contexts: Vec::new(),
             liked_songs_pinned: true,
@@ -880,6 +877,21 @@ mod tests {
             LanguageChoice::System.resolve(),
             Locale::English,
             "tests pin English"
+        );
+    }
+
+    #[test]
+    fn the_retired_update_check_switch_still_loads() {
+        // Updates are checked on every launch now; settings written while
+        // the switch existed keep loading, and their other values stay.
+        let older: Settings =
+            serde_json::from_str(r#"{"check_for_updates": false, "mac_notch_widget": true}"#)
+                .unwrap();
+        assert!(older.mac_notch_widget);
+        assert!(
+            !serde_json::to_string(&older)
+                .unwrap()
+                .contains("check_for_updates")
         );
     }
 

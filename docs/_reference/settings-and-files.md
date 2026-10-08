@@ -241,7 +241,6 @@ main fields are:
 | `eq_bands_db` | ten zeros | The bands from 60 Hz to 16 kHz, in decibels, -12 to 12 |
 | `keep_playing_in_background` | `true` | Close to tray |
 | `mac_notch_widget` | `false` | Show interactive Now Playing widget when hovering over the MacBook notch (macOS only) |
-| `check_for_updates` | `false` | Ask GitHub once a day for a newer release. Not shown in Settings; set it here |
 | `download_updates_automatically` | `false` | Download a found update in the background. Not shown in Settings; set it here |
 | `web_client_id` | none | Optional personal Spotify app id used alongside shared coverage |
 | `personal_app_nudge_at` | none | Legacy daily-reminder timestamp, retained for older releases |

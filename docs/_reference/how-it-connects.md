@@ -121,17 +121,19 @@ current-track pickup.
 - Spotsie has no telemetry, analytics, or hosted service. When the lyrics
   panel is open and Spotify has no lyrics, it sends the track's artist, title,
   album, and length to [lrclib.net](https://lrclib.net). It also checks
-  api.github.com once a day for updates. You can turn off automatic checks in
-  Settings, or request one there at any time. On macOS, **Check for Updates**
-  is also in the application menu.
+  api.github.com for updates on every launch and once a day while open; there
+  is no switch for this. **Check for updates** in Settings asks at any time.
+  On macOS, **Check for Updates** is also in the application menu.
 
   On Windows, macOS, and Linux, downloading an update fetches release metadata and
   `checksums.txt` from the project's GitHub release, then the matching binary
   archive, Windows installer, or universal macOS DMG. Spotsie checks the published SHA-256 digest
   and the portable executable's reported version before offering a restart.
-  Automatic downloads are optional; installation always waits for your click.
-  Checks and downloads do not open the update popup. The green update pill opens
-  it on request; closing the popup does not cancel a download.
+  A found release shows **Update available** beside Settings in the top bar.
+  Clicking it downloads the update (the label counts the percentage), then it
+  becomes **Restart Spotsie**, and installation waits for that click. A copy
+  that cannot replace itself (a system package, Flatpak) opens a popup saying
+  how to update it instead.
   No Spotify credential is sent. These are GitHub-hosted checksums, not a
   separate publisher signature.
 

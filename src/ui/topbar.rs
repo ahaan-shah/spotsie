@@ -154,6 +154,131 @@ fn badge(
     response
 }
 
+/// What the update badge says: that there is one, how far it has come, or
+/// that a restart finishes it.
+fn update_label(locale: crate::i18n::Locale, download: &crate::updates::DownloadState) -> String {
+    match download {
+        crate::updates::DownloadState::Ready(_) => gettext(locale, "Restart Spotsie").into_owned(),
+        crate::updates::DownloadState::Installing => gettext(locale, "Restarting…").into_owned(),
+        crate::updates::DownloadState::Downloading { received, total } => {
+            let percent = if *total > 0 {
+                (*received as f64 / *total as f64 * 100.0).round() as u32
+            } else {
+                0
+            };
+            // Translators: {percent} is a whole number from 0 to 100.
+            gettext(locale, "Updating… {percent}%").replace("{percent}", &percent.to_string())
+        }
+        crate::updates::DownloadState::Idle | crate::updates::DownloadState::Failed(_) => {
+            gettext(locale, "Update available").into_owned()
+        }
+    }
+}
+
+/// The update badge, after Magpie's: a quiet row in the bar's own colours,
+/// an icon with one small accent dot, a hover wash, and while it downloads a
+/// thin line filling underneath. It fades in when it first appears.
+fn update_badge(
+    ui: &mut egui::Ui,
+    palette: &Palette,
+    galley: Arc<Galley>,
+    download: &crate::updates::DownloadState,
+    labels: bool,
+) -> egui::Response {
+    use crate::updates::DownloadState;
+    let height = galley.size().y + BADGE_PADDING_Y;
+    let size = if labels {
+        vec2(galley.size().x + UPDATE_BADGE_PADDING, height)
+    } else {
+        Vec2::splat(height)
+    };
+    let busy = matches!(
+        download,
+        DownloadState::Downloading { .. } | DownloadState::Installing
+    );
+    let (rect, response) = ui.allocate_exact_size(size, Sense::click());
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), galley.text())
+    });
+    let ctx = ui.ctx().clone();
+    let shown = crate::motion::tween_from(
+        &ctx,
+        egui::Id::new("update-badge-shown"),
+        0.0,
+        1.0,
+        crate::motion::EMPHASIS,
+    );
+    let hover = crate::motion::toggle(
+        &ctx,
+        egui::Id::new("update-badge-hover"),
+        response.hovered() && !busy,
+        crate::motion::MICRO,
+    );
+    let painter = ui.painter();
+    if hover > 0.0 {
+        painter.rect_filled(
+            rect,
+            CornerRadius::same(14),
+            crate::motion::with_alpha(palette.surface_hover, hover),
+        );
+    }
+    let ink = crate::motion::with_alpha(
+        crate::motion::lerp_color(palette.secondary, palette.text, hover),
+        shown,
+    );
+    let icon_center = if labels {
+        pos2(rect.left() + 14.0, rect.center().y)
+    } else {
+        rect.center()
+    };
+    let icon = match download {
+        DownloadState::Ready(_) | DownloadState::Installing => Icon::Refresh,
+        _ => Icon::CloudDownload,
+    };
+    icon.image(ink, 13.0).paint_at(
+        ui,
+        egui::Rect::from_center_size(icon_center, Vec2::splat(13.0)),
+    );
+    // The one bit of colour.
+    painter.circle_filled(
+        icon_center + vec2(6.0, -5.0),
+        2.5,
+        crate::motion::with_alpha(palette.accent, shown),
+    );
+    if labels {
+        painter.galley(
+            pos2(rect.left() + 24.0, rect.center().y - galley.size().y / 2.0),
+            galley.clone(),
+            ink,
+        );
+        if let DownloadState::Downloading { received, total } = download {
+            let progress = if *total > 0 {
+                (*received as f32 / *total as f32).clamp(0.0, 1.0)
+            } else {
+                0.0
+            };
+            let progress = crate::motion::tween(
+                &ctx,
+                egui::Id::new("update-badge-progress"),
+                progress,
+                crate::motion::GLIDE,
+            );
+            let track = egui::Rect::from_min_size(
+                pos2(rect.left() + 24.0, rect.bottom() - 3.0),
+                vec2(galley.size().x, 2.0),
+            );
+            painter.rect_filled(track, CornerRadius::same(1), palette.outline);
+            let done = egui::Rect::from_min_size(track.min, vec2(track.width() * progress, 2.0));
+            painter.rect_filled(done, CornerRadius::same(1), palette.accent);
+        }
+    }
+    if busy {
+        response
+    } else {
+        response.on_hover_cursor(egui::CursorIcon::PointingHand)
+    }
+}
+
 fn nav_button(
     ui: &mut egui::Ui,
     palette: &Palette,
@@ -278,21 +403,10 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                     .layout_no_wrap(label, theme::medium(12.5), palette.accent)
             });
             let update = app.update.clone();
-            let update_galley = update.as_ref().map(|update| {
-                let label = match &app.update_download {
-                    crate::updates::DownloadState::Ready(_) => {
-                        gettext(locale, "Update ready").into_owned()
-                    }
-                    crate::updates::DownloadState::Downloading { .. } => {
-                        gettext(locale, "Downloading update…").into_owned()
-                    }
-                    _ => {
-                        // Translators: {version} is a version number such as 1.2.0.
-                        gettext(locale, "Update to {version}").replace("{version}", &update.version)
-                    }
-                };
+            let update_galley = update.as_ref().map(|_| {
+                let label = update_label(locale, &app.update_download);
                 ui.painter()
-                    .layout_no_wrap(label, theme::medium(12.5), palette.accent)
+                    .layout_no_wrap(label, theme::medium(12.5), palette.secondary)
             });
             // Ask once, so the bar reserves room for exactly the spinner it
             // then draws.
@@ -472,6 +586,42 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                 {
                     app.actions.push(Action::Open(Page::Settings));
                 }
+                // A newer release, found on launch. It only says so,
+                // quietly; nothing downloads until it is clicked, and
+                // nothing restarts until it is clicked again.
+                if let (Some(galley), Some(update)) = (update_galley, update) {
+                    let response =
+                        update_badge(ui, &palette, galley, &app.update_download, fit.labels);
+                    let tip = match &app.update_download {
+                        crate::updates::DownloadState::Ready(_) => {
+                            // Translators: {version} is a version number such as 1.2.0.
+                            gettext(locale, "Spotsie {version} is installed. Click to restart.")
+                        }
+                        crate::updates::DownloadState::Downloading { .. }
+                        | crate::updates::DownloadState::Installing => {
+                            // Translators: {version} is a version number such as 1.2.0.
+                            gettext(locale, "Installing Spotsie {version}")
+                        }
+                        _ => {
+                            // Translators: {version} is a version number such as 1.2.0.
+                            gettext(locale, "Spotsie {version} is out. Click to update.")
+                        }
+                    }
+                    .replace("{version}", &update.version);
+                    if response.on_hover_text(tip).clicked() {
+                        match &app.update_download {
+                            crate::updates::DownloadState::Ready(_) => {
+                                app.actions.push(Action::InstallUpdate)
+                            }
+                            crate::updates::DownloadState::Idle
+                            | crate::updates::DownloadState::Failed(_) => {
+                                app.actions.push(Action::StartUpdate)
+                            }
+                            crate::updates::DownloadState::Downloading { .. }
+                            | crate::updates::DownloadState::Installing => {}
+                        }
+                    }
+                }
                 // A quiet spinner once the app has been talking to Spotify for a
                 // while, long enough that fast requests never flash it.
                 if busy {
@@ -499,26 +649,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                     if response.clicked() {
                         app.actions.push(Action::ToggleDevicesPopup);
                     }
-                }
-                // A newer release. Most people never visit a releases page,
-                // so the app says so, quietly, until they do.
-                if let (Some(galley), Some(update)) = (update_galley, update)
-                    && badge(
-                        ui,
-                        &palette,
-                        Icon::Info,
-                        galley,
-                        UPDATE_BADGE_PADDING,
-                        fit.labels,
-                    )
-                    .on_hover_text(
-                        // Translators: {version} is a version number such as 1.2.0.
-                        gettext(locale, "Version {version} is available.")
-                            .replace("{version}", &update.version),
-                    )
-                    .clicked()
-                {
-                    app.actions.push(Action::ShowUpdate);
                 }
             });
         },

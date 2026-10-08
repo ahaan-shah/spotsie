@@ -549,6 +549,9 @@ pub struct App {
     pub update_download: crate::updates::DownloadState,
     pub update_source: crate::updates::Source,
     pub update_support: Option<Result<crate::updates::Installation, String>>,
+    /// "Update available" was clicked before the installation was inspected:
+    /// download, or explain, as soon as it has been.
+    update_wanted: bool,
     pub update_restart_arguments: Vec<String>,
     pub update_receipt: Option<fastframe_update::Receipt>,
     /// The equalizer as the player's thread reads it.
@@ -938,6 +941,7 @@ impl App {
             update_download: crate::updates::DownloadState::Idle,
             update_source: crate::updates::Source::default(),
             update_support: None,
+            update_wanted: false,
             update_restart_arguments: Vec::new(),
             update_receipt: None,
             eq,
@@ -1936,11 +1940,14 @@ impl App {
                 },
                 Event::WebApp { client_id } => self.web_app = client_id,
                 Event::UpdateSupport(result) => {
+                    let wanted = std::mem::take(&mut self.update_wanted);
                     if result.is_ok()
-                        && self.settings.download_updates_automatically
+                        && (wanted || self.settings.download_updates_automatically)
                         && matches!(self.update_download, crate::updates::DownloadState::Idle)
                     {
                         self.actions.push(Action::DownloadUpdate);
+                    } else if result.is_err() && wanted {
+                        self.show_update = true;
                     }
                     self.update_support = Some(result);
                 }
@@ -1964,7 +1971,9 @@ impl App {
                     self.update_checking = false;
                     match result {
                         Ok(Some(notice)) => {
-                            if manual || self.update.as_ref() != Some(&notice) {
+                            // A check on launch only shows "Update available"
+                            // in the top bar; asking by hand also says so.
+                            if manual {
                                 self.toast(
                                     // Translators: {version} is a version number such as 1.4.0.
                                     gettext(self.locale, "Spotsie {version} is available")
@@ -1972,7 +1981,9 @@ impl App {
                                 );
                             }
                             self.update = Some(notice);
-                            if self.settings.download_updates_automatically
+                            // Learn now whether this copy can replace itself,
+                            // so "Update available" answers its click at once.
+                            if self.update_support.is_none()
                                 && matches!(
                                     self.update_download,
                                     crate::updates::DownloadState::Idle
@@ -2698,12 +2709,8 @@ impl App {
             .retain(|toast| toast.created.elapsed() < TOAST_LIFETIME);
         self.maybe_suggest_personal_app();
 
-        if self.settings.check_for_updates
-            && !self.offline
-            && self
-                .last_update_check
-                .is_none_or(|at| at.elapsed() >= crate::updates::CHECK_INTERVAL)
-        {
+        // Tests never reach GitHub; they check `update_check_due` instead.
+        if !cfg!(test) && self.update_check_due() {
             self.check_for_updates(false);
         }
 
@@ -8834,6 +8841,14 @@ impl App {
                     self.backend.send(Command::InspectUpdate);
                 }
             }
+            Action::StartUpdate => match &self.update_support {
+                Some(Ok(_)) => self.actions.push(Action::DownloadUpdate),
+                Some(Err(_)) => self.show_update = true,
+                None => {
+                    self.update_wanted = true;
+                    self.backend.send(Command::InspectUpdate);
+                }
+            },
             Action::DownloadUpdate => {
                 if matches!(
                     self.update_download,
@@ -9170,7 +9185,26 @@ impl App {
         self.toast_error(error);
     }
 
+    /// Whether to ask GitHub for a newer release now. Every launch asks
+    /// once, then once a day while Spotsie stays open; there is no setting.
+    /// An update is only downloaded when "Update available" is clicked.
+    fn update_check_due(&self) -> bool {
+        !self.offline
+            && self
+                .last_update_check
+                .is_none_or(|at| at.elapsed() >= crate::updates::CHECK_INTERVAL)
+    }
+
     fn check_for_updates(&mut self, manual: bool) {
+        if manual && self.offline && self.update_source.is_github() {
+            // Asked by hand, the button always answers.
+            self.toast_error(
+                // Translators: {error} is an error message.
+                gettext(self.locale, "Couldn't check for updates: {error}")
+                    .replace("{error}", &gettext(self.locale, "Spotsie is offline.")),
+            );
+            return;
+        }
         if self.update_checking
             || (self.offline && self.update_source.is_github())
             || !matches!(
@@ -17430,10 +17464,81 @@ mod tests {
             app.update.as_ref().map(|release| release.version.as_str()),
             Some("1.2.3")
         );
+        assert!(
+            app.toasts.is_empty(),
+            "a release found on its own shows only in the top bar"
+        );
+    }
+
+    #[test]
+    fn checking_for_updates_by_hand_while_offline_says_so() {
+        let mut app = headless_app();
+        app.offline = true;
+        app.apply(Action::CheckForUpdates, &egui::Context::default());
+        assert!(!app.update_checking);
         assert_eq!(
             app.toasts.last().map(|toast| toast.message.as_str()),
-            Some("Spotsie 1.2.3 is available")
+            Some("Couldn't check for updates: Spotsie is offline.")
         );
+    }
+
+    #[test]
+    fn updates_are_checked_on_launch_and_daily_without_a_setting() {
+        let mut app = headless_app();
+        app.offline = false;
+        assert!(app.update_check_due(), "a new launch asks GitHub");
+        app.last_update_check = Some(Instant::now());
+        assert!(!app.update_check_due(), "once is enough until tomorrow");
+        if let Some(yesterday) = Instant::now().checked_sub(crate::updates::CHECK_INTERVAL) {
+            app.last_update_check = Some(yesterday);
+            assert!(app.update_check_due(), "a day later it asks again");
+        }
+        app.last_update_check = None;
+        app.offline = true;
+        assert!(!app.update_check_due(), "offline, nothing is asked");
+    }
+
+    #[test]
+    fn the_update_badge_downloads_on_click_and_explains_when_it_cannot() {
+        let ctx = egui::Context::default();
+        let release = crate::updates::Release {
+            version: "1.2.3".into(),
+            url: "https://github.com/ahaan-shah/spotsie/releases/tag/v1.2.3".into(),
+        };
+        // Clicked before the installation was inspected: it downloads once
+        // the answer comes back.
+        let mut app = headless_app();
+        app.update = Some(release.clone());
+        app.apply(Action::StartUpdate, &ctx);
+        assert!(matches!(
+            app.update_download,
+            crate::updates::DownloadState::Idle
+        ));
+        app.handle_backend_events(vec![Event::UpdateSupport(Ok(
+            crate::updates::Installation {
+                executable: "/test/spotsie".into(),
+                kind: crate::updates::Kind::Portable,
+            },
+        ))]);
+        app.apply_actions(&ctx);
+        assert!(matches!(
+            app.update_download,
+            crate::updates::DownloadState::Downloading { .. }
+        ));
+        assert!(!app.show_update);
+        // A copy a package manager owns says how to update it instead.
+        let mut app = headless_app();
+        app.update = Some(release);
+        app.apply(Action::StartUpdate, &ctx);
+        app.handle_backend_events(vec![Event::UpdateSupport(Err(
+            "Update this installation through pacman.".into(),
+        ))]);
+        app.apply_actions(&ctx);
+        assert!(app.show_update);
+        assert!(matches!(
+            app.update_download,
+            crate::updates::DownloadState::Idle
+        ));
     }
 
     fn cached_playlist_row(uri: &str) -> crate::api::models::PlaylistItem {

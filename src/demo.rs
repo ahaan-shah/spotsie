@@ -8344,21 +8344,22 @@ mod tests {
         const FIELD_RIGHT_INSET: f32 = 30.0;
         let (ctx, mut app) = accessible_app("topbar-badges");
         app.open(Page::Playlist("pl1".into()));
-        for panel in [None, Some("queue"), Some("lyrics")] {
+        // The lyrics and the cover view put the top bar away, so only the
+        // queue sits beside it.
+        for panel in [None, Some("queue")] {
             app.show_queue_panel = panel == Some("queue");
-            app.show_lyrics_panel = panel == Some("lyrics");
             for (label, state) in [
                 (None, DownloadState::Idle),
-                (Some("Update to 9.9.9"), DownloadState::Idle),
+                (Some("Update available"), DownloadState::Idle),
                 (
-                    Some("Downloading update…"),
+                    Some("Updating… 50%"),
                     DownloadState::Downloading {
                         received: 1,
                         total: 2,
                     },
                 ),
                 (
-                    Some("Update ready"),
+                    Some("Restart Spotsie"),
                     DownloadState::Ready(Box::new(Prepared::sample(
                         Installation {
                             executable: "/test/spotsie".into(),
@@ -8437,7 +8438,10 @@ mod tests {
                             "the update badge covers {} px of the search field at {width} px",
                             field - release
                         );
-                        if narrowest {
+                        // A copy that cannot replace itself explains how to
+                        // update instead of downloading.
+                        if narrowest && label == "Update available" {
+                            app.update_support = Some(Err("Use your package manager.".into()));
                             let button = accessible_node(&tree, label, Role::Button);
                             let mut output = ctx.run_ui(
                                 egui::RawInput {
@@ -8457,9 +8461,10 @@ mod tests {
                             output.textures_delta.clear();
                             assert!(
                                 app.show_update,
-                                "the collapsed {label} badge must open the updater"
+                                "the collapsed {label} badge must explain the update"
                             );
                             app.show_update = false;
+                            app.update_support = None;
                         }
                     }
                 }

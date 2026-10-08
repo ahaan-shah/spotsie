@@ -791,6 +791,7 @@ fastframe_icons::icons! {
         CirclePlus => "circle-plus",
         CircleX => lucide "circle-x",
         Clock => lucide "clock",
+        CloudDownload => "cloud-download",
         Compass => "compass",
         Copy => lucide "copy",
         CoverView => "cover-view",
