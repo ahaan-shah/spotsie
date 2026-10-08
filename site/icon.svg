@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <radialGradient id="vinyl" cx="64" cy="64" r="62" gradientUnits="userSpaceOnUse">
+      <stop offset="0.35" stop-color="#232725"/>
+      <stop offset="1" stop-color="#0a0c0b"/>
+    </radialGradient>
+    <linearGradient id="label" x1="44" y1="42" x2="84" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7dfab0"/>
+      <stop offset="0.5" stop-color="#1ed760"/>
+      <stop offset="1" stop-color="#0e9e4a"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="10" y1="10" x2="118" y2="118" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5ff59c"/>
+      <stop offset="1" stop-color="#0b8a3e"/>
+    </linearGradient>
+    <clipPath id="disc"><circle cx="64" cy="64" r="62"/></clipPath>
+  </defs>
+  <!-- The record. -->
+  <circle cx="64" cy="64" r="62" fill="url(#vinyl)"/>
+  <!-- Grooves. -->
+  <g fill="none" stroke="#ffffff" stroke-opacity="0.07" stroke-width="1.2">
+    <circle cx="64" cy="64" r="54"/>
+    <circle cx="64" cy="64" r="46"/>
+    <circle cx="64" cy="64" r="38"/>
+  </g>
+  <!-- Light caught by the grooves, on opposite sides. -->
+  <g clip-path="url(#disc)">
+    <path d="M64 64 L18 6 A62 62 0 0 1 56 2 Z" fill="url(#shine)"/>
+    <path d="M64 64 L110 122 A62 62 0 0 1 72 126 Z" fill="url(#shine)"/>
+  </g>
+  <!-- A green rim, so the record holds its shape on dark panels. -->
+  <circle cx="64" cy="64" r="60" fill="none" stroke="url(#rim)" stroke-width="4"/>
+  <!-- The spot: the label. -->
+  <circle cx="64" cy="64" r="25" fill="url(#label)"/>
+  <circle cx="64" cy="64" r="24.4" fill="none" stroke="#ffffff" stroke-opacity="0.25" stroke-width="1.2"/>
+  <!-- The spindle hole. -->
+  <circle cx="64" cy="64" r="4" fill="#0a0c0b"/>
+</svg>

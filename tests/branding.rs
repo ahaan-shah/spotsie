@@ -40,7 +40,8 @@ fn the_command_reports_its_name_and_passes_the_update_version_check() {
 
 /// The app's earlier names are gone from the code, assets and packaging.
 /// Spelled in halves so this file does not match itself. The second name
-/// remains only in Markdown, which credits the project Spotsie started from.
+/// remains only in Markdown and the website (`site/`), which credit the
+/// project Spotsie started from.
 #[test]
 fn no_file_carries_an_old_name() {
     let first = ["fast", "potify"].concat();
@@ -77,11 +78,12 @@ fn no_file_carries_an_old_name() {
                 .into_owned();
             let text = String::from_utf8_lossy(&std::fs::read(&path).unwrap()).to_lowercase();
             let lower = relative.to_lowercase();
-            let markdown = lower.ends_with(".md");
+            let credits =
+                lower.ends_with(".md") || path.strip_prefix(root).unwrap().starts_with("site");
             if [&first, &second].into_iter().any(|old| {
                 lower.contains(old.as_str())
                     || (text.contains(old.as_str())
-                        && !(markdown && old.as_str() == second.as_str()))
+                        && !(credits && old.as_str() == second.as_str()))
             }) {
                 found.push(relative);
             }

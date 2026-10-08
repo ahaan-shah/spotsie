@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spotsie · Spotify, native and light</title>
+<meta name="description" content="A native Spotify client for Linux, macOS and Windows. Looks like Spotify, opens in a blink, and carries no browser engine. Free and open source.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0D0F0E">
+<meta property="og:title" content="Spotsie">
+<meta property="og:description" content="Spotify, native and light, for Linux, macOS and Windows.">
+<meta property="og:image" content="https://ahaan-shah.github.io/spotsie/media/home-dark.webp">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/Figtree-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/PlusJakartaSans-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/PlusJakartaSans-SemiBoldItalic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+<script>
+  // Before first paint, so a saved light/dark choice never flashes.
+  (() => {
+    const r = document.documentElement;
+    try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") r.dataset.theme = t; } catch {}
+    r.toggleAttribute("data-dark", r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches);
+  })();
+</script>
+</head>
+<body>
+
+<header class="top">
+  <a class="brand" href="#"><img src="icon.svg" alt="" width="28" height="28"> Spotsie</a>
+  <nav>
+    <a href="#tour">Features</a>
+    <a href="#install">Install</a>
+    <a href="#lyrics">Lyrics</a>
+    <button class="mode" type="button" aria-label="Switch between light and dark"><svg class="moon" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M16.5 12.3A6.8 6.8 0 0 1 7.7 3.5a6.8 6.8 0 1 0 8.8 8.8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><svg class="sun" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+    <a class="gh" href="https://github.com/ahaan-shah/spotsie"><svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg><span>GitHub</span></a>
+  </nav>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="record" aria-hidden="true"><img class="hero-icon" src="icon.svg" alt="" width="128" height="128"></div>
+  <h1>Spotify, <em>without the weight</em></h1>
+  <p class="lede">Spotsie is a native Spotify client. It looks like the Spotify you know, opens in a blink, and doesn’t bring a web browser along for the ride.</p>
+  <div class="cta">
+    <a class="btn primary" href="#install">Install Spotsie</a>
+    <a class="btn ghost" href="#tour">Take a look</a>
+  </div>
+  <p class="platforms">Free and open source · Linux, macOS and Windows · Playback needs Spotify Premium</p>
+  <figure class="shot hero-shot reveal">
+    <img class="only-light" src="media/home-light.webp" alt="Spotsie's Home page in Spotsie Light: the library sidebar, playlists, and the player bar" width="1880" height="1175">
+    <img class="only-dark" src="media/home-dark.webp" alt="Spotsie's Home page in Spotsie Dark: the library sidebar, playlists, and the player bar" width="1880" height="1175">
+  </figure>
+</section>
+
+<section class="facts reveal">
+  <div><strong>Native, written in Rust</strong><span>No Electron, no Chromium inside</span></div>
+  <div><strong>Feels like home</strong><span>Laid out like Spotify’s desktop app</span></div>
+  <div><strong>A speaker of its own</strong><span>Spotify Connect, both ways</span></div>
+  <div><strong>No account, no telemetry</strong><span>Just you and Spotify</span></div>
+</section>
+
+<section id="tour" class="tour">
+  <h2 class="reveal">Take a quick look around</h2>
+  <div class="tour-body reveal">
+    <div class="tabs" role="tablist" aria-label="Pages">
+      <button role="tab" aria-selected="false" data-i="0">Playlists</button>
+      <button role="tab" aria-selected="false" data-i="1">Lyrics</button>
+      <button role="tab" aria-selected="false" data-i="2">Cover view</button>
+      <button role="tab" aria-selected="false" data-i="3">Queue</button>
+      <button role="tab" aria-selected="false" data-i="4">Artists</button>
+      <button role="tab" aria-selected="false" data-i="5">Search</button>
+      <button role="tab" aria-selected="false" data-i="6">Settings</button>
+    </div>
+    <div class="stage">
+      <div class="frames shot">
+        <img class="on" src="media/playlist-dark.webp" alt="A playlist" width="1880" height="1175">
+        <img src="media/lyrics.webp" alt="Timed lyrics beside the cover" width="1880" height="1175" loading="lazy">
+        <img src="media/cover.webp" alt="The cover view" width="1880" height="1175" loading="lazy">
+        <img src="media/queue-dark.webp" alt="The queue beside Home" width="1880" height="1175" loading="lazy">
+        <img src="media/artist-dark.webp" alt="An artist's page" width="1880" height="1175" loading="lazy">
+        <img src="media/search-dark.webp" alt="Search results" width="1880" height="1175" loading="lazy">
+        <img src="media/settings-light.webp" alt="Settings, in Spotsie Light" width="1880" height="1175" loading="lazy">
+      </div>
+      <p class="caption" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<section id="install" class="install">
+  <h2 class="reveal">Install in one line</h2>
+  <p class="sub reveal">Paste this into a terminal. It downloads the latest release, checks it, and puts Spotsie in your apps.</p>
+  <div class="installer reveal">
+    <div class="seg" role="tablist" aria-label="Platform">
+      <button role="tab" data-os="unix" aria-selected="true">Linux &amp; macOS</button>
+      <button role="tab" data-os="win" aria-selected="false">Windows</button>
+    </div>
+    <div class="cmd" data-os="unix">
+      <span class="prompt">$</span>
+      <code>curl -fsSL https://raw.githubusercontent.com/ahaan-shah/spotsie/main/install.sh | sh</code>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <div class="cmd" data-os="win" hidden>
+      <span class="prompt">PS&gt;</span>
+      <code>irm https://raw.githubusercontent.com/ahaan-shah/spotsie/main/install.ps1 | iex</code>
+      <button class="copy" type="button">Copy</button>
+    </div>
+    <p class="note" data-os="unix">Paste this in your terminal</p>
+    <p class="note" data-os="win" hidden>Paste this in PowerShell</p>
+    <div class="direct" data-os="win" hidden>
+      <p>If you prefer downloading directly, you can install the <code>.exe</code> and set it up the way you’re used to on Windows.</p>
+      <a class="btn primary" href="https://github.com/ahaan-shah/spotsie/releases/latest/download/spotsie-setup.exe" download><svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 16.5h12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Download spotsie-setup.exe</a>
+    </div>
+  </div>
+  <p class="fine reveal">More downloads (.deb, .rpm, AppImage, Flatpak, portable archives) are on the <a href="https://github.com/ahaan-shah/spotsie/releases/latest">latest release</a>.</p>
+</section>
+
+<section id="lyrics" class="pair">
+  <h2 class="reveal">Sing along, <em>badly</em></h2>
+  <p class="sub reveal">Timed lyrics that follow the song, and a cover view that fills the room. Both go full screen, and the player bar steps aside until you reach for it.</p>
+  <div class="pair-grid reveal">
+    <figure class="shot"><img src="media/lyrics.webp" alt="Lyrics following the song beside the cover" width="1880" height="1175" loading="lazy"></figure>
+    <figure class="shot"><img src="media/cover.webp" alt="The cover view" width="1880" height="1175" loading="lazy"></figure>
+  </div>
+</section>
+
+<section id="themes" class="themes">
+  <h2 class="reveal">Make it yours</h2>
+  <p class="sub reveal">Eleven themes and nine fonts, crossfading as you switch. Or let it follow your system.</p>
+  <div class="deck theme-deck reveal" aria-roledescription="carousel" aria-label="Themes">
+    <div class="cards">
+      <figure class="card shot" data-name="Spotsie Dark"><img src="media/playlist-dark.webp" alt="Spotsie in the Spotsie Dark theme" width="1880" height="1175" loading="lazy"></figure>
+      <figure class="card shot" data-name="Spotsie Light"><img src="media/playlist-light.webp" alt="Spotsie in the Spotsie Light theme" width="1880" height="1175" loading="lazy"></figure>
+      <figure class="card shot" data-name="Catppuccin"><img src="media/themes/catppuccin.webp" alt="Spotsie in the Catppuccin theme" width="1880" height="1175" loading="lazy"></figure>
+      <figure class="card shot" data-name="Rosé Pine Dawn"><img src="media/themes/rose-pine-dawn.webp" alt="Spotsie in the Rosé Pine Dawn theme" width="1880" height="1175" loading="lazy"></figure>
+      <figure class="card shot" data-name="Tokyo Night"><img src="media/themes/tokyo-night.webp" alt="Spotsie in the Tokyo Night theme" width="1880" height="1175" loading="lazy"></figure>
+      <figure class="card shot" data-name="Flexoki"><img src="media/themes/flexoki.webp" alt="Spotsie in the Flexoki theme" width="1880" height="1175" loading="lazy"></figure>
+      <figure class="card shot" data-name="Nord"><img src="media/themes/nord.webp" alt="Spotsie in the Nord theme" width="1880" height="1175" loading="lazy"></figure>
+      <figure class="card shot" data-name="Catppuccin Latte"><img src="media/themes/catppuccin-latte.webp" alt="Spotsie in the Catppuccin Latte theme" width="1880" height="1175" loading="lazy"></figure>
+      <figure class="card shot" data-name="Gruvbox"><img src="media/themes/gruvbox.webp" alt="Spotsie in the Gruvbox theme" width="1880" height="1175" loading="lazy"></figure>
+      <figure class="card shot" data-name="Rosé Pine"><img src="media/themes/rose-pine.webp" alt="Spotsie in the Rosé Pine theme" width="1880" height="1175" loading="lazy"></figure>
+      <figure class="card shot" data-name="Everforest"><img src="media/themes/everforest.webp" alt="Spotsie in the Everforest theme" width="1880" height="1175" loading="lazy"></figure>
+    </div>
+    <button class="nav prev" type="button" aria-label="Previous theme"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="nav next" type="button" aria-label="Next theme"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+  <p class="deck-label reveal" aria-live="polite"><span></span></p>
+</section>
+
+<section class="quotes">
+  <h2 class="reveal">What people are definitely saying</h2>
+  <div class="deck quote-deck reveal" data-auto="6000" aria-roledescription="carousel" aria-label="Made-up testimonials">
+    <div class="cards">
+      <figure class="card quote"><blockquote>“My laptop fan used to sing along to every song. Now it’s just me. Sorry, neighbours.”</blockquote><figcaption><b>Marco T.</b>Former fan owner</figcaption></figure>
+      <figure class="card quote"><blockquote>“I double-clicked a song and it played. Immediately. I had to sit down.”</blockquote><figcaption><b>Priya S.</b>Easily moved</figcaption></figure>
+      <figure class="card quote"><blockquote>“It looks exactly like Spotify, so my partner still hasn’t noticed I switched. Our relationship is built on this.”</blockquote><figcaption><b>Jordan K.</b>Keeping one secret</figcaption></figure>
+      <figure class="card quote"><blockquote>“I closed forty browser tabs to make room for my music player. Turns out I didn’t have to.”</blockquote><figcaption><b>Dev, Senior Engineer</b>Reopened all forty</figcaption></figure>
+      <figure class="card quote"><blockquote>“The lyrics follow the song so well I’ve stopped making up my own. My band is furious.”</blockquote><figcaption><b>Sam L.</b>Retired lyricist</figcaption></figure>
+      <figure class="card quote"><blockquote>“The icon is a vinyl record. I’ve never owned a record. I now describe myself as a collector.”</blockquote><figcaption><b>Ava R.</b>Vinyl adjacent</figcaption></figure>
+      <figure class="card quote"><blockquote>“It said ‘Update available’ and then waited for me. Nothing has waited for me since 2009.”</blockquote><figcaption><b>Gerald P.</b>Trusts buttons again</figcaption></figure>
+    </div>
+    <button class="nav prev" type="button" aria-label="Previous"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="nav next" type="button" aria-label="Next"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+  <p class="fine reveal">Testimonials are made up. The app is real.</p>
+</section>
+
+<section class="credits reveal">
+  <h2>Standing on good shoulders</h2>
+  <p>Spotsie started from <a href="https://github.com/crmne/spotifast">Spotifast</a> by <a href="https://github.com/crmne">Carmine Paolino</a>. Its sign-in, playback, Spotify Connect and storage are Spotifast’s proven backend; the interface is Spotsie’s own. Playback runs on <a href="https://github.com/librespot-org/librespot">librespot</a>, the window on <a href="https://github.com/emilk/egui">egui</a>, and the lyrics come from Spotify and <a href="https://lrclib.net">LRCLIB</a>.</p>
+  <p>The music, artwork and metadata are <b>Spotify</b>’s, through your own Premium account. Spotify is a trademark of Spotify AB, and Spotsie is an independent project, not affiliated with or endorsed by Spotify.</p>
+</section>
+
+<section class="maker reveal">
+  <a href="https://github.com/ahaan-shah">
+    <img src="media/ahaan.jpg" alt="" width="64" height="64">
+    <span><small>Made by</small><b>Ahaan Shah</b><span class="handle">github.com/ahaan-shah</span></span>
+  </a>
+</section>
+
+</main>
+
+<footer>
+  <span>Spotsie · MIT licensed · Built on Spotifast · Not affiliated with Spotify</span>
+  <span><a href="https://github.com/ahaan-shah/spotsie">Source</a> · <a href="https://github.com/ahaan-shah/spotsie/releases">Releases</a> · <a href="https://github.com/crmne/spotifast">Spotifast</a></span>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>
