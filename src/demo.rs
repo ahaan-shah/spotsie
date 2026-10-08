@@ -1791,7 +1791,7 @@ mod tests {
                     (
                         Loadable::Loaded(None),
                         vec![
-                            gettext(locale, "No lyrics").into_owned(),
+                            gettext(locale, "Lyrics not available").into_owned(),
                             gettext(locale, "No lyrics found for this track.").into_owned(),
                         ],
                     ),

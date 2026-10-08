@@ -117,16 +117,46 @@ pub async fn fetch(
     cache_dir: &Path,
     query: &Query,
 ) -> Result<Option<Lyrics>> {
+    fetch_from(http, API, cache_dir, query).await
+}
+
+async fn fetch_from(
+    http: &reqwest::Client,
+    api: &str,
+    cache_dir: &Path,
+    query: &Query,
+) -> Result<Option<Lyrics>> {
     let cache_path = cache_dir.join(format!("{}.json", cache_key(query)));
     if let Some(cached) = read_cache(&cache_path) {
         return Ok(cached);
     }
-    let found = lookup(http, query).await?;
+    let found = match lookup(http, api, query).await {
+        Ok(found) => found,
+        // LRCLIB is down or overloaded: for the listener that is the same as
+        // no lyrics, but it is not remembered, so the next visit asks again.
+        Err(error) if error.is::<Unavailable>() => {
+            log::debug!("lyrics unavailable for now: {error:#}");
+            return Ok(None);
+        }
+        Err(error) => return Err(error),
+    };
     write_cache(&cache_path, &found);
     Ok(found)
 }
 
-async fn lookup(http: &reqwest::Client, query: &Query) -> Result<Option<Lyrics>> {
+/// LRCLIB answered with a server error (a 503 when it is overloaded).
+#[derive(Debug)]
+struct Unavailable(reqwest::StatusCode);
+
+impl std::fmt::Display for Unavailable {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(formatter, "LRCLIB answered {}", self.0)
+    }
+}
+
+impl std::error::Error for Unavailable {}
+
+async fn lookup(http: &reqwest::Client, api: &str, query: &Query) -> Result<Option<Lyrics>> {
     let title = clean_title(&query.title);
     let artist = clean_artist(&query.artist);
     if title.is_empty() || artist.is_empty() {
@@ -143,13 +173,14 @@ async fn lookup(http: &reqwest::Client, query: &Query) -> Result<Option<Lyrics>>
     if query.duration_ms > 0 {
         exact.push(("duration", duration.as_str()));
     }
-    if let Some(record) = get::<Record>(http, "/get", &exact).await?
+    if let Some(record) = get::<Record>(http, api, "/get", &exact).await?
         && let Some(lyrics) = record.lyrics()
     {
         return Ok(Some(lyrics));
     }
     let candidates = get::<Vec<Record>>(
         http,
+        api,
         "/search",
         &[
             ("artist_name", artist.as_str()),
@@ -165,11 +196,12 @@ async fn lookup(http: &reqwest::Client, query: &Query) -> Result<Option<Lyrics>>
 /// "that is not a question I can answer"; neither is a fault worth showing.
 async fn get<T: DeserializeOwned>(
     http: &reqwest::Client,
+    api: &str,
     path: &str,
     params: &[(&str, &str)],
 ) -> Result<Option<T>> {
     let response = http
-        .get(format!("{API}{path}"))
+        .get(format!("{api}{path}"))
         .query(params)
         .header("Accept", "application/json")
         .send()
@@ -178,6 +210,9 @@ async fn get<T: DeserializeOwned>(
     let status = response.status();
     if status == reqwest::StatusCode::NOT_FOUND || status == reqwest::StatusCode::BAD_REQUEST {
         return Ok(None);
+    }
+    if status.is_server_error() {
+        return Err(Unavailable(status).into());
     }
     if !status.is_success() {
         anyhow::bail!("LRCLIB answered {status}");
@@ -609,6 +644,49 @@ fn write_cache(path: &Path, found: &Option<Lyrics>) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_server_error_reads_as_no_lyrics_and_is_not_remembered() {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let cache = std::env::temp_dir().join(format!("spotsie-lyrics-503-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&cache);
+        std::fs::create_dir_all(&cache).unwrap();
+        runtime.block_on(async {
+            let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let api = format!("http://{}/api", listener.local_addr().unwrap());
+            let server = tokio::spawn(async move {
+                let (mut socket, _) = listener.accept().await.unwrap();
+                let mut request = Vec::new();
+                while !request.ends_with(b"\r\n\r\n") {
+                    request.push(socket.read_u8().await.unwrap());
+                }
+                socket
+                    .write_all(
+                        b"HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+                    )
+                    .await
+                    .unwrap();
+            });
+            let query = Query {
+                artist: "Artist".into(),
+                title: "Song".into(),
+                album: String::new(),
+                duration_ms: 200_000,
+            };
+            let http = reqwest::Client::builder().no_proxy().build().unwrap();
+            let found = fetch_from(&http, &api, &cache, &query)
+                .await
+                .unwrap();
+            assert_eq!(found, None);
+            server.await.unwrap();
+        });
+        assert_eq!(std::fs::read_dir(&cache).unwrap().count(), 0);
+        let _ = std::fs::remove_dir_all(&cache);
+    }
 
     #[test]
     fn a_featuring_is_cut_where_it_starts_whatever_the_case_costs() {

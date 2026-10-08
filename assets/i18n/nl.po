@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spotsie\n"
 "Report-Msgid-Bugs-To: https://github.com/ahaan-shah/spotsie/issues/new\n"
-"POT-Creation-Date: 2026-10-07 18:26+0530\n"
+"POT-Creation-Date: 2026-10-08 20:52+0530\n"
 "PO-Revision-Date: 2026-09-09 13:30+0000\n"
 "Last-Translator: Spotsie contributors\n"
 "Language-Team: Dutch\n"
@@ -27,13 +27,13 @@ msgstr "{name} pauzeren"
 msgid "Play {name}"
 msgstr "{name} afspelen"
 
-#: src/ui/sidebar.rs:300 src/app.rs:2370 src/app.rs:15678
+#: src/ui/sidebar.rs:300 src/app.rs:2381 src/app.rs:15711
 #: src/ui/collection.rs:1720 src/ui/collection.rs:1897
 msgid "Playlist"
 msgstr "Playlist"
 
-#: src/ui/sidebar.rs:310 src/app.rs:2344 src/app.rs:15683
-#: src/ui/collection.rs:1890 src/ui/home.rs:49 src/ui/keys.rs:239
+#: src/ui/sidebar.rs:310 src/app.rs:2355 src/app.rs:15716
+#: src/ui/collection.rs:1890 src/ui/home.rs:49 src/ui/keys.rs:243
 msgid "Liked Songs"
 msgstr "Gelikete nummers"
 
@@ -61,111 +61,112 @@ msgstr "Lokale aangepaste volgorde"
 msgid "Spotify custom order"
 msgstr "Aangepaste Spotify-volgorde"
 
-#: src/ui/sidebar.rs:714
+#: src/ui/sidebar.rs:717
 msgid "Folder"
 msgstr "Map"
 
 #. Translators: {owner} is the name of the playlist's owner.
-#: src/ui/sidebar.rs:822 src/ui/search.rs:214
+#: src/ui/sidebar.rs:825 src/ui/search.rs:214
 #, rust-format
 msgid "Playlist • {owner}"
 msgstr "Playlist • {owner}"
 
-#: src/ui/sidebar.rs:880 src/i18n.rs:255 src/i18n.rs:258 src/ui/keys.rs:235
-#: src/ui/topbar.rs:239
+#: src/ui/sidebar.rs:883 src/i18n.rs:255 src/i18n.rs:258 src/ui/keys.rs:239
+#: src/ui/topbar.rs:364
 msgid "Home"
 msgstr "Home"
 
-#: src/ui/sidebar.rs:891 src/app.rs:5773 src/ui/keys.rs:226
+#: src/ui/sidebar.rs:894 src/app.rs:5780 src/ui/keys.rs:230
+#: src/ui/topbar.rs:444
 msgid "Search"
 msgstr "Zoeken"
 
-#: src/ui/sidebar.rs:922
+#: src/ui/sidebar.rs:925
 msgid "Hide sidebar (Ctrl+B)"
 msgstr "Zijbalk verbergen (Ctrl+B)"
 
-#: src/ui/sidebar.rs:923
+#: src/ui/sidebar.rs:926
 msgid "Hide sidebar (Cmd+B)"
 msgstr "Zijbalk verbergen (Cmd+B)"
 
-#: src/ui/sidebar.rs:955
+#: src/ui/sidebar.rs:958
 msgid "Show as list"
 msgstr "Weergeven als lijst"
 
-#: src/ui/sidebar.rs:957
+#: src/ui/sidebar.rs:960
 msgid "Show as grid"
 msgstr "Weergeven als raster"
 
-#: src/ui/sidebar.rs:970
+#: src/ui/sidebar.rs:973
 msgid "Create a playlist"
 msgstr "Playlist maken"
 
-#: src/ui/sidebar.rs:986
+#: src/ui/sidebar.rs:989
 msgid "Search Your Library"
 msgstr "Bibliotheek doorzoeken"
 
-#: src/ui/sidebar.rs:1002
+#: src/ui/sidebar.rs:1005
 msgid "Library"
 msgstr "Bibliotheek"
 
-#: src/ui/sidebar.rs:1041 src/app.rs:5746 src/model.rs:636 src/ui/search.rs:647
+#: src/ui/sidebar.rs:1044 src/app.rs:5753 src/model.rs:636 src/ui/search.rs:647
 msgid "Playlists"
 msgstr "Playlists"
 
-#: src/ui/sidebar.rs:1042 src/model.rs:635 src/model.rs:749
+#: src/ui/sidebar.rs:1045 src/model.rs:635 src/model.rs:749
 #: src/ui/library.rs:17 src/ui/search.rs:575
 msgid "Albums"
 msgstr "Albums"
 
-#: src/ui/sidebar.rs:1043 src/model.rs:634 src/ui/library.rs:22
+#: src/ui/sidebar.rs:1046 src/model.rs:634 src/ui/library.rs:22
 #: src/ui/search.rs:508
 msgid "Artists"
 msgstr "Artiesten"
 
-#: src/ui/sidebar.rs:1044 src/model.rs:637 src/ui/library.rs:27
+#: src/ui/sidebar.rs:1047 src/model.rs:637 src/ui/library.rs:27
 #: src/ui/search.rs:697
 msgid "Podcasts"
 msgstr "Podcasts"
 
-#: src/ui/sidebar.rs:1064
+#: src/ui/sidebar.rs:1067
 msgid "Search in Your Library"
 msgstr "Zoeken in je bibliotheek"
 
-#: src/ui/sidebar.rs:1192 src/app.rs:2405 src/ui/artist.rs:203
+#: src/ui/sidebar.rs:1195 src/app.rs:2416 src/ui/artist.rs:203
 #: src/ui/artist.rs:311 src/ui/home.rs:563 src/ui/library.rs:100
 #: src/ui/search.rs:145 src/ui/search.rs:472
 msgid "Artist"
 msgstr "Artiest"
 
 #. Translators: {publisher} is the podcast's publisher.
-#: src/ui/sidebar.rs:1228 src/ui/search.rs:239
+#: src/ui/sidebar.rs:1231 src/ui/search.rs:239
 #, rust-format
 msgid "Podcast • {publisher}"
 msgstr "Podcast • {publisher}"
 
-#: src/ui/sidebar.rs:1286
+#: src/ui/sidebar.rs:1289
 msgid "Nothing here yet."
 msgstr "Hier staat nog niets."
 
-#: src/ui/sidebar.rs:1288
+#: src/ui/sidebar.rs:1291
 msgid "No matches."
 msgstr "Geen resultaten."
 
-#: src/ui/sidebar.rs:1922
+#: src/ui/sidebar.rs:1925
 msgid "Sort by recently played"
 msgstr "Sorteren op onlangs afgespeeld"
 
-#: src/ui/sidebar.rs:1943 src/ui/player_bar.rs:399 src/ui/widgets.rs:1272
+#: src/ui/sidebar.rs:1946 src/ui/player_bar.rs:440 src/ui/widgets.rs:1272
 #: src/ui/artist.rs:341 src/ui/collection.rs:214 src/ui/search.rs:390
 #: src/ui/show.rs:311
 msgid "Play"
 msgstr "Afspelen"
 
-#: src/ui/sidebar.rs:1961
+#: src/ui/sidebar.rs:1964
 msgid "Unpin"
 msgstr "Losmaken"
 
-#: src/ui/sidebar.rs:1963
+#: src/ui/sidebar.rs:1966
 msgid "Pin to top"
 msgstr "Bovenaan vastzetten"
 
@@ -213,85 +214,85 @@ msgstr "{name}, map, samengevouwen"
 msgid "{name}, folder, expanded"
 msgstr "{name}, map, uitgevouwen"
 
-#: src/ui/player_bar.rs:118 src/ui/lyrics.rs:121 src/ui/lyrics.rs:505
+#: src/ui/player_bar.rs:159 src/ui/lyrics.rs:227 src/ui/lyrics.rs:624
 msgid "Nothing playing"
 msgstr "Er wordt niets afgespeeld"
 
-#: src/ui/player_bar.rs:124 src/app.rs:7058
+#: src/ui/player_bar.rs:165 src/app.rs:7065
 msgid "Pick a song, album, or playlist"
 msgstr "Kies een nummer, album of playlist"
 
-#: src/ui/player_bar.rs:255 src/ui/widgets.rs:871 src/ui/widgets.rs:1102
+#: src/ui/player_bar.rs:296 src/ui/widgets.rs:871 src/ui/widgets.rs:1102
 #: src/ui/widgets.rs:2007
 msgid "Remove from Liked Songs"
 msgstr "Verwijderen uit Gelikete nummers"
 
-#: src/ui/player_bar.rs:261 src/ui/widgets.rs:874 src/ui/widgets.rs:1105
+#: src/ui/player_bar.rs:302 src/ui/widgets.rs:874 src/ui/widgets.rs:1105
 #: src/ui/widgets.rs:2009
 msgid "Save to Liked Songs"
 msgstr "Opslaan in Gelikete nummers"
 
-#: src/ui/player_bar.rs:343 src/ui/player_bar.rs:350 src/ui/collection.rs:260
+#: src/ui/player_bar.rs:384 src/ui/player_bar.rs:391 src/ui/collection.rs:260
 msgid "Shuffle"
 msgstr "Willekeurige volgorde"
 
-#: src/ui/player_bar.rs:364
+#: src/ui/player_bar.rs:405
 msgid "Previous"
 msgstr "Vorige"
 
-#: src/ui/player_bar.rs:397 src/ui/collection.rs:212
+#: src/ui/player_bar.rs:438 src/ui/collection.rs:212
 msgid "Pause"
 msgstr "Pauzeren"
 
-#: src/ui/player_bar.rs:415
+#: src/ui/player_bar.rs:456
 msgid "Next"
 msgstr "Volgende"
 
-#: src/ui/player_bar.rs:423
+#: src/ui/player_bar.rs:464
 msgid "Repeat"
 msgstr "Herhalen"
 
-#: src/ui/player_bar.rs:427
+#: src/ui/player_bar.rs:468
 msgid "Repeat one"
 msgstr "Eén nummer herhalen"
 
-#: src/ui/player_bar.rs:432
+#: src/ui/player_bar.rs:473
 msgid "Repeat off"
 msgstr "Herhalen uit"
 
-#: src/ui/player_bar.rs:493
+#: src/ui/player_bar.rs:534
 msgid "Playback position (%)"
 msgstr "Afspeelpositie (%)"
 
-#: src/ui/player_bar.rs:536
+#: src/ui/player_bar.rs:577
 msgid "Volume (%)"
 msgstr "Volume (%)"
 
-#: src/ui/player_bar.rs:569
+#: src/ui/player_bar.rs:610
 msgid "Unmute"
 msgstr "Geluid aan"
 
-#: src/ui/player_bar.rs:571
+#: src/ui/player_bar.rs:612
 msgid "Mute"
 msgstr "Dempen"
 
-#: src/ui/player_bar.rs:587
+#: src/ui/player_bar.rs:628
 msgid "This device's volume can't be changed from Spotsie"
 msgstr "Het volume van dit apparaat kan niet vanuit Spotsie worden gewijzigd"
 
-#: src/ui/player_bar.rs:602 src/ui/devices.rs:193
+#: src/ui/player_bar.rs:643 src/ui/devices.rs:193
 msgid "Connect to a device"
 msgstr "Verbinden met een apparaat"
 
-#: src/ui/player_bar.rs:621 src/ui/queue.rs:23 src/ui/queue.rs:80
+#: src/ui/player_bar.rs:662 src/ui/queue.rs:23 src/ui/queue.rs:80
 msgid "Queue"
 msgstr "Wachtrij"
 
-#: src/ui/player_bar.rs:647 src/ui/lyrics.rs:183
+#: src/ui/player_bar.rs:688 src/ui/lyrics.rs:295
 msgid "Lyrics"
 msgstr "Songtekst"
 
-#: src/ui/player_bar.rs:663
+#: src/ui/player_bar.rs:704
 msgid "Cover view"
 msgstr "Hoesweergave"
 
@@ -299,7 +300,7 @@ msgstr "Hoesweergave"
 msgid "Recent"
 msgstr "Recent"
 
-#: src/ui/queue.rs:93 src/ui/lyrics.rs:211 src/ui/mod.rs:535
+#: src/ui/queue.rs:93 src/ui/mod.rs:594
 msgid "Close"
 msgstr "Sluiten"
 
@@ -354,60 +355,60 @@ msgstr "Afgespeelde nummers verschijnen hier."
 msgid "Load more"
 msgstr "Meer laden"
 
-#: src/ui/lyrics.rs:122
+#: src/ui/lyrics.rs:228
 msgid "Play a song to see it here."
 msgstr "Speel een nummer af om het hier te zien."
 
-#: src/ui/lyrics.rs:197
+#: src/ui/lyrics.rs:309
 msgid "Leave full screen (Esc)"
 msgstr "Volledig scherm verlaten (Esc)"
 
-#: src/ui/lyrics.rs:228
+#: src/ui/lyrics.rs:324
 msgid "Full screen"
 msgstr "Volledig scherm"
 
-#: src/ui/lyrics.rs:230
+#: src/ui/lyrics.rs:326
 msgid "Full screen lyrics"
 msgstr "Songtekst op volledig scherm"
 
-#: src/ui/lyrics.rs:246
+#: src/ui/lyrics.rs:342
 msgctxt "lyrics"
 msgid "Follow"
 msgstr "Volgen"
 
-#: src/ui/lyrics.rs:311 src/ui/lyrics.rs:546
+#: src/ui/lyrics.rs:420 src/ui/lyrics.rs:665
 msgid "Instrumental"
 msgstr "Instrumentaal"
 
-#: src/ui/lyrics.rs:312 src/ui/lyrics.rs:547
+#: src/ui/lyrics.rs:421 src/ui/lyrics.rs:666
 msgid "No timed lyrics for this track."
 msgstr "Geen gesynchroniseerde songtekst voor dit nummer."
 
-#: src/ui/lyrics.rs:315 src/ui/lyrics.rs:536
-msgid "No lyrics"
-msgstr "Geen songtekst"
+#: src/ui/lyrics.rs:424 src/ui/lyrics.rs:655
+msgid "Lyrics not available"
+msgstr ""
 
-#: src/ui/lyrics.rs:316 src/ui/lyrics.rs:537
+#: src/ui/lyrics.rs:425 src/ui/lyrics.rs:656
 msgid "No lyrics found for this track."
 msgstr "Geen songtekst gevonden voor dit nummer."
 
 #. Translators: Keep {error} unchanged. It is the original failure detail.
-#: src/ui/lyrics.rs:322 src/ui/lyrics.rs:519
+#: src/ui/lyrics.rs:431 src/ui/lyrics.rs:638
 #, rust-format
 msgid "Couldn't fetch the lyrics: {error}"
 msgstr "Kan de songtekst niet ophalen: {error}"
 
-#: src/ui/lyrics.rs:329 src/ui/widgets.rs:2775 src/app.rs:9787
+#: src/ui/lyrics.rs:438 src/ui/widgets.rs:2775 src/app.rs:9821
 #: src/ui/collection.rs:753
 msgid "Loading…"
 msgstr "Laden…"
 
-#: src/ui/lyrics.rs:349 src/ui/lyrics.rs:525 src/ui/settings.rs:392
+#: src/ui/lyrics.rs:458 src/ui/lyrics.rs:644 src/ui/settings.rs:408
 #: src/ui/login.rs:106
 msgid "Try again"
 msgstr "Opnieuw proberen"
 
-#: src/ui/lyrics.rs:506
+#: src/ui/lyrics.rs:625
 msgid "Play a song to see its lyrics."
 msgstr "Speel een nummer af om de songtekst te zien."
 
@@ -416,7 +417,7 @@ msgstr "Speel een nummer af om de songtekst te zien."
 msgid "Add to queue"
 msgstr "Toevoegen aan wachtrij"
 
-#: src/ui/widgets.rs:890 src/ui/widgets.rs:1166 src/ui/keys.rs:201
+#: src/ui/widgets.rs:890 src/ui/widgets.rs:1166 src/ui/keys.rs:205
 msgid "Remove from this playlist"
 msgstr "Verwijderen uit deze playlist"
 
@@ -628,18 +629,18 @@ msgstr ""
 "De proxy zet Spotify-hostnamen om. Lokaal afspelen maakt rechtstreeks "
 "verbinding."
 
-#: src/app.rs:690
+#: src/app.rs:693
 msgid "Restoring proxy settings"
 msgstr "Proxyinstellingen worden hersteld"
 
 #. Translators: {name} is the name of a speaker or other playback device.
-#: src/app.rs:1820
+#: src/app.rs:1824
 #, rust-format
 msgid "{name} is ready"
 msgstr "{name} is klaar"
 
 #. Translators: {error} is a sentence saying why the proxy password could not be stored.
-#: src/app.rs:1846
+#: src/app.rs:1850
 #, rust-format
 msgid ""
 "{error} The original settings file is kept intact; changed preferences are "
@@ -649,53 +650,53 @@ msgstr ""
 "gewijzigde voorkeuren worden nog niet opgeslagen."
 
 #. Translators: {version} is a version number such as 1.4.0.
-#: src/app.rs:1970
+#: src/app.rs:1979
 #, rust-format
 msgid "Spotsie {version} is available"
 msgstr "Spotsie {version} is beschikbaar"
 
-#: src/app.rs:1987
+#: src/app.rs:1998
 msgid "Spotsie is up to date"
 msgstr "Spotsie is up-to-date"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:1995
+#: src/app.rs:2006 src/app.rs:9203
 #, rust-format
 msgid "Couldn't check for updates: {error}"
 msgstr "Kan niet controleren op updates: {error}"
 
 #. Translators: {error} is an error message from the playback engine.
-#: src/app.rs:2068
+#: src/app.rs:2079
 #, rust-format
 msgid "Local playback: {error}"
 msgstr "Lokaal afspelen: {error}"
 
-#: src/app.rs:2245
+#: src/app.rs:2256
 msgid "Spotify audio disconnected. Reconnecting local playback"
 msgstr "Spotify-audio verbroken. Lokaal afspelen maakt opnieuw verbinding"
 
-#: src/app.rs:2352 src/app/radio.rs:171 src/ui/radio.rs:35 src/ui/radio.rs:79
+#: src/app.rs:2363 src/app/radio.rs:171 src/ui/radio.rs:35 src/ui/radio.rs:79
 msgid "Radio"
 msgstr "Radio"
 
-#: src/app.rs:2386 src/api/models.rs:259
+#: src/app.rs:2397 src/api/models.rs:259
 msgid "Album"
 msgstr "Album"
 
-#: src/app.rs:2424 src/ui/show.rs:124
+#: src/app.rs:2435 src/ui/show.rs:124
 msgid "Podcast"
 msgstr "Podcast"
 
-#: src/app.rs:2870
+#: src/app.rs:2877
 msgid "Proxy applied. Restarting local playback."
 msgstr "Proxy toegepast. Lokaal afspelen wordt opnieuw gestart."
 
-#: src/app.rs:2872
+#: src/app.rs:2879
 msgid "Proxy settings applied"
 msgstr "Proxyinstellingen toegepast"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:2879
+#: src/app.rs:2886
 #, rust-format
 msgid ""
 "Proxy could not be applied: {error}. Previous connection settings are still "
@@ -704,39 +705,39 @@ msgstr ""
 "Proxy kan niet worden toegepast: {error}. De vorige verbindingsinstellingen "
 "blijven in gebruik."
 
-#: src/app.rs:4210
+#: src/app.rs:4217
 msgid "Queue cleared"
 msgstr "Wachtrij gewist"
 
 #. Translators: Keep {date} unchanged. It is a date in YYYY-MM-DD form.
-#: src/app.rs:4240 src/app.rs:15668
+#: src/app.rs:4247 src/app.rs:15701
 #, rust-format
 msgid "Queue {date}"
 msgstr "Wachtrij {date}"
 
-#: src/app.rs:4680
+#: src/app.rs:4687
 msgid "Your Spotify sign-in expired. Please sign in again."
 msgstr "Je Spotify-aanmelding is verlopen. Log opnieuw in."
 
 #. Translators: {error} is an error message.
-#: src/app.rs:4687
+#: src/app.rs:4694
 #, rust-format
 msgid "Couldn't load your profile: {error}"
 msgstr "Kan je profiel niet laden: {error}"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:4726
+#: src/app.rs:4733
 #, rust-format
 msgid "Couldn't list devices: {error}"
 msgstr "Kan apparaten niet ophalen: {error}"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5049
+#: src/app.rs:5056
 #, rust-format
 msgid "Couldn't load more playlists: {error}"
 msgstr "Kan niet meer playlists laden: {error}"
 
-#: src/app.rs:5095
+#: src/app.rs:5102
 msgid ""
 "Spotify hasn't confirmed your playlist changes yet. Try refreshing again."
 msgstr ""
@@ -744,150 +745,150 @@ msgstr ""
 "vernieuwen."
 
 #. Translators: {name} is a playlist name.
-#: src/app.rs:5291
+#: src/app.rs:5298
 #, rust-format
 msgid "Created {name}"
 msgstr "{name} gemaakt"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5313
+#: src/app.rs:5320
 #, rust-format
 msgid "Couldn't create the playlist: {error}"
 msgstr "Kan de playlist niet maken: {error}"
 
-#: src/app.rs:5367
+#: src/app.rs:5374
 msgid "Playlist cover updated"
 msgstr "Playlistcover bijgewerkt"
 
-#: src/app.rs:5376
+#: src/app.rs:5383
 msgid "Playlist updated"
 msgstr "Playlist bijgewerkt"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5386 src/app.rs:5501
+#: src/app.rs:5393 src/app.rs:5508
 #, rust-format
 msgid "Couldn't update the playlist: {error}"
 msgstr "Kan de playlist niet bijwerken: {error}"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5460
+#: src/app.rs:5467
 #, rust-format
 msgid "Playlist change failed: {error}"
 msgstr "Playlistwijziging mislukt: {error}"
 
-#: src/app.rs:5486
+#: src/app.rs:5493
 msgid "Added to Your Library"
 msgstr "Toegevoegd aan Jouw bibliotheek"
 
-#: src/app.rs:5488 src/app.rs:5680
+#: src/app.rs:5495 src/app.rs:5687
 msgid "Removed from Your Library"
 msgstr "Verwijderd uit Jouw bibliotheek"
 
-#: src/app.rs:5673
+#: src/app.rs:5680
 msgid "Added to Liked Songs"
 msgstr "Toegevoegd aan Gelikete nummers"
 
-#: src/app.rs:5675
+#: src/app.rs:5682
 msgid "Removed from Liked Songs"
 msgstr "Verwijderd uit Gelikete nummers"
 
-#: src/app.rs:5677
+#: src/app.rs:5684
 msgid "Following artist"
 msgstr "Je volgt de artiest"
 
-#: src/app.rs:5678
+#: src/app.rs:5685
 msgid "Unfollowed artist"
 msgstr "Je volgt de artiest niet meer"
 
-#: src/app.rs:5679
+#: src/app.rs:5686
 msgid "Saved to Your Library"
 msgstr "Opgeslagen in Jouw bibliotheek"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5694
+#: src/app.rs:5701
 #, rust-format
 msgid "Couldn't update your library: {error}"
 msgstr "Kan je bibliotheek niet bijwerken: {error}"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5946
+#: src/app.rs:5953
 #, rust-format
 msgid "Cannot open this song: {error}"
 msgstr "Kan dit nummer niet openen: {error}"
 
-#: src/app.rs:5960
+#: src/app.rs:5967
 msgid "This episode's podcast is not on Spotify"
 msgstr "De podcast van deze aflevering staat niet op Spotify"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5965
+#: src/app.rs:5972
 #, rust-format
 msgid "Cannot open this episode: {error}"
 msgstr "Kan deze aflevering niet openen: {error}"
 
-#: src/app.rs:6002
+#: src/app.rs:6009
 msgid "Choose a device from the devices menu first."
 msgstr "Kies eerst een apparaat in het apparatenmenu."
 
 #. Translators: {error} is an error message.
-#: src/app.rs:6025
+#: src/app.rs:6032
 #, rust-format
 msgid "Couldn't switch device: {error}"
 msgstr "Kan niet van apparaat wisselen: {error}"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:6036 src/app.rs:6060
+#: src/app.rs:6043 src/app.rs:6067
 #, rust-format
 msgid "Couldn't add to queue: {error}"
 msgstr "Kan niet toevoegen aan wachtrij: {error}"
 
-#: src/app.rs:6139
+#: src/app.rs:6146
 msgid "This song's album is not on Spotify"
 msgstr "Het album van dit nummer staat niet op Spotify"
 
-#: src/app.rs:6156
+#: src/app.rs:6163
 msgid "Spotsie cannot open this kind of Spotify link"
 msgstr "Spotsie kan dit soort Spotify-link niet openen"
 
-#: src/app.rs:6319
+#: src/app.rs:6326
 msgid "Nothing is playing. Pick something first"
 msgstr "Er wordt niets afgespeeld. Kies eerst iets"
 
-#: src/app.rs:6679
+#: src/app.rs:6686
 msgid "Choose a device, or enable playback on this computer"
 msgstr "Kies een apparaat of schakel afspelen op deze computer in"
 
-#: src/app.rs:7041 src/app.rs:7046
+#: src/app.rs:7048 src/app.rs:7053
 msgid "Pick something to play"
 msgstr "Kies iets om af te spelen"
 
 #. Translators: {name} is an album name.
-#: src/app.rs:7321
+#: src/app.rs:7328
 #, rust-format
 msgid "Loading {name} to queue…"
 msgstr "{name} wordt aan de wachtrij toegevoegd…"
 
-#: src/app.rs:7340
+#: src/app.rs:7347
 msgid "Playback device changed. Add the album to queue again"
 msgstr "Afspeelapparaat gewijzigd. Voeg het album opnieuw toe aan de wachtrij"
 
-#: src/app.rs:7349 src/app.rs:7367 src/app.rs:7376
+#: src/app.rs:7356 src/app.rs:7374 src/app.rs:7383
 msgid "Couldn't load the album's songs in order. Try again"
 msgstr ""
 "Kan de nummers van het album niet op volgorde laden. Probeer het opnieuw"
 
 #. Translators: {name} is an album name and {error} is an error message.
-#: src/app.rs:7356
+#: src/app.rs:7363
 #, rust-format
 msgid "Couldn't add {name} to queue: {error}"
 msgstr "Kan {name} niet aan de wachtrij toevoegen: {error}"
 
-#: src/app.rs:7414
+#: src/app.rs:7421
 msgid "This album has no playable songs to queue"
 msgstr "Dit album heeft geen afspeelbare nummers voor de wachtrij"
 
 #. Translators: {count} is a number of songs and {name} is an album name.
-#: src/app.rs:7423
+#: src/app.rs:7430
 #, rust-format
 msgid "{count} song from {name} added to queue"
 msgid_plural "{count} songs from {name} added to queue"
@@ -895,7 +896,7 @@ msgstr[0] "{count} nummer van {name} toegevoegd aan wachtrij"
 msgstr[1] "{count} nummers van {name} toegevoegd aan wachtrij"
 
 #. Translators: {count} is a number of songs.
-#: src/app.rs:7467
+#: src/app.rs:7474
 #, rust-format
 msgid "{count} song added to queue"
 msgid_plural "{count} songs added to queue"
@@ -903,41 +904,41 @@ msgstr[0] "{count} nummer toegevoegd aan wachtrij"
 msgstr[1] "{count} nummers toegevoegd aan wachtrij"
 
 #. Translators: {name} is a song, episode, album, or playlist name.
-#: src/app.rs:7504
+#: src/app.rs:7511
 #, rust-format
 msgid "{name} added to queue"
 msgstr "{name} toegevoegd aan wachtrij"
 
-#: src/app.rs:7914
+#: src/app.rs:7921
 msgid "The clipboard has no Spotify song links"
 msgstr "Het klembord bevat geen links naar Spotify-nummers"
 
 #. Translators: {count} is the number of pasted links that failed.
-#: src/app.rs:7995
+#: src/app.rs:8002
 #, rust-format
 msgid "{count} pasted link could not be added"
 msgid_plural "{count} pasted links could not be added"
 msgstr[0] "{count} geplakte link kan niet worden toegevoegd"
 msgstr[1] "{count} geplakte links kunnen niet worden toegevoegd"
 
-#: src/app.rs:8582
+#: src/app.rs:8589
 msgid "Spotify doesn't let apps remove a playlist description, so it was kept"
 msgstr ""
 "Spotify laat apps geen playlistbeschrijving verwijderen, dus die is behouden"
 
-#: src/app.rs:8626 src/app.rs:8639
+#: src/app.rs:8633 src/app.rs:8646
 msgid "Link copied"
 msgstr "Link gekopieerd"
 
 #. Translators: {count} is a number of song links, always more than one.
-#: src/app.rs:8643
+#: src/app.rs:8650
 #, rust-format
 msgid "{count} link copied"
 msgid_plural "{count} links copied"
 msgstr[0] "{count} link gekopieerd"
 msgstr[1] "{count} links gekopieerd"
 
-#: src/app.rs:8910
+#: src/app.rs:8925
 msgid ""
 "Spotify doesn't let apps reorder your playlists, so this order is saved on "
 "this computer"
@@ -945,67 +946,71 @@ msgstr ""
 "Spotify laat apps je playlists niet herschikken, dus deze volgorde wordt op "
 "deze computer opgeslagen"
 
-#: src/app.rs:8985
+#: src/app.rs:9000
 msgid "Restarting local playback"
 msgstr "Lokaal afspelen wordt opnieuw gestart"
 
-#: src/app.rs:9018
+#: src/app.rs:9033
 msgid "Local playback needs Spotify Premium"
 msgstr "Lokaal afspelen vereist Spotify Premium"
 
-#: src/app.rs:9030
+#: src/app.rs:9045
 msgid "Opening your browser to set up local playback"
 msgstr "Je browser wordt geopend om lokaal afspelen in te stellen"
 
-#: src/app.rs:9047
+#: src/app.rs:9062
 msgid "Play history cleared"
 msgstr "Afspeelgeschiedenis gewist"
 
 #. Translators: {size} is a size in megabytes, such as 12.5.
-#: src/app.rs:9058
+#: src/app.rs:9073
 #, rust-format
 msgid "Cleared {size} MB of artwork"
 msgstr "{size} MB aan covers gewist"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:9064
+#: src/app.rs:9079
 #, rust-format
 msgid "Couldn't clear artwork: {error}"
 msgstr "Kan covers niet wissen: {error}"
 
-#: src/app.rs:9877
+#: src/app.rs:9204
+msgid "Spotsie is offline."
+msgstr ""
+
+#: src/app.rs:9911
 msgid "Couldn't start playback"
 msgstr "Kan afspelen niet starten"
 
-#: src/app.rs:9878
+#: src/app.rs:9912
 msgid "Couldn't pause"
 msgstr "Kan niet pauzeren"
 
-#: src/app.rs:9879
+#: src/app.rs:9913
 msgid "Couldn't skip"
 msgstr "Kan niet overslaan"
 
-#: src/app.rs:9880
+#: src/app.rs:9914
 msgid "Couldn't go back"
 msgstr "Kan niet teruggaan"
 
-#: src/app.rs:9881
+#: src/app.rs:9915
 msgid "Couldn't seek"
 msgstr "Kan niet spoelen"
 
-#: src/app.rs:9882
+#: src/app.rs:9916
 msgid "Couldn't change the volume"
 msgstr "Kan het volume niet wijzigen"
 
-#: src/app.rs:9883
+#: src/app.rs:9917
 msgid "Couldn't change shuffle"
 msgstr "Kan willekeurige volgorde niet wijzigen"
 
-#: src/app.rs:9884
+#: src/app.rs:9918
 msgid "Couldn't change repeat"
 msgstr "Kan herhalen niet wijzigen"
 
-#: src/app.rs:9927
+#: src/app.rs:9961
 msgid ""
 "No audio output device was found. Connect or enable one, then press play "
 "again."
@@ -1013,20 +1018,20 @@ msgstr ""
 "Er is geen audio-uitvoerapparaat gevonden. Sluit er een aan of schakel er "
 "een in en druk dan opnieuw op Afspelen."
 
-#: src/app.rs:9938
+#: src/app.rs:9972
 msgid ""
 "Spotify doesn't make this playlist's songs available to third-party apps."
 msgstr ""
 "Spotify stelt de nummers van deze playlist niet beschikbaar voor apps van "
 "derden."
 
-#: src/app.rs:10068
+#: src/app.rs:10102
 msgid "Spotify sign-in expired. Sign in again, then retry the cover upload."
 msgstr ""
 "Spotify-aanmelding verlopen. Log opnieuw in en probeer de cover dan opnieuw "
 "te uploaden."
 
-#: src/app.rs:10073
+#: src/app.rs:10107
 msgid ""
 "Spotify refused this cover. Check that you own the playlist, then sign in "
 "again to grant image upload permission. If using a personal app, reconnect "
@@ -1036,46 +1041,46 @@ msgstr ""
 "log opnieuw in om toestemming te geven voor het uploaden van afbeeldingen. "
 "Gebruik je een persoonlijke app, verbind die dan ook opnieuw in Instellingen."
 
-#: src/app.rs:10077
+#: src/app.rs:10111
 msgid "Spotify rejected the image size. Choose a smaller image."
 msgstr ""
 "Spotify heeft de afbeeldingsgrootte geweigerd. Kies een kleinere afbeelding."
 
 #. Translators: {error} is an error message.
-#: src/app.rs:10080
+#: src/app.rs:10114
 #, rust-format
 msgid "Couldn't upload the cover: {error}. Try again."
 msgstr "Kan de cover niet uploaden: {error}. Probeer het opnieuw."
 
 #. Translators: Keep {track} unchanged. It is the name of the song,
 #. playlist, album, or artist the radio is based on, not translated.
-#: src/app.rs:15688 src/app/radio.rs:39
+#: src/app.rs:15721 src/app/radio.rs:39
 #, rust-format
 msgid "{track} Radio"
 msgstr "Radio op basis van {track}"
 
-#: src/ui/settings.rs:166 src/ui/keys.rs:251 src/ui/topbar.rs:439
-#: src/ui/topbar.rs:469
+#: src/ui/settings.rs:182 src/ui/keys.rs:255 src/ui/topbar.rs:553
+#: src/ui/topbar.rs:583
 msgid "Settings"
 msgstr "Instellingen"
 
-#: src/ui/settings.rs:180
+#: src/ui/settings.rs:196
 msgid "Search settings"
 msgstr "Instellingen doorzoeken"
 
-#: src/ui/settings.rs:207
+#: src/ui/settings.rs:223
 msgid "Account"
 msgstr "Account"
 
-#: src/ui/settings.rs:208 src/ui/topbar.rs:457
+#: src/ui/settings.rs:224 src/ui/topbar.rs:571
 msgid "Sign out"
 msgstr "Uitloggen"
 
-#: src/ui/settings.rs:211
+#: src/ui/settings.rs:227
 msgid "Personal Spotify app"
 msgstr "Persoonlijke Spotify-app"
 
-#: src/ui/settings.rs:214
+#: src/ui/settings.rs:230
 msgid ""
 "Use a personal Development Mode app for a separate API quota. The shared app "
 "stays active."
@@ -1083,204 +1088,204 @@ msgstr ""
 "Gebruik een persoonlijke app in Development Mode voor een apart API-quotum. "
 "De gedeelde app blijft actief."
 
-#: src/ui/settings.rs:218
+#: src/ui/settings.rs:234
 msgid "Create an app"
 msgstr "App maken"
 
-#: src/ui/settings.rs:221
+#: src/ui/settings.rs:237
 msgid "Create one for free in Spotify's developer dashboard."
 msgstr "Maak er gratis een in het ontwikkelaarsdashboard van Spotify."
 
-#: src/ui/settings.rs:226
+#: src/ui/settings.rs:242
 msgid "Personal app ready"
 msgstr "Persoonlijke app klaar"
 
-#: src/ui/settings.rs:229
+#: src/ui/settings.rs:245
 msgid "Supported requests use your app. Other requests use the shared app."
 msgstr ""
 "Ondersteunde verzoeken gebruiken je app. Andere verzoeken gebruiken de "
 "gedeelde app."
 
-#: src/ui/settings.rs:234
+#: src/ui/settings.rs:250
 msgid "Authorize your personal app"
 msgstr "Je persoonlijke app autoriseren"
 
-#: src/ui/settings.rs:237
+#: src/ui/settings.rs:253
 msgid "Spotify opens in your browser to verify the account."
 msgstr "Spotify opent in je browser om het account te verifiëren."
 
-#: src/ui/settings.rs:242
+#: src/ui/settings.rs:258
 msgid "Remove personal app"
 msgstr "Persoonlijke app verwijderen"
 
-#: src/ui/settings.rs:243
+#: src/ui/settings.rs:259
 msgid "Shared access remains signed in."
 msgstr "Gedeelde toegang blijft ingelogd."
 
-#: src/ui/settings.rs:273
+#: src/ui/settings.rs:289
 msgid "Spotify Free, local playback needs Premium"
 msgstr "Spotify Free, lokaal afspelen vereist Premium"
 
 #. Translators: {username} is the Spotify account's user name.
-#: src/ui/settings.rs:287
+#: src/ui/settings.rs:303
 #, rust-format
 msgid "Connected as {username}"
 msgstr "Verbonden als {username}"
 
-#: src/ui/settings.rs:315
+#: src/ui/settings.rs:331
 msgid "Client ID"
 msgstr "Client ID"
 
-#: src/ui/settings.rs:338
+#: src/ui/settings.rs:354
 msgid "Setup guide"
 msgstr "Installatiegids"
 
-#: src/ui/settings.rs:348 src/ui/settings.rs:364 src/ui/dialogs.rs:118
+#: src/ui/settings.rs:364 src/ui/settings.rs:380 src/ui/dialogs.rs:118
 msgid "Remove"
 msgstr "Verwijderen"
 
-#: src/ui/settings.rs:356
+#: src/ui/settings.rs:372
 msgid "Authorize"
 msgstr "Autoriseren"
 
-#: src/ui/settings.rs:375
+#: src/ui/settings.rs:391
 msgctxt "playback status"
 msgid "Ready"
 msgstr "Klaar"
 
-#: src/ui/settings.rs:376
+#: src/ui/settings.rs:392
 msgid "This computer is a Spotify Connect device."
 msgstr "Deze computer is een Spotify Connect-apparaat."
 
-#: src/ui/settings.rs:380
+#: src/ui/settings.rs:396
 msgctxt "playback status"
 msgid "Setting up"
 msgstr "Wordt ingesteld"
 
-#: src/ui/settings.rs:381
+#: src/ui/settings.rs:397
 msgid "Finish authorizing in your browser."
 msgstr "Rond de autorisatie af in je browser."
 
-#: src/ui/settings.rs:385
+#: src/ui/settings.rs:401
 msgctxt "playback status"
 msgid "Connecting"
 msgstr "Verbinden"
 
-#: src/ui/settings.rs:386 src/ui/login.rs:97
+#: src/ui/settings.rs:402 src/ui/login.rs:97
 msgid "Connecting to Spotify…"
 msgstr "Verbinden met Spotify…"
 
-#: src/ui/settings.rs:390
+#: src/ui/settings.rs:406
 msgctxt "playback status"
 msgid "Unavailable"
 msgstr "Niet beschikbaar"
 
-#: src/ui/settings.rs:395
+#: src/ui/settings.rs:411
 msgctxt "playback status"
 msgid "Not set up"
 msgstr "Niet ingesteld"
 
-#: src/ui/settings.rs:398
+#: src/ui/settings.rs:414
 msgid "Requires Spotify Premium and a one-time browser sign-in."
 msgstr "Vereist Spotify Premium en eenmalig inloggen in de browser."
 
-#: src/ui/settings.rs:400
+#: src/ui/settings.rs:416
 msgid "Enable playback here"
 msgstr "Hier afspelen inschakelen"
 
-#: src/ui/settings.rs:403
+#: src/ui/settings.rs:419
 msgid "Playback on this computer"
 msgstr "Afspelen op deze computer"
 
-#: src/ui/settings.rs:404
+#: src/ui/settings.rs:420
 msgid "Normalize volume"
 msgstr "Volume normaliseren"
 
-#: src/ui/settings.rs:405
+#: src/ui/settings.rs:421
 msgid "Autoplay"
 msgstr "Automatisch afspelen"
 
-#: src/ui/settings.rs:406
+#: src/ui/settings.rs:422
 msgid "Gapless playback"
 msgstr "Naadloos afspelen"
 
-#: src/ui/settings.rs:407
+#: src/ui/settings.rs:423
 msgid "Keep music playing when the window closes"
 msgstr "Muziek blijven afspelen als het venster sluit"
 
-#: src/ui/settings.rs:408
+#: src/ui/settings.rs:424
 msgid "Audio cache"
 msgstr "Audiocache"
 
-#: src/ui/settings.rs:409
+#: src/ui/settings.rs:425
 msgid "Apply and restart playback"
 msgstr "Toepassen en afspelen herstarten"
 
-#: src/ui/settings.rs:410
+#: src/ui/settings.rs:426
 msgid "Restart local playback to apply these settings."
 msgstr "Herstart lokaal afspelen om deze instellingen toe te passen."
 
 #. Translators: {status} is a playback state such as Ready or Not set up.
-#: src/ui/settings.rs:414
+#: src/ui/settings.rs:430
 #, rust-format
 msgid "Status: {status}"
 msgstr "Status: {status}"
 
-#: src/ui/settings.rs:418
+#: src/ui/settings.rs:434
 msgid "Device name"
 msgstr "Apparaatnaam"
 
-#: src/ui/settings.rs:419
+#: src/ui/settings.rs:435
 msgid "How this computer appears in Spotify Connect."
 msgstr "Zo verschijnt deze computer in Spotify Connect."
 
-#: src/ui/settings.rs:422
+#: src/ui/settings.rs:438
 msgid "Audio quality"
 msgstr "Audiokwaliteit"
 
-#: src/ui/settings.rs:423
+#: src/ui/settings.rs:439
 msgid "Higher bitrates use more data and cache space."
 msgstr "Hogere bitrates gebruiken meer data en cacheruimte."
 
-#: src/ui/settings.rs:427
+#: src/ui/settings.rs:443
 msgid "Keep loud and quiet tracks at a similar level."
 msgstr "Houdt harde en zachte nummers op een vergelijkbaar niveau."
 
-#: src/ui/settings.rs:431
+#: src/ui/settings.rs:447
 msgid "Keep playing similar songs when your music ends."
 msgstr "Speelt vergelijkbare nummers af als je muziek is afgelopen."
 
-#: src/ui/settings.rs:435
+#: src/ui/settings.rs:451
 msgid "Play tracks without silence between them."
 msgstr "Speelt nummers af zonder stilte ertussen."
 
-#: src/ui/settings.rs:442
+#: src/ui/settings.rs:458
 msgid ""
 "Spotsie hides to the system tray. Quit from the tray menu or with Ctrl+Q."
 msgstr ""
 "Spotsie verdwijnt naar het systeemvak. Sluit af via het menu in het "
 "systeemvak of met Ctrl+Q."
 
-#: src/ui/settings.rs:446
+#: src/ui/settings.rs:462
 msgid ""
 "Spotsie hides to the system tray. Quit from the tray menu or with Cmd+Q."
 msgstr ""
 "Spotsie verdwijnt naar het systeemvak. Sluit af via het menu in het "
 "systeemvak of met Cmd+Q."
 
-#: src/ui/settings.rs:452
+#: src/ui/settings.rs:468
 msgid "Audio output"
 msgstr "Audio-uitvoer"
 
-#: src/ui/settings.rs:455
+#: src/ui/settings.rs:471
 msgid "PulseAudio also covers PipeWire. Rodio talks to ALSA directly."
 msgstr "PulseAudio dekt ook PipeWire. Rodio praat rechtstreeks met ALSA."
 
-#: src/ui/settings.rs:460
+#: src/ui/settings.rs:476
 msgid "Output buffer"
 msgstr "Uitvoerbuffer"
 
-#: src/ui/settings.rs:463
+#: src/ui/settings.rs:479
 msgid ""
 "More buffering can prevent clicks on busy computers. Less buffering makes "
 "controls respond sooner."
@@ -1288,120 +1293,120 @@ msgstr ""
 "Meer buffer kan tikken op drukke computers voorkomen. Minder buffer laat de "
 "bediening sneller reageren."
 
-#: src/ui/settings.rs:469
+#: src/ui/settings.rs:485
 msgid "Save downloaded audio for later playback."
 msgstr "Gedownloade audio bewaren om later af te spelen."
 
-#: src/ui/settings.rs:472
+#: src/ui/settings.rs:488
 msgid "Playback settings applied"
 msgstr "Afspeelinstellingen toegepast"
 
-#: src/ui/settings.rs:474 src/ui/settings.rs:622
+#: src/ui/settings.rs:490 src/ui/settings.rs:638
 msgid "MacBook notch widget"
 msgstr "MacBook-notch-widget"
 
-#: src/ui/settings.rs:477
+#: src/ui/settings.rs:493
 msgid "Show interactive Now Playing widget when hovering over the notch."
 msgstr ""
 "Toon interactieve widget voor Wordt afgespeeld bij het aanwijzen van de "
 "notch."
 
-#: src/ui/settings.rs:495
+#: src/ui/settings.rs:511
 msgid "Reconnect"
 msgstr "Opnieuw verbinden"
 
-#: src/ui/settings.rs:527
+#: src/ui/settings.rs:543
 msgid "Normal · 96 kbps"
 msgstr "Normaal · 96 kbps"
 
-#: src/ui/settings.rs:528
+#: src/ui/settings.rs:544
 msgid "High · 160 kbps"
 msgstr "Hoog · 160 kbps"
 
-#: src/ui/settings.rs:529
+#: src/ui/settings.rs:545
 msgid "Very high · 320 kbps"
 msgstr "Zeer hoog · 320 kbps"
 
-#: src/ui/settings.rs:717
+#: src/ui/settings.rs:733
 msgid "Playback settings applied."
 msgstr "Afspeelinstellingen toegepast."
 
-#: src/ui/settings.rs:724
+#: src/ui/settings.rs:740
 msgid "Appearance"
 msgstr "Weergave"
 
-#: src/ui/settings.rs:725
+#: src/ui/settings.rs:741
 msgid "Theme"
 msgstr "Thema"
 
-#: src/ui/settings.rs:726
+#: src/ui/settings.rs:742
 msgid "Colour from album art"
 msgstr "Kleur van albumhoes"
 
-#: src/ui/settings.rs:727
+#: src/ui/settings.rs:743
 msgid "Compact library sidebar"
 msgstr "Compacte bibliotheekzijbalk"
 
-#: src/ui/settings.rs:728
+#: src/ui/settings.rs:744
 msgid "Compact track list"
 msgstr "Compacte nummerlijst"
 
-#: src/ui/settings.rs:729
+#: src/ui/settings.rs:745
 msgid "Font"
 msgstr "Lettertype"
 
-#: src/ui/settings.rs:730
+#: src/ui/settings.rs:746
 msgid "Custom title bar"
 msgstr "Aangepaste titelbalk"
 
-#: src/ui/settings.rs:741
+#: src/ui/settings.rs:757
 msgid "Follow system uses your Omarchy colours."
 msgstr "“Systeem volgen” gebruikt je Omarchy-kleuren."
 
-#: src/ui/settings.rs:745
+#: src/ui/settings.rs:761
 msgid "Follow system uses your desktop's light or dark appearance."
 msgstr ""
 "“Systeem volgen” gebruikt de lichte of donkere weergave van je bureaublad."
 
-#: src/ui/settings.rs:750 src/ui/settings.rs:1341
+#: src/ui/settings.rs:766 src/ui/settings.rs:1341
 msgid "Language"
 msgstr "Taal"
 
-#: src/ui/settings.rs:753
+#: src/ui/settings.rs:769
 msgid ""
 "System follows your computer's language. Untranslated text stays in English."
 msgstr ""
 "“Systeem” volgt de taal van je computer. Onvertaalde tekst blijft Engels."
 
-#: src/ui/settings.rs:760
+#: src/ui/settings.rs:776
 msgid "Use the current cover's colour on pages and the player bar."
 msgstr "Gebruik de kleur van de huidige cover op pagina's en in de spelerbalk."
 
-#: src/ui/settings.rs:765
+#: src/ui/settings.rs:781
 msgid "Show names without covers in the sidebar."
 msgstr "Namen zonder covers tonen in de zijbalk."
 
-#: src/ui/settings.rs:769
+#: src/ui/settings.rs:785
 msgid "Show each track on one line without a cover."
 msgstr "Elk nummer op één regel tonen, zonder cover."
 
-#: src/ui/settings.rs:772
+#: src/ui/settings.rs:788
 msgid "Interface zoom"
 msgstr "Zoom van de interface"
 
-#: src/ui/settings.rs:776
+#: src/ui/settings.rs:792
 msgid "Ctrl+Plus and Ctrl+Minus work anywhere; Ctrl+0 resets."
 msgstr "Ctrl+Plus en Ctrl+Min werken overal; Ctrl+0 herstelt."
 
-#: src/ui/settings.rs:780
+#: src/ui/settings.rs:796
 msgid "Cmd+Plus and Cmd+Minus work anywhere; Cmd+0 resets."
 msgstr "Cmd+Plus en Cmd+Min werken overal; Cmd+0 herstelt."
 
-#: src/ui/settings.rs:787
+#: src/ui/settings.rs:803
 msgid "Every font is bundled with Spotsie and works offline."
 msgstr "Alle lettertypen zitten in Spotsie en werken offline."
 
-#: src/ui/settings.rs:793
+#: src/ui/settings.rs:809
 msgid ""
 "Draw Spotsie's own title bar and window buttons instead of the standard "
 "Windows ones."
@@ -1538,8 +1543,8 @@ msgstr "Controleren op updates"
 msgid "Checking…"
 msgstr "Controleren…"
 
-#: src/ui/settings.rs:1250 src/ui/dialogs.rs:175 src/ui/keys.rs:261
-#: src/ui/topbar.rs:447
+#: src/ui/settings.rs:1250 src/ui/dialogs.rs:175 src/ui/keys.rs:265
+#: src/ui/topbar.rs:561
 msgid "Keyboard shortcuts"
 msgstr "Sneltoetsen"
 
@@ -1615,11 +1620,11 @@ msgctxt "proxy"
 msgid "System"
 msgstr "Systeem"
 
-#: src/theme.rs:442
+#: src/theme.rs:402
 msgid "Loading local themes…"
 msgstr "Lokale thema's laden…"
 
-#: src/theme.rs:445
+#: src/theme.rs:405
 msgid ""
 "The selected theme is unavailable. Keeping the last usable appearance. See "
 "the log for details."
@@ -1627,11 +1632,11 @@ msgstr ""
 "Het gekozen thema is niet beschikbaar. De laatste bruikbare weergave blijft "
 "actief. Zie het logboek voor details."
 
-#: src/theme.rs:449
+#: src/theme.rs:409
 msgid "The themes folder could not be read. See the log for details."
 msgstr "De themamap kan niet worden gelezen. Zie het logboek voor details."
 
-#: src/theme.rs:453
+#: src/theme.rs:413
 msgid ""
 "The themes folder has more than 512 entries. Keep fewer files there to list "
 "the custom palettes."
@@ -1639,7 +1644,7 @@ msgstr ""
 "De themamap bevat meer dan 512 items. Houd er minder bestanden om de "
 "aangepaste paletten te tonen."
 
-#: src/theme.rs:457
+#: src/theme.rs:417
 msgid ""
 "Only 128 custom palettes can be listed. Keep fewer JSON files in the themes "
 "folder to see the rest."
@@ -1647,7 +1652,7 @@ msgstr ""
 "Er kunnen maar 128 aangepaste paletten worden getoond. Houd minder JSON-"
 "bestanden in de themamap om de rest te zien."
 
-#: src/theme.rs:461
+#: src/theme.rs:421
 msgid ""
 "The Omarchy palette could not be loaded. Keeping the last usable appearance. "
 "See the log for details."
@@ -1655,7 +1660,7 @@ msgstr ""
 "Het Omarchy-kleurenpalet kon niet worden geladen. De laatste bruikbare "
 "weergave blijft actief. Zie het logboek voor details."
 
-#: src/theme.rs:465
+#: src/theme.rs:425
 msgid ""
 "Custom themes could not be loaded. Run spotsie reload-themes to try again."
 msgstr ""
@@ -2080,116 +2085,116 @@ msgstr "Meer topnummers tonen"
 msgid "Recommended for you"
 msgstr "Aanbevolen voor jou"
 
-#: src/ui/keys.rs:172
+#: src/ui/keys.rs:176
 msgctxt "key"
 msgid "Space"
 msgstr "Spatie"
 
-#: src/ui/keys.rs:173
+#: src/ui/keys.rs:177
 msgid "Play or pause"
 msgstr "Afspelen of pauzeren"
 
-#: src/ui/keys.rs:177
+#: src/ui/keys.rs:181
 msgid "Previous or next"
 msgstr "Vorige of volgende"
 
-#: src/ui/keys.rs:181
+#: src/ui/keys.rs:185
 msgid "Seek 10 seconds"
 msgstr "10 seconden spoelen"
 
-#: src/ui/keys.rs:185
+#: src/ui/keys.rs:189
 msgid "Volume up or down"
 msgstr "Volume hoger of lager"
 
-#: src/ui/keys.rs:187
+#: src/ui/keys.rs:191
 msgid "Mute or unmute"
 msgstr "Dempen of dempen opheffen"
 
-#: src/ui/keys.rs:190
+#: src/ui/keys.rs:194
 msgid "Like or unlike the playing song"
 msgstr "Het huidige nummer liken of niet meer liken"
 
-#: src/ui/keys.rs:192
+#: src/ui/keys.rs:196
 msgid "Toggle shuffle"
 msgstr "Willekeurige volgorde aan/uit"
 
-#: src/ui/keys.rs:193
+#: src/ui/keys.rs:197
 msgid "Cycle repeat"
 msgstr "Herhaalmodus wisselen"
 
-#: src/ui/keys.rs:194
+#: src/ui/keys.rs:198
 msgid "Show the queue"
 msgstr "Wachtrij tonen"
 
-#: src/ui/keys.rs:195
+#: src/ui/keys.rs:199
 msgid "Show the lyrics"
 msgstr "Songtekst tonen"
 
-#: src/ui/keys.rs:196
+#: src/ui/keys.rs:200
 msgid "Lyrics: leave full screen"
 msgstr "Songtekst: volledig scherm verlaten"
 
-#: src/ui/keys.rs:199
+#: src/ui/keys.rs:203
 msgid "Song list: extend or shrink the selection"
 msgstr "Nummerlijst: selectie uitbreiden of verkleinen"
 
-#: src/ui/keys.rs:204
+#: src/ui/keys.rs:208
 msgid "Song list: select all"
 msgstr "Nummerlijst: alles selecteren"
 
-#: src/ui/keys.rs:208
+#: src/ui/keys.rs:212
 msgid "Song list: copy the selected songs' links"
 msgstr "Nummerlijst: links van geselecteerde nummers kopiëren"
 
-#: src/ui/keys.rs:212
+#: src/ui/keys.rs:216
 msgid "Playlist: cut the selected songs"
 msgstr "Playlist: geselecteerde nummers knippen"
 
-#: src/ui/keys.rs:216
+#: src/ui/keys.rs:220
 msgid "Playlist: add the pasted song links"
 msgstr "Playlist: geplakte nummerlinks toevoegen"
 
 #. Translators: Keep the key names. Only the word "or" is translated.
-#: src/ui/keys.rs:221
+#: src/ui/keys.rs:225
 msgid "Cmd+F  or  /"
 msgstr "Cmd+F  of  /"
 
 #. Translators: Keep the key names. Only the word "or" is translated.
-#: src/ui/keys.rs:224
+#: src/ui/keys.rs:228
 msgid "Ctrl+F  or  /"
 msgstr "Ctrl+F  of  /"
 
-#: src/ui/keys.rs:230
+#: src/ui/keys.rs:234
 msgid "Show or hide the sidebar"
 msgstr "Zijbalk tonen of verbergen"
 
-#: src/ui/keys.rs:232
+#: src/ui/keys.rs:236
 msgid "Back or forward"
 msgstr "Terug of vooruit"
 
-#: src/ui/keys.rs:243
+#: src/ui/keys.rs:247
 msgid "Go to the playing artist"
 msgstr "Ga naar de huidige artiest"
 
-#: src/ui/keys.rs:247
+#: src/ui/keys.rs:251
 msgid "Go to the playing album"
 msgstr "Ga naar het huidige album"
 
 #. Translators: Keep the key names. Only the word "or" is translated.
-#: src/ui/keys.rs:256
+#: src/ui/keys.rs:260
 msgid "Cmd+/ or ?"
 msgstr "Cmd+/ of ?"
 
 #. Translators: Keep the key names. Only the word "or" is translated.
-#: src/ui/keys.rs:259
+#: src/ui/keys.rs:263
 msgid "Ctrl+/ or ?"
 msgstr "Ctrl+/ of ?"
 
-#: src/ui/keys.rs:265
+#: src/ui/keys.rs:269
 msgid "Close the window"
 msgstr "Venster sluiten"
 
-#: src/ui/keys.rs:267
+#: src/ui/keys.rs:271
 msgid "Quit"
 msgstr "Afsluiten"
 
@@ -2263,15 +2268,15 @@ msgstr "Proxyinstellingen"
 msgid "Spotsie {version} • not affiliated with Spotify"
 msgstr "Spotsie {version} • niet verbonden aan Spotify"
 
-#: src/ui/mod.rs:521
+#: src/ui/mod.rs:580
 msgid "Minimize"
 msgstr "Minimaliseren"
 
-#: src/ui/mod.rs:527
+#: src/ui/mod.rs:586
 msgid "Restore"
 msgstr "Herstellen"
 
-#: src/ui/mod.rs:529
+#: src/ui/mod.rs:588
 msgid "Maximize"
 msgstr "Maximaliseren"
 
@@ -2387,59 +2392,71 @@ msgstr "Nog {duration}"
 msgid "Played"
 msgstr "Afgespeeld"
 
-#: src/ui/topbar.rs:228
+#: src/ui/topbar.rs:161
+msgid "Restart Spotsie"
+msgstr ""
+
+#: src/ui/topbar.rs:162
+msgid "Restarting…"
+msgstr ""
+
+#. Translators: {percent} is a whole number from 0 to 100.
+#: src/ui/topbar.rs:170
+#, rust-format
+msgid "Updating… {percent}%"
+msgstr ""
+
+#: src/ui/topbar.rs:173
+msgid "Update available"
+msgstr ""
+
+#: src/ui/topbar.rs:353
 msgid "Show sidebar (Ctrl+B)"
 msgstr "Zijbalk tonen (Ctrl+B)"
 
-#: src/ui/topbar.rs:229
+#: src/ui/topbar.rs:354
 msgid "Show sidebar (Cmd+B)"
 msgstr "Zijbalk tonen (Cmd+B)"
 
-#: src/ui/topbar.rs:248
+#: src/ui/topbar.rs:373
 msgid "Back"
 msgstr "Terug"
 
-#: src/ui/topbar.rs:259
+#: src/ui/topbar.rs:384
 msgid "Forward"
 msgstr "Vooruit"
 
 #. Translators: {device} is the name of the device playing the music.
-#: src/ui/topbar.rs:273
+#: src/ui/topbar.rs:398
 #, rust-format
 msgid "Playing on {device}"
 msgstr "Afspelen op {device}"
 
-#: src/ui/topbar.rs:275
+#: src/ui/topbar.rs:400
 msgid "Playing on another device"
 msgstr "Afspelen op een ander apparaat"
 
-#: src/ui/topbar.rs:284
-msgid "Update ready"
-msgstr "Update klaar"
-
-#: src/ui/topbar.rs:287 src/ui/update.rs:74
-msgid "Downloading update…"
-msgstr "Update downloaden…"
+#. Translators: {version} is a version number such as 1.2.0.
+#: src/ui/topbar.rs:598
+#, rust-format
+msgid "Spotsie {version} is installed. Click to restart."
+msgstr ""
 
 #. Translators: {version} is a version number such as 1.2.0.
-#: src/ui/topbar.rs:291
+#: src/ui/topbar.rs:603
 #, rust-format
-msgid "Update to {version}"
-msgstr "Bijwerken naar {version}"
+msgid "Installing Spotsie {version}"
+msgstr ""
 
-#: src/ui/topbar.rs:330
-msgid "What do you want to play?"
-msgstr "Wat wil je afspelen?"
+#. Translators: {version} is a version number such as 1.2.0.
+#: src/ui/topbar.rs:607
+#, rust-format
+msgid "Spotsie {version} is out. Click to update."
+msgstr ""
 
-#: src/ui/topbar.rs:479
+#: src/ui/topbar.rs:629
 msgid "Waiting for Spotify…"
 msgstr "Wachten op Spotify…"
-
-#. Translators: {version} is a version number such as 1.2.0.
-#: src/ui/topbar.rs:516
-#, rust-format
-msgid "Version {version} is available."
-msgstr "Versie {version} is beschikbaar."
 
 #: src/ui/update.rs:19
 msgid "Update Spotsie"
@@ -2456,6 +2473,10 @@ msgstr "Releasenotes"
 #: src/ui/update.rs:72
 msgid "Checking download…"
 msgstr "Download controleren…"
+
+#: src/ui/update.rs:74
+msgid "Downloading update…"
+msgstr "Update downloaden…"
 
 #. Translators: {received} and {total} are sizes in megabytes, such as 12.5.
 #: src/ui/update.rs:90
@@ -2638,3 +2659,20 @@ msgstr "Goedemiddag"
 #: src/util.rs:259
 msgid "Good evening"
 msgstr "Goedenavond"
+
+#~ msgid "No lyrics"
+#~ msgstr "Geen songtekst"
+
+#~ msgid "Update ready"
+#~ msgstr "Update klaar"
+
+#, rust-format
+#~ msgid "Update to {version}"
+#~ msgstr "Bijwerken naar {version}"
+
+#~ msgid "What do you want to play?"
+#~ msgstr "Wat wil je afspelen?"
+
+#, rust-format
+#~ msgid "Version {version} is available."
+#~ msgstr "Versie {version} is beschikbaar."

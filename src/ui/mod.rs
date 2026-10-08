@@ -62,6 +62,7 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     if app.lyrics_fullscreen.is_some() {
         lyrics::fullscreen(app, ui);
     } else {
+        lyrics::note_fullscreen_closed(ctx);
         // Each panel draws while it slides in or out, so these always run.
         sidebar::show(app, ui);
         queue::side_panel(app, ui);
@@ -120,6 +121,30 @@ pub(crate) fn sliding_panel<R>(
         .drag_to_open(false)
         .show_collapsible(ui, open, add_contents)
         .map(|response| (response, settled))
+}
+
+/// [`sliding_panel`] at its own pace: egui slides every panel in its
+/// global animation time, so lend the panel `duration` while it slides and
+/// give its contents the usual time back.
+pub(crate) fn sliding_panel_over<R>(
+    ui: &mut egui::Ui,
+    panel: egui::Panel,
+    id: &str,
+    open: &mut bool,
+    duration: f32,
+    add_contents: impl FnOnce(&mut egui::Ui) -> R,
+) -> Option<(egui::InnerResponse<R>, bool)> {
+    let ctx = ui.ctx().clone();
+    let usual = ctx.global_style().animation_time;
+    ctx.global_style_mut(|style| style.animation_time = duration);
+    let restore = |ctx: &Context| ctx.global_style_mut(|style| style.animation_time = usual);
+    let shown = sliding_panel(ui, panel, id, open, |ui| {
+        restore(ui.ctx());
+        add_contents(ui)
+    });
+    // A closed panel never ran its contents.
+    restore(&ctx);
+    shown
 }
 
 /// The sidebar's narrowest width.

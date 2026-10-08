@@ -448,14 +448,17 @@ fn now_secs() -> u64 {
         .unwrap_or(0)
 }
 
+/// Spotsie's own icon, drawn on the page the browser lands on after sign-in.
+const LOGO: &str = include_str!("../packaging/icons/spotsie.svg");
+
 fn page(title: &str, heading: &str, body: &str, accent: &str) -> String {
     format!(
         "<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>{title}</title>\
 <style>:root{{color-scheme:dark}}body{{margin:0;min-height:100vh;display:grid;place-items:center;background:#0f1114;color:#e8eaed;font-family:Inter,system-ui,sans-serif}}\
 main{{max-width:28rem;padding:2.5rem;border-radius:1.25rem;background:#181b20;box-shadow:0 20px 60px rgba(0,0,0,.5);text-align:center}}\
-.mark{{width:64px;height:64px;border-radius:50%;background:{accent};display:grid;place-items:center;margin:0 auto 1.25rem}}\
-.mark svg{{width:30px;height:30px;fill:#0f1114}}h1{{font-size:1.4rem;margin:.25rem 0 .5rem}}p{{color:#a5adba;line-height:1.5;margin:0}}</style>\
-<main><div class=\"mark\"><svg viewBox=\"0 0 24 24\"><path d=\"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z\"/></svg></div>\
+.mark{{width:72px;height:72px;border-radius:50%;box-shadow:0 0 0 3px #181b20,0 0 0 5px {accent};margin:0 auto 1.5rem}}\
+.mark svg{{width:72px;height:72px;display:block}}h1{{font-size:1.4rem;margin:.25rem 0 .5rem}}p{{color:#a5adba;line-height:1.5;margin:0}}</style>\
+<main><div class=\"mark\">{LOGO}</div>\
 <h1>{heading}</h1><p>{body}</p></main><script>setTimeout(function(){{window.close()}},1500)</script></html>"
     )
 }
@@ -480,6 +483,14 @@ fn failure_page(reason: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn the_browser_pages_carry_spotsies_own_icon() {
+        for page in [super::success_page(), super::failure_page("denied")] {
+            assert!(page.contains(super::LOGO.trim()));
+            assert!(page.contains("radialGradient id=\"vinyl\""));
+        }
+    }
+
     #[test]
     fn token_errors_never_include_authorization_response_contents() {
         for (status, body) in [
