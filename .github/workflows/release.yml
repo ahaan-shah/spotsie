@@ -230,6 +230,14 @@ jobs:
             --output "dist/spotsie-${GITHUB_REF_NAME}-source.tar.gz"
       - name: Public filenames, updater compatibility and checksums
         run: python3 packaging/release-names.py dist "$GITHUB_REF_NAME"
+      # The website's "Download spotsie-setup.exe" button links to
+      # releases/latest/download/spotsie-setup.exe, so the x64 installer is
+      # also published under a name without the version. Its checksum joins
+      # the others before they are signed.
+      - name: Stable Windows installer name
+        run: |
+          cp "dist/spotsie-${GITHUB_REF_NAME}-x86_64-pc-windows-msvc-setup.exe" dist/spotsie-setup.exe
+          (cd dist && sha256sum spotsie-setup.exe >> checksums.txt)
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '4.0'
