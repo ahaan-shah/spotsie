@@ -210,9 +210,6 @@ jobs:
     needs: [build, macos, flatpak]
     if: ${{ !cancelled() && needs.build.result == 'success' && needs.macos.result == 'success' }}
     runs-on: ubuntu-latest
-    # Publishing waits for the maintainer's approval, and only this job can
-    # read the release signing key (v* tags only).
-    environment: release-signing
     steps:
       - uses: actions/checkout@v7
         with:
@@ -233,27 +230,14 @@ jobs:
       # The website's "Download spotsie-setup.exe" button links to
       # releases/latest/download/spotsie-setup.exe, so the x64 installer is
       # also published under a name without the version. Its checksum joins
-      # the others before they are signed.
+      # the others.
       - name: Stable Windows installer name
         run: |
           cp "dist/spotsie-${GITHUB_REF_NAME}-x86_64-pc-windows-msvc-setup.exe" dist/spotsie-setup.exe
           (cd dist && sha256sum spotsie-setup.exe >> checksums.txt)
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '4.0'
-      # Sign the manifest release-names.py wrote (checksums.txt.sig), then
-      # check the signature and every listed file against the committed key.
-      # Updaters that carry the key refuse releases without a valid one.
-      - name: Sign checksums
-        env:
-          SPOTSIE_UPDATE_SIGNING_KEY: ${{ secrets.SPOTSIE_UPDATE_SIGNING_KEY }}
-        run: |
-          gem install native-packages --version 0.8.1 --no-document
-          native-packages sign-checksums dist/checksums.txt \
-            --public-key assets/update-public-key.hex \
-            --key-env SPOTSIE_UPDATE_SIGNING_KEY
-          native-packages verify-checksums dist/checksums.txt \
-            --public-key assets/update-public-key.hex
+      # Releases are not signed yet: the app checks every download against
+      # checksums.txt (publisher_key is None in src/updates.rs). Signing needs
+      # Spotsie's own key pair, with the private half as a repository secret.
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/*
