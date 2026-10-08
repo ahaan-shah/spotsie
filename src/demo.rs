@@ -1738,8 +1738,20 @@ mod tests {
                 assert!(matches!(app.lyrics, Loadable::Loaded(None)));
             }
             app.lyrics_fullscreen = None;
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let close = accessible_node(&tree, &gettext(locale, "Close"), Role::Button);
+            // The lyrics fill the main area and the player bar steps aside;
+            // moving the pointer to the bottom brings it back, and its
+            // Lyrics button closes them.
+            accessible_frame(
+                &ctx,
+                &mut app,
+                vec![egui::Event::PointerMoved(egui::pos2(640.0, 780.0))],
+            );
+            let tree = accessible_frame(
+                &ctx,
+                &mut app,
+                vec![egui::Event::PointerMoved(egui::pos2(640.0, 790.0))],
+            );
+            let close = accessible_node(&tree, &gettext(locale, "Lyrics"), Role::Button);
             accessible_frame(
                 &ctx,
                 &mut app,
@@ -4419,49 +4431,39 @@ mod tests {
     }
 
     #[test]
-    fn custom_theme_picker_applies_the_clicked_palette_and_exposes_its_name_and_value() {
-        let (ctx, mut app) = accessible_app("custom-theme-picker");
+    fn theme_picker_applies_the_clicked_palette_and_exposes_its_name_and_value() {
+        // Palette files no longer have tiles of their own (one list since
+        // the shorter theme list); a built-in theme stands in for them.
+        let (ctx, mut app) = accessible_app("theme-picker");
         app.open(Page::Settings);
         ctx.data_mut(|data| {
             data.insert_temp(egui::Id::new("settings-filter"), "Appearance".to_string())
         });
-        let mut palette = crate::theme::Palette::light();
-        palette.accent = egui::Color32::from_rgb(140, 63, 165);
-        app.custom_themes = crate::theme::Catalog::preview(
-            vec![crate::theme::CustomTheme {
-                filename: "local.json".into(),
-                palette,
-            }],
-            false,
-        );
         for _ in 0..3 {
             view_frame(&ctx, &mut app, vec![], App::frame_ui);
         }
         let painted = view_frame(&ctx, &mut app, vec![], App::frame_ui);
         let tile = |name: &str| sidebar_text(&painted, name).center();
-        // Follow system and the palette files first, by name without
-        // `.json`; then the light themes, then the dark ones.
-        assert!(tile("Follow system").x < tile("local").x);
-        assert!((tile("Follow system").y - tile("local").y).abs() < 1.0);
-        assert!(tile("Follow system").y < tile("Light").y);
-        assert!(tile("Light").y < tile("Dark").y);
-        assert!(tile("Light").y < tile("Nord").y && tile("Snow").y < tile("Nord").y);
-        let custom = sidebar_text(&painted, "local").center();
+        // Follow system first, then the light themes, then the dark ones.
+        assert!(tile("Follow system").x < tile("Spotsie Light").x);
+        assert!(tile("Follow system").y <= tile("Spotsie Light").y);
+        assert!(tile("Spotsie Light").y <= tile("Spotsie Dark").y);
+        assert!(tile("Flexoki").y <= tile("Nord").y);
+        let nord = sidebar_text(&painted, "Nord").center();
         view_frame(
             &ctx,
             &mut app,
-            pointer_click(custom, egui::PointerButton::Primary),
+            pointer_click(nord, egui::PointerButton::Primary),
             App::frame_ui,
         );
-        assert_eq!(app.settings.custom_theme.as_deref(), Some("local.json"));
-        assert_eq!(app.palette, palette);
+        assert_eq!(app.settings.builtin_theme.as_deref(), Some("Nord"));
+        assert_eq!(app.settings.custom_theme, None);
         assert_eq!(
-            app.settings.custom_theme_cache.as_ref().unwrap().palette,
-            palette
+            app.palette,
+            crate::theme::builtin_theme("Nord").unwrap().palette
         );
-        assert_eq!(ctx.theme(), egui::Theme::Light);
         let tree = accessible_frame(&ctx, &mut app, vec![]);
-        let id = accessible_node(&tree, "local", egui::accesskit::Role::RadioButton);
+        let id = accessible_node(&tree, "Nord", egui::accesskit::Role::RadioButton);
         let node = &tree
             .nodes
             .iter()
