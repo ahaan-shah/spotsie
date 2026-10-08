@@ -116,8 +116,8 @@ your PC". Click **More info**, then **Run anyway**.
 ### Other downloads
 
 The [latest release](https://github.com/ahaan-shah/spotsie/releases/latest)
-also has `.deb`, `.rpm` and AppImage builds, a Flatpak bundle, portable
-`.tar.gz` and `.zip` archives, and the macOS disk image.
+also has portable archives (`.tar.gz` for Linux x86-64 and ARM64, `.zip` for
+Windows x64 and ARM64), the Windows installers, and the macOS disk image.
 
 **Uninstall:** on Linux and macOS, run the install line with
 `sh -s -- --uninstall` in place of `sh`. On Windows, use **Settings → Apps**.

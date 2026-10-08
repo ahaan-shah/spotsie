@@ -9,9 +9,10 @@ Spotsie keeps its release asset definitions and nFPM configuration in
 pinned [native-packages](https://github.com/crmne/native-packages) gem,
 installed with `gem install native-packages --version 0.8.1`.
 
-Pushing a `v*` tag runs `.github/workflows/release.yml`, which builds the
-Linux, macOS and Windows artifacts, the Flatpak bundle and the macOS DMG, then
-writes and signs `checksums.txt`. The release body comes from
+Starting `.github/workflows/release.yml` by hand on a `v*` tag builds the
+Linux and Windows archives, the Windows installers and the macOS DMG, then
+writes `checksums.txt` (releases are not signed yet). Releases carry no
+Flatpak bundle; the manifests in `packaging/flatpak/` stay for local builds. The release body comes from
 `packaging/release-notes/vVERSION.md`, which must exist before the tag is
 pushed.
 
