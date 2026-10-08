@@ -6,7 +6,7 @@
 # checksums.txt, and installs Spotsie for the current user (no admin prompt).
 #
 # Environment:
-#   SPOTSIE_VERSION   install a specific version (e.g. 0.1.0) instead of the latest
+#   SPOTSIE_VERSION   install a specific version (e.g. 0.1.1) instead of the latest
 #
 # Everything runs inside a script block so nothing leaks into your session,
 # and errors are thrown rather than calling `exit`, which would close it.

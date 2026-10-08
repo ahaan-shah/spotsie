@@ -8,7 +8,7 @@
 #   curl -fsSL https://raw.githubusercontent.com/ahaan-shah/spotsie/main/install.sh | sh -s -- --uninstall
 #
 # Environment:
-#   SPOTSIE_VERSION   install a specific version (e.g. 0.1.0) instead of the latest
+#   SPOTSIE_VERSION   install a specific version (e.g. 0.1.1) instead of the latest
 #   SPOTSIE_BASE_URL  download from a mirror instead of GitHub releases (needs SPOTSIE_VERSION)
 set -eu
 

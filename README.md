@@ -90,7 +90,7 @@ What the script does on each platform:
 - **macOS:** installs `Spotsie.app` (universal, Apple Silicon + Intel) into `/Applications`.
 
 The script checks every download against the release's `checksums.txt`. To pin
-a version, set `SPOTSIE_VERSION=0.1.0`.
+a version, set `SPOTSIE_VERSION=0.1.1`.
 
 The app isn't notarized yet. If macOS refuses to open it the first time,
 right-click the app and choose **Open**, or run
@@ -106,7 +106,7 @@ irm https://raw.githubusercontent.com/ahaan-shah/spotsie/main/install.ps1 | iex
 
 This installs Spotsie just for you (no admin prompt) into
 `%LOCALAPPDATA%\Programs\Spotsie` and adds it to the Start menu, on x64 and
-ARM64 PCs. To pin a version, run `$env:SPOTSIE_VERSION = "0.1.0"` first.
+ARM64 PCs. To pin a version, run `$env:SPOTSIE_VERSION = "0.1.1"` first.
 
 Prefer a regular installer? Download
 [`spotsie-setup.exe`](https://github.com/ahaan-shah/spotsie/releases/latest/download/spotsie-setup.exe)
