@@ -5696,7 +5696,7 @@ dependencies = [
 
 [[package]]
 name = "spotsie"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "aes 0.8.4",
  "anyhow",
