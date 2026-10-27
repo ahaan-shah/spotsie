@@ -74,7 +74,16 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             egui::Stroke::new(1.0, palette.outline),
         );
         let width = rect.width();
-        let side = (width * 0.3).clamp(200.0, 420.0);
+        let fit = Fit::for_width(width);
+        let shown = Shown::ease(ui.ctx(), fit);
+        // The side columns ease to their new width as controls come and go.
+        let side = crate::motion::tween(
+            ui.ctx(),
+            egui::Id::new("player-bar-side"),
+            fit.side(width),
+            crate::motion::STANDARD,
+        )
+        .min(width / 2.0);
         let cy = rect.center().y;
         let left = Rect::from_min_max(rect.min, pos2(rect.left() + side, rect.bottom()));
         let center = Rect::from_min_max(
@@ -85,19 +94,221 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
         // egui's cross-axis centring is unreliable across nested layouts of
         // mixed heights, so each region is placed in an explicit band that
         // is sized to its content and centred on the bar's midline.
-        now_playing_block(app, ui, left, now.as_ref());
+        if shown.art > 0.01 {
+            let mut left_ui = ui.new_child(UiBuilder::new().max_rect(left));
+            left_ui.set_clip_rect(left.intersect(ui.clip_rect()));
+            left_ui.set_opacity(shown.art);
+            now_playing_block(app, &mut left_ui, left, now.as_ref(), shown.title);
+        }
 
-        transport(app, ui, now.as_ref(), center);
+        transport(app, ui, now.as_ref(), center, shown);
 
-        let right_band =
-            Rect::from_min_size(pos2(rect.right() - side, cy - 15.0), vec2(side, 30.0));
-        let mut right_ui = ui.new_child(
-            UiBuilder::new()
-                .max_rect(right_band)
-                .layout(Layout::right_to_left(Align::Center)),
-        );
-        extras(app, &mut right_ui, now.as_ref());
+        extras(app, ui, now.as_ref(), pos2(rect.right(), cy), shown);
     });
+}
+
+/// What the bar has room for. As the window narrows the controls go one
+/// at a time, the least used first, until only Play is left.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct Fit {
+    cover_view: bool,
+    lyrics: bool,
+    volume_slider: bool,
+    queue: bool,
+    times: bool,
+    shuffle_repeat: bool,
+    devices: bool,
+    mute: bool,
+    title: bool,
+    progress: bool,
+    skips: bool,
+    art: bool,
+}
+
+/// Room around the transport, so it never touches the side columns.
+const CENTER_PAD: f32 = 24.0;
+const TRANSPORT_GAP: f32 = 10.0;
+const EXTRAS_GAP: f32 = 6.0;
+const ICON_EDGE: f32 = 30.0;
+const VOLUME_WIDTH: f32 = 92.0;
+/// The song's name beside the cover needs at least this much.
+const TITLE_COLUMN: f32 = 200.0;
+/// The cover on its own.
+const ART_COLUMN: f32 = 68.0;
+/// The seek bar's shortest length, and the space its times take.
+const PROGRESS_MIN: f32 = 96.0;
+const TIMES_WIDTH: f32 = 96.0;
+/// The least the window narrows between one control going and the next.
+const STEP_SPACING: f32 = 24.0;
+
+impl Fit {
+    const ALL: Fit = Fit {
+        cover_view: true,
+        lyrics: true,
+        volume_slider: true,
+        queue: true,
+        times: true,
+        shuffle_repeat: true,
+        devices: true,
+        mute: true,
+        title: true,
+        progress: true,
+        skips: true,
+        art: true,
+    };
+
+    /// Each step drops one more control, in the order they go.
+    fn steps() -> impl Iterator<Item = Fit> {
+        let drops: [fn(&mut Fit); 12] = [
+            |f| f.cover_view = false,
+            |f| f.lyrics = false,
+            |f| f.volume_slider = false,
+            |f| f.queue = false,
+            |f| f.times = false,
+            |f| f.shuffle_repeat = false,
+            |f| f.devices = false,
+            |f| f.mute = false,
+            |f| f.title = false,
+            |f| f.progress = false,
+            |f| f.skips = false,
+            |f| f.art = false,
+        ];
+        let mut fit = Fit::ALL;
+        std::iter::once(fit).chain(drops.into_iter().map(move |drop| {
+            drop(&mut fit);
+            fit
+        }))
+    }
+
+    /// The most the bar can show in `width`. Each step comes in at least
+    /// `STEP_SPACING` wider than the one after it, even where dropping its
+    /// control frees no room, so they go and return one at a time.
+    fn for_width(width: f32) -> Fit {
+        let steps: Vec<Fit> = Fit::steps().collect();
+        let mut from = vec![0.0; steps.len()];
+        for i in (0..steps.len() - 1).rev() {
+            from[i] = steps[i].needs().max(from[i + 1] + STEP_SPACING);
+        }
+        steps
+            .iter()
+            .zip(from)
+            .find(|(_, from)| *from <= width)
+            .map(|(fit, _)| *fit)
+            .unwrap_or_else(|| *steps.last().expect("steps"))
+    }
+
+    fn left(&self) -> f32 {
+        if self.title {
+            TITLE_COLUMN
+        } else if self.art {
+            ART_COLUMN
+        } else {
+            0.0
+        }
+    }
+
+    fn right(&self) -> f32 {
+        let mut items = Vec::new();
+        for (on, width) in [
+            (self.volume_slider, VOLUME_WIDTH),
+            (self.mute, ICON_EDGE),
+            (self.devices, ICON_EDGE + 4.0),
+            (self.queue, ICON_EDGE),
+            (self.lyrics, ICON_EDGE),
+            (self.cover_view, ICON_EDGE),
+        ] {
+            if on {
+                items.push(width);
+            }
+        }
+        items.iter().sum::<f32>() + EXTRAS_GAP * items.len().saturating_sub(1) as f32
+    }
+
+    fn transport(&self) -> f32 {
+        let mut width = 36.0;
+        if self.skips {
+            width += 2.0 * (30.0 + TRANSPORT_GAP);
+        }
+        if self.shuffle_repeat {
+            width += 2.0 * (29.0 + TRANSPORT_GAP);
+        }
+        let progress = if self.progress {
+            PROGRESS_MIN + if self.times { TIMES_WIDTH } else { 0.0 }
+        } else {
+            0.0
+        };
+        width.max(progress) + CENTER_PAD
+    }
+
+    fn needs(&self) -> f32 {
+        2.0 * self.left().max(self.right()) + self.transport()
+    }
+
+    /// How wide each side column is: a share of the bar, never less than
+    /// either side needs, never so much that the transport is squeezed.
+    fn side(&self, width: f32) -> f32 {
+        let least = self.left().max(self.right());
+        let most = ((width - self.transport()) / 2.0).max(least);
+        (width * 0.3).clamp(least, most.min(420.0).max(least))
+    }
+}
+
+/// How far each control has eased in, 0 gone to 1 shown.
+#[derive(Clone, Copy)]
+struct Shown {
+    cover_view: f32,
+    lyrics: f32,
+    volume_slider: f32,
+    queue: f32,
+    times: f32,
+    shuffle_repeat: f32,
+    devices: f32,
+    mute: f32,
+    title: f32,
+    progress: f32,
+    skips: f32,
+    art: f32,
+}
+
+impl Shown {
+    fn ease(ctx: &egui::Context, fit: Fit) -> Shown {
+        let k = |name: &'static str, on: bool| {
+            crate::motion::toggle(
+                ctx,
+                egui::Id::new(("player-bar-fit", name)),
+                on,
+                crate::motion::STANDARD,
+            )
+        };
+        Shown {
+            cover_view: k("cover-view", fit.cover_view),
+            lyrics: k("lyrics", fit.lyrics),
+            volume_slider: k("volume", fit.volume_slider),
+            queue: k("queue", fit.queue),
+            times: k("times", fit.times),
+            shuffle_repeat: k("shuffle-repeat", fit.shuffle_repeat),
+            devices: k("devices", fit.devices),
+            mute: k("mute", fit.mute),
+            title: k("title", fit.title),
+            progress: k("progress", fit.progress),
+            skips: k("skips", fit.skips),
+            art: k("art", fit.art),
+        }
+    }
+}
+
+/// A control's own band, faded to how far it has eased in. `None` once it
+/// has gone.
+fn faded(ui: &mut egui::Ui, rect: Rect, shown: f32) -> Option<egui::Ui> {
+    (shown > 0.01).then(|| {
+        let mut child = ui.new_child(
+            UiBuilder::new()
+                .max_rect(rect)
+                .layout(Layout::centered_and_justified(egui::Direction::LeftToRight)),
+        );
+        child.set_opacity(shown);
+        child
+    })
 }
 
 /// Ease the final fill's RGB. Untinted custom panels keep their alpha while
@@ -127,13 +338,22 @@ fn eased_fill(ctx: &egui::Context, panel: Color32, tint: Option<Color32>) -> Col
     }
 }
 
-fn now_playing_block(app: &mut App, ui: &mut egui::Ui, region: Rect, now: Option<&NowPlaying>) {
+fn now_playing_block(
+    app: &mut App,
+    ui: &mut egui::Ui,
+    region: Rect,
+    now: Option<&NowPlaying>,
+    title_shown: f32,
+) {
     let palette = app.palette;
     let cy = region.center().y;
     let cover_rect = Rect::from_min_size(pos2(region.left() + 4.0, cy - 28.0), Vec2::splat(56.0));
 
     let Some(now) = now else {
         super::widgets::paint_cover(ui, &palette, None, cover_rect, 6.0, Icon::Music, None);
+        if title_shown <= 0.01 {
+            return;
+        }
         let text_left = cover_rect.right() + 12.0;
         let text_rect = Rect::from_min_size(
             pos2(text_left, cy - 17.0),
@@ -145,6 +365,7 @@ fn now_playing_block(app: &mut App, ui: &mut egui::Ui, region: Rect, now: Option
                 .layout(Layout::top_down(Align::Min)),
         );
         text_ui.spacing_mut().item_spacing.y = 2.0;
+        text_ui.multiply_opacity(title_shown);
         theme::text(
             &mut text_ui,
             gettext(app.locale, "Nothing playing"),
@@ -215,6 +436,10 @@ fn now_playing_block(app: &mut App, ui: &mut egui::Ui, region: Rect, now: Option
             app.actions.push(Action::SettingsChanged);
         }
     }
+    if title_shown <= 0.01 {
+        return;
+    }
+    ui.multiply_opacity(title_shown);
     let heart_width = if now.is_episode { 0.0 } else { 42.0 };
     let text_left = cover_rect.right() + 12.0;
     let text_width = (region.right() - text_left - heart_width).max(40.0);
@@ -319,7 +544,13 @@ fn now_playing_block(app: &mut App, ui: &mut egui::Ui, region: Rect, now: Option
     }
 }
 
-fn transport(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>, region: Rect) {
+fn transport(
+    app: &mut App,
+    ui: &mut egui::Ui,
+    now: Option<&NowPlaying>,
+    region: Rect,
+    shown: Shown,
+) {
     let palette = app.palette;
     // Everything here is placed with explicit rects: egui's implicit rows
     // centre each widget in the row height known when it is added, which
@@ -329,8 +560,8 @@ fn transport(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>, region:
     // one cluster, centred as a group in the 88px bar: the buttons sit 8px
     // above the bar's midline and the progress row 23px below it. Measured
     // on screen this puts equal breathing room above and beneath the
-    // cluster.
-    let cy = region.center().y - 8.0;
+    // cluster. Without the progress row the buttons settle on the midline.
+    let cy = region.center().y - 8.0 * shown.progress;
     let enabled = now.is_some_and(|now| now.can_control) || app.is_connected();
     let playing = now.is_some_and(|now| now.playing);
     let loading = now.is_some_and(|now| now.loading);
@@ -343,14 +574,30 @@ fn transport(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>, region:
     };
 
     // Button widths: icon buttons occupy icon size + 12; the disc is 36.
+    // A control making way narrows its slot as it fades, so the rest close
+    // in around Play.
     let widths = [29.0, 30.0, 36.0, 30.0, 29.0];
-    let gap = 10.0;
-    let total: f32 = widths.iter().sum::<f32>() + gap * 4.0;
-    let mut x = region.center().x - total / 2.0;
-    let mut slot = |width: f32| {
-        let rect = Rect::from_center_size(pos2(x + width / 2.0, cy), vec2(width, 36.0));
-        x += width + gap;
-        rect
+    let eased = [
+        shown.shuffle_repeat,
+        shown.skips,
+        1.0,
+        shown.skips,
+        shown.shuffle_repeat,
+    ];
+    let slots: [Rect; 5] = {
+        let total: f32 = widths
+            .iter()
+            .zip(eased)
+            .map(|(width, k)| (width + TRANSPORT_GAP) * k)
+            .sum::<f32>()
+            - TRANSPORT_GAP;
+        let mut x = region.center().x - total / 2.0;
+        std::array::from_fn(|i| {
+            let room = widths[i] * eased[i];
+            let rect = Rect::from_center_size(pos2(x + room / 2.0, cy), vec2(widths[i], 36.0));
+            x += (widths[i] + TRANSPORT_GAP) * eased[i];
+            rect
+        })
     };
     let centered = |ui: &mut egui::Ui, rect: Rect| {
         ui.new_child(
@@ -361,46 +608,47 @@ fn transport(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>, region:
     };
 
     let shuffle_color = if shuffle { palette.accent } else { dim };
-    let mut cell = centered(ui, slot(widths[0]));
-    let shuffle_button = theme::icon_button(
-        &mut cell,
-        Icon::Shuffle,
-        17.0,
-        shuffle_color,
-        if shuffle {
-            palette.accent_hover
-        } else {
-            palette.text
-        },
-        &gettext(app.locale, "Shuffle"),
-    );
-    shuffle_button.widget_info(|| {
-        egui::WidgetInfo::selected(
-            egui::WidgetType::Checkbox,
-            cell.is_enabled(),
-            shuffle,
-            gettext(app.locale, "Shuffle"),
-        )
-    });
-    if shuffle_button.clicked() {
-        app.actions.push(Action::ToggleShuffle);
+    if let Some(mut cell) = faded(ui, slots[0], shown.shuffle_repeat) {
+        let shuffle_button = theme::icon_button(
+            &mut cell,
+            Icon::Shuffle,
+            17.0,
+            shuffle_color,
+            if shuffle {
+                palette.accent_hover
+            } else {
+                palette.text
+            },
+            &gettext(app.locale, "Shuffle"),
+        );
+        shuffle_button.widget_info(|| {
+            egui::WidgetInfo::selected(
+                egui::WidgetType::Checkbox,
+                cell.is_enabled(),
+                shuffle,
+                gettext(app.locale, "Shuffle"),
+            )
+        });
+        if shuffle_button.clicked() {
+            app.actions.push(Action::ToggleShuffle);
+        }
     }
 
-    let mut cell = centered(ui, slot(widths[1]));
-    if theme::icon_button(
-        &mut cell,
-        Icon::SkipBackFilled,
-        18.0,
-        dim,
-        palette.text,
-        &gettext(app.locale, "Previous"),
-    )
-    .clicked()
+    if let Some(mut cell) = faded(ui, slots[1], shown.skips)
+        && theme::icon_button(
+            &mut cell,
+            Icon::SkipBackFilled,
+            18.0,
+            dim,
+            palette.text,
+            &gettext(app.locale, "Previous"),
+        )
+        .clicked()
     {
         app.actions.push(Action::Previous);
     }
 
-    let disc = slot(widths[2]);
+    let disc = slots[2];
     if loading || app.any_play_pending() {
         ui.painter()
             .circle_filled(disc.center(), 18.0, palette.text);
@@ -437,16 +685,16 @@ fn transport(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>, region:
         }
     }
 
-    let mut cell = centered(ui, slot(widths[3]));
-    if theme::icon_button(
-        &mut cell,
-        Icon::SkipForwardFilled,
-        18.0,
-        dim,
-        palette.text,
-        &gettext(app.locale, "Next"),
-    )
-    .clicked()
+    if let Some(mut cell) = faded(ui, slots[3], shown.skips)
+        && theme::icon_button(
+            &mut cell,
+            Icon::SkipForwardFilled,
+            18.0,
+            dim,
+            palette.text,
+            &gettext(app.locale, "Next"),
+        )
+        .clicked()
     {
         app.actions.push(Action::Next);
     }
@@ -464,28 +712,33 @@ fn transport(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>, region:
             gettext(app.locale, "Repeat off"),
         ),
     };
-    let mut cell = centered(ui, slot(widths[4]));
-    if theme::icon_button(
-        &mut cell,
-        repeat_icon,
-        17.0,
-        repeat_color,
-        if repeat == RepeatMode::Off {
-            palette.text
-        } else {
-            palette.accent_hover
-        },
-        &tooltip,
-    )
-    .clicked()
+    if let Some(mut cell) = faded(ui, slots[4], shown.shuffle_repeat)
+        && theme::icon_button(
+            &mut cell,
+            repeat_icon,
+            17.0,
+            repeat_color,
+            if repeat == RepeatMode::Off {
+                palette.text
+            } else {
+                palette.accent_hover
+            },
+            &tooltip,
+        )
+        .clicked()
     {
         app.actions.push(Action::CycleRepeat);
     }
 
+    if shown.progress <= 0.01 {
+        return;
+    }
     // Progress row, just below the buttons (disc bottom + 6px gap + half of
-    // the time text's line height).
+    // the time text's line height). It shortens with the window, and its
+    // times make way before it does.
     let row_cy = cy + 31.0;
-    let slider_width = (region.width() - 120.0).clamp(120.0, 620.0);
+    let slider_width = (region.width() - CENTER_PAD - TIMES_WIDTH * shown.times).clamp(0.0, 620.0);
+    let times_color = |color: Color32| color.gamma_multiply(shown.times * shown.progress);
     let (position, duration) = now
         .map(|now| (now.position_ms, now.duration_ms))
         .unwrap_or((0, 0));
@@ -504,7 +757,7 @@ fn transport(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>, region:
         egui::Align2::RIGHT_CENTER,
         util::format_duration_ms(shown_position),
         theme::regular(11.5),
-        time_color,
+        times_color(time_color),
     );
     let slider_rect =
         Rect::from_center_size(pos2(region.center().x, row_cy), vec2(slider_width, 16.0));
@@ -513,6 +766,7 @@ fn transport(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>, region:
             .max_rect(slider_rect)
             .layout(Layout::left_to_right(Align::Center)),
     );
+    slider_ui.set_opacity(shown.progress);
     let fraction = if duration > 0 {
         position as f32 / duration as f32
     } else {
@@ -542,17 +796,31 @@ fn transport(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>, region:
         egui::Align2::LEFT_CENTER,
         util::format_duration_ms(duration),
         theme::regular(11.5),
-        time_color,
+        times_color(time_color),
     );
 }
 
-fn extras(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>) {
+/// Volume, devices, queue, lyrics and cover view, laid out leftwards from
+/// `right`. A control making way narrows its slot as it fades.
+fn extras(
+    app: &mut App,
+    ui: &mut egui::Ui,
+    now: Option<&NowPlaying>,
+    right: egui::Pos2,
+    shown: Shown,
+) {
     let palette = app.palette;
-    ui.spacing_mut().item_spacing.x = 6.0;
+    let mut x = right.x;
+    let mut slot = |width: f32, k: f32| {
+        let rect =
+            Rect::from_center_size(pos2(x - width * k / 2.0, right.y), vec2(width, ICON_EDGE));
+        x -= (width + EXTRAS_GAP) * k;
+        rect
+    };
     let volume = now
         .map(|now| now.volume_percent)
         .unwrap_or_else(|| crate::app::volume_to_percent(app.local.volume));
-    let shown = match app.volume_preview {
+    let shown_volume = match app.volume_preview {
         Some(fraction) => (fraction * 100.0).round() as u8,
         None => volume,
     };
@@ -560,14 +828,20 @@ fn extras(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>) {
     // volume changes from other apps: show their volume but don't offer to
     // change it.
     let adjustable = now.is_none_or(|now| now.can_set_volume);
-    let controls = ui.add_enabled_ui(adjustable, |ui| {
+    let mut volume_rect = Rect::NOTHING;
+    let slider = slot(VOLUME_WIDTH, shown.volume_slider);
+    if let Some(mut cell) = faded(ui, slider, shown.volume_slider) {
+        if !adjustable {
+            cell.disable();
+        }
+        volume_rect = volume_rect.union(slider);
         match thin_slider(
-            ui,
+            &mut cell,
             &palette,
             egui::Id::new("volume-slider"),
             &gettext(app.locale, "Volume (%)"),
-            shown as f32 / 100.0,
-            92.0,
+            shown_volume as f32 / 100.0,
+            VOLUME_WIDTH,
             Some(0.05),
         ) {
             SliderEvent::Dragging(value) => {
@@ -585,19 +859,26 @@ fn extras(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>) {
             }
             SliderEvent::None => {}
         }
-        let volume_icon = match shown {
+    }
+    let mute = slot(ICON_EDGE, shown.mute);
+    if let Some(mut cell) = faded(ui, mute, shown.mute) {
+        if !adjustable {
+            cell.disable();
+        }
+        volume_rect = volume_rect.union(mute);
+        let volume_icon = match shown_volume {
             0 => Icon::VolumeX,
             1..=33 => Icon::Volume,
             34..=66 => Icon::Volume1,
             _ => Icon::Volume2,
         };
         if theme::icon_button(
-            ui,
+            &mut cell,
             volume_icon,
             18.0,
             palette.secondary,
             palette.text,
-            &if shown == 0 {
+            &if shown_volume == 0 {
                 gettext(app.locale, "Unmute")
             } else {
                 gettext(app.locale, "Mute")
@@ -607,10 +888,10 @@ fn extras(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>) {
         {
             app.actions.push(Action::ToggleMute);
         }
-    });
-    if !adjustable {
+    }
+    if !adjustable && volume_rect.is_positive() {
         ui.interact(
-            controls.response.rect,
+            volume_rect,
             egui::Id::new("volume-fixed"),
             egui::Sense::hover(),
         )
@@ -619,82 +900,90 @@ fn extras(app: &mut App, ui: &mut egui::Ui, now: Option<&NowPlaying>) {
             "This device's volume can't be changed from Spotsie",
         ));
     }
-    ui.add_space(4.0);
     let remote = now.is_some_and(|now| !now.local);
-    let devices = theme::icon_button(
-        ui,
-        Icon::Speaker,
-        18.0,
-        if remote {
-            palette.accent
-        } else {
-            palette.secondary
-        },
-        palette.text,
-        &gettext(app.locale, "Connect to a device"),
-    );
-    ui.ctx().data_mut(|data| {
-        data.insert_temp(egui::Id::new(super::devices::BUTTON_RECT_ID), devices.rect)
-    });
-    if devices.clicked() {
-        app.actions.push(Action::ToggleDevicesPopup);
+    // The devices button keeps a little more room from the volume.
+    let devices = slot(ICON_EDGE + 4.0, shown.devices);
+    let devices = Rect::from_center_size(devices.center() - vec2(2.0, 0.0), Vec2::splat(ICON_EDGE));
+    if let Some(mut cell) = faded(ui, devices, shown.devices) {
+        let response = theme::icon_button(
+            &mut cell,
+            Icon::Speaker,
+            18.0,
+            if remote {
+                palette.accent
+            } else {
+                palette.secondary
+            },
+            palette.text,
+            &gettext(app.locale, "Connect to a device"),
+        );
+        ui.ctx().data_mut(|data| {
+            data.insert_temp(egui::Id::new(super::devices::BUTTON_RECT_ID), response.rect)
+        });
+        if response.clicked() {
+            app.actions.push(Action::ToggleDevicesPopup);
+        }
     }
     let queue_open = app.show_queue_panel || matches!(app.page(), Page::Queue);
-    let queue_button = theme::icon_button(
-        ui,
-        Icon::ListVideo,
-        18.0,
-        if queue_open {
-            palette.accent
-        } else {
-            palette.secondary
-        },
-        palette.text,
-        &gettext(app.locale, "Queue"),
-    );
-    if queue_button.clicked() {
-        app.actions.push(Action::ToggleQueuePanel);
+    if let Some(mut cell) = faded(ui, slot(ICON_EDGE, shown.queue), shown.queue) {
+        let queue_button = theme::icon_button(
+            &mut cell,
+            Icon::ListVideo,
+            18.0,
+            if queue_open {
+                palette.accent
+            } else {
+                palette.secondary
+            },
+            palette.text,
+            &gettext(app.locale, "Queue"),
+        );
+        if queue_button.clicked() {
+            app.actions.push(Action::ToggleQueuePanel);
+        }
+        // A dragged song dropped on the queue button queues it, same as the
+        // "Add to queue" menu item.
+        if let Some(track) = queue_button.dnd_release_payload::<DragTrack>() {
+            app.actions.push(Action::QueueMany {
+                songs: track
+                    .items
+                    .iter()
+                    .map(|item| (item.uri().to_string(), item.name().to_string()))
+                    .collect(),
+            });
+        }
     }
-    // A dragged song dropped on the queue button queues it, same as the
-    // "Add to queue" menu item.
-    if let Some(track) = queue_button.dnd_release_payload::<DragTrack>() {
-        app.actions.push(Action::QueueMany {
-            songs: track
-                .items
-                .iter()
-                .map(|item| (item.uri().to_string(), item.name().to_string()))
-                .collect(),
-        });
-    }
-    if theme::icon_button(
-        ui,
-        Icon::Lyrics,
-        18.0,
-        if app.show_lyrics_panel {
-            palette.accent
-        } else {
-            palette.secondary
-        },
-        palette.text,
-        &gettext(app.locale, "Lyrics"),
-    )
-    .clicked()
+    if let Some(mut cell) = faded(ui, slot(ICON_EDGE, shown.lyrics), shown.lyrics)
+        && theme::icon_button(
+            &mut cell,
+            Icon::Lyrics,
+            18.0,
+            if app.show_lyrics_panel {
+                palette.accent
+            } else {
+                palette.secondary
+            },
+            palette.text,
+            &gettext(app.locale, "Lyrics"),
+        )
+        .clicked()
     {
         app.actions.push(Action::ToggleLyricsPanel);
     }
-    if theme::icon_button(
-        ui,
-        Icon::CoverView,
-        18.0,
-        if app.show_cover_view {
-            palette.accent
-        } else {
-            palette.secondary
-        },
-        palette.text,
-        &gettext(app.locale, "Cover view"),
-    )
-    .clicked()
+    if let Some(mut cell) = faded(ui, slot(ICON_EDGE, shown.cover_view), shown.cover_view)
+        && theme::icon_button(
+            &mut cell,
+            Icon::CoverView,
+            18.0,
+            if app.show_cover_view {
+                palette.accent
+            } else {
+                palette.secondary
+            },
+            palette.text,
+            &gettext(app.locale, "Cover view"),
+        )
+        .clicked()
     {
         app.actions.push(Action::ToggleCoverView);
     }
@@ -808,5 +1097,53 @@ mod player_bar_tint_tests {
 
         end_tint_session(&ctx);
         assert_eq!(frame(&ctx, 0.22, panel, None), panel);
+    }
+}
+
+#[cfg(test)]
+mod player_bar_fit_tests {
+    use super::*;
+
+    /// At any width the side columns hold what they show and the transport
+    /// keeps its room between them, so nothing overlaps.
+    #[test]
+    fn nothing_overlaps_at_any_width() {
+        for width in (40..=2400).step_by(5) {
+            let width = width as f32;
+            let fit = Fit::for_width(width);
+            if fit == Fit::steps().last().unwrap() {
+                continue;
+            }
+            let side = fit.side(width);
+            assert!(
+                side >= fit.left() && side >= fit.right(),
+                "{width}: {fit:?}"
+            );
+            assert!(
+                width - 2.0 * side + 0.01 >= fit.transport(),
+                "{width}: {fit:?} side {side}"
+            );
+        }
+    }
+
+    /// Narrowing takes controls away one at a time and widening brings
+    /// them back, down to Play alone.
+    #[test]
+    fn controls_go_one_at_a_time_down_to_play() {
+        assert_eq!(Fit::for_width(1400.0), Fit::ALL);
+        let tiny = Fit::for_width(60.0);
+        assert_eq!(tiny, Fit::steps().last().unwrap());
+        assert!(!tiny.skips && !tiny.art && !tiny.progress && !tiny.mute);
+        let step = |fit: Fit| Fit::steps().position(|s| s == fit).unwrap();
+        let mut last = 0;
+        for width in (60..=1400).rev().step_by(2) {
+            let now = step(Fit::for_width(width as f32));
+            assert!(now <= last + 1, "two controls went at once at {width}");
+            assert!(
+                now >= last,
+                "a control came back while narrowing at {width}"
+            );
+            last = now;
+        }
     }
 }
