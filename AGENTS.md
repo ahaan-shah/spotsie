@@ -126,8 +126,8 @@ Plain `cargo` is fine. Never put build output or large scratch files in
 ## Installing and releasing
 
 `scripts/install.sh` builds a release binary and installs it for the user
-(`~/.local/bin`, the launcher entry and the icon). Run it after changes the
-user wants on their system.
+(`~/.local/bin`, the launcher entry and the icon). Never run it, or install
+Spotsie on the user's system any other way, unless they ask.
 
 Versions are tagged `vMAJOR.MINOR.PATCH`, starting at v0.1.0:
 
@@ -139,7 +139,7 @@ Versions are tagged `vMAJOR.MINOR.PATCH`, starting at v0.1.0:
    the version in `Cargo.toml`, `Cargo.lock` and the Flatpak metainfo,
    commits, and creates the annotated tag. It does not push.
 3. Push only when the user asks: `git push && git push origin vVERSION`.
-4. Run `scripts/install.sh` so the installed app is the new version.
+4. Don't install the new version locally unless the user asks.
 
 CI runs on Linux only. The release workflow, which builds packages for every
 platform, runs only when started by hand from the Actions tab on a tag.
