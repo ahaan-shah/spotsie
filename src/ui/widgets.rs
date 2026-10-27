@@ -1299,6 +1299,20 @@ pub fn context_menu_items(
             label: name.to_string(),
         });
     }
+    if kind == "playlist"
+        && let Some(id) = util::uri_id(uri)
+        && menu_item(
+            ui,
+            &palette,
+            Some(Icon::ListEnd),
+            &gettext(locale, "Add to queue"),
+        )
+    {
+        app.actions.push(Action::QueuePlaylist {
+            id: id.to_string(),
+            label: name.to_string(),
+        });
+    }
     let saved = app.is_saved(uri).unwrap_or(false);
     let (icon, text) = match (kind, saved) {
         ("artist", true) => (Icon::CircleX, pgettext(locale, "artist", "Unfollow")),

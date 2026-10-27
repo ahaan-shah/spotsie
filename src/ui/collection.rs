@@ -321,6 +321,27 @@ pub fn actions_row(
                 .collect();
             app.actions.push(Action::QueueMany { songs });
         }
+        // A playlist's songs go to the queue in its own order, all of them,
+        // as an album's do from its menu.
+        if actions.save_radio.is_none()
+            && let Some(uri) = &actions.play_uri
+            && util::uri_kind(uri) == Some("playlist")
+            && let Some(id) = util::uri_id(uri)
+            && theme::icon_button(
+                ui,
+                Icon::ListPlus,
+                26.0,
+                palette.secondary,
+                palette.text,
+                &gettext(locale, "Add to queue"),
+            )
+            .clicked()
+        {
+            app.actions.push(Action::QueuePlaylist {
+                id: id.to_string(),
+                label: actions.name.to_string(),
+            });
+        }
         if let Some(uri) = &actions.play_uri {
             let more = theme::icon_button(
                 ui,

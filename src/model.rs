@@ -966,6 +966,11 @@ pub enum Action {
         uri: String,
         label: String,
     },
+    /// Every song of a playlist, in its own order, after what is queued.
+    QueuePlaylist {
+        id: String,
+        label: String,
+    },
     ToggleSaved(String),
     /// Queue several songs in order and show one notification.
     QueueMany {
