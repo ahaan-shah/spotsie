@@ -9,13 +9,17 @@ nav_order: 1
 Spotsie uses separate credentials for Web API access, a personal app, and
 local playback:
 
-1. **The shared Web API app** keeps full catalogue and playlist coverage.
-2. **Your optional personal Web API app** handles supported playback, library,
-   catalog, catalogue search, playlist creation, and owned or collaborative
-   playlist requests without using the shared app's quota. Complete
-   playlist-library views and the playlist half of a search stay on the shared
-   app so Spotify-owned results are not filtered out. Both Web API grants must
-   verify as the same Spotify account.
+1. **Your own Web API app**, which you make on Spotify's developer website
+   during onboarding, answers every Web API request. Spotify no longer
+   accepts new sign-ins through the app Spotsie used to share, so since 0.1.4
+   it is the only way to sign in.
+2. **The shared Web API app**, only for listeners who signed in through it
+   before 0.1.4. Their grant keeps working until Spotify refuses it; no new
+   one is ever made. While it lasts it keeps the coverage it had: complete
+   playlist-library views and the playlist half of a search stay on it, and a
+   personal app takes the rest. Both Web API grants must verify as the same
+   Spotify account. When Spotify refuses the shared grant, a listener with a
+   personal app stays signed in with it; one without is sent to onboarding.
 3. **Local playback** uses
    [librespot](https://github.com/librespot-org/librespot). It needs one more
    browser approval and keeps an independent reusable credential. Spotify Premium
@@ -51,10 +55,16 @@ rejects a saved refresh grant, Spotsie removes that grant and asks for a new
 browser approval. Upgrading to protected storage does not itself require
 signing in again.
 
-By default, Spotsie uses the public app shared with spotify-player, ncspot,
-and Omarchy Spotify. Spotify divides its quota among all users. A personal app
-adds a separate Development Mode quota. See
-[Use a Personal Spotify App](../_guide/make-it-even-faster.md).
+Since 0.1.4, Spotsie no longer carries the public app it shared with
+spotify-player, ncspot, and Omarchy Spotify, which stopped taking new
+sign-ins. Each listener signs in through an app of their own, with its own
+Development Mode quota. See [Your Spotify App](../_guide/make-it-even-faster.md).
+Before the browser opens, Spotsie sends Spotify's token endpoint one request
+with a code that cannot be valid: the answer says whether Spotify knows the
+Client ID, without signing anyone in.
+
+Without a shared grant, every request, including those the routing below gives
+to shared access, goes to the personal app, and a search is one request.
 
 Since 0.8.0, a search runs as two requests when a
 personal app is ready: songs, artists, albums, podcasts, and episodes on the
@@ -72,7 +82,9 @@ Development Mode rejects the larger page. Without a personal app, one request
 still asks for all six types and nothing about a search changes.
 
 Since 0.8.0, verified Premium accounts using shared access see a
-one-time introduction to that option. Setup and dismissal are remembered in
+one-time introduction to that option. Since 0.1.4 it only appears while a
+shared grant from an earlier version is signed in, and asks them to move to
+their own app. Setup and dismissal are remembered in
 settings. The prompt uses the existing account profile and adds no request.
 
 Since 0.8.0, explicitly sorting a Library section loads its remaining

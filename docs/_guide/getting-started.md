@@ -11,8 +11,17 @@ installation steps. Then open **Spotsie**.
 
 ## Sign in
 
-Press **Sign in with Spotify**. Your browser opens Spotify's sign-in page.
-Approve access there, then return to Spotsie to see your library.
+The first time you open Spotsie, onboarding walks you through signing in:
+
+1. **Get started** shows four short steps for making your own free Spotify
+   app on Spotify's developer website. Spotify requires one for each
+   listener, and the account that makes it needs Premium.
+   [Your Spotify app](make-it-even-faster.md) has the same steps and what to
+   do if one goes wrong.
+2. Paste the app's **Client ID** and press **Sign in with Spotify**. Your
+   browser opens Spotify's sign-in page.
+3. Approve access there, and Spotsie opens your library by itself.
+
 Spotsie never sees your Spotify password.
 
 Spotsie remembers your sign-in using your computer's protected storage,

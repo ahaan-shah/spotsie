@@ -12,8 +12,9 @@ Linux, macOS, and Windows. It opens in well under a second and typically uses
 
 Your Spotify playlists stay on your account.
 
-**Playback needs Spotify Premium.** Free accounts can browse and search, but
-cannot play music through Spotsie on this computer or another device.
+**Spotsie needs Spotify Premium.** You sign in through a free Spotify app of
+your own, and Spotify only lets Premium accounts make one. Playback, on this
+computer or another device, needs Premium too.
 
 ![Spotsie Home with the playlist library, recommendations, queue, and player visible](../screenshot.png)
 
@@ -61,8 +62,8 @@ the app is updated.
 
 Spotsie has a limited scope:
 
-- **Playing needs Spotify Premium**, both on this computer and when
-  controlling another device. Free accounts can browse and search.
+- **Spotsie needs Spotify Premium**, to make the Spotify app you sign in
+  through and to play, on this computer or another device.
 - Setup asks for two Spotify approvals: one to access your library, another
   to play music on this computer. [How it connects](../_reference/how-it-connects.md)
   explains why.

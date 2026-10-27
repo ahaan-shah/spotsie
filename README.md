@@ -16,8 +16,9 @@ and carries no browser engine.
 
 </div>
 
-**Playback needs Spotify Premium.** Free accounts can browse and search, but
-can't play music through Spotsie. Spotsie is an independent project, not made
+**Spotsie needs Spotify Premium.** You sign in through a free Spotify app of
+your own, which onboarding walks you through making in about two minutes, and
+Spotify only lets Premium accounts make one. Playback needs Premium too. Spotsie is an independent project, not made
 or endorsed by Spotify.
 
 ## Features
@@ -162,7 +163,7 @@ See [Everyday use](docs/_guide/using-spotsie.md#controlling-it-from-the-command-
 There's no Spotsie account, no telemetry and no hosted service. Spotsie talks
 to Spotify, and to three other places, each for one thing:
 
-- **Spotify**, for your library, search and playback, signed in with Spotify's own login page. Sign-ins live in your system's keyring.
+- **Spotify**, for your library, search and playback, signed in with Spotify's own login page through your own free Spotify app, which onboarding helps you make. Sign-ins live in your system's keyring.
 - **[LRCLIB](https://lrclib.net)**, for lyrics when Spotify has none: the song's artist, title, album and length, nothing about you.
 - **GitHub**, once on each launch, to see whether a newer Spotsie exists. Updates are only downloaded when you click **Update available**.
 - **Your local network**, to find Spotify Connect speakers.

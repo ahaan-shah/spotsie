@@ -242,7 +242,7 @@ main fields are:
 | `keep_playing_in_background` | `true` | Close to tray |
 | `mac_notch_widget` | `false` | Show interactive Now Playing widget when hovering over the MacBook notch (macOS only) |
 | `download_updates_automatically` | `false` | Download a found update in the background. Not shown in Settings; set it here |
-| `web_client_id` | none | Optional personal Spotify app id used alongside shared coverage |
+| `web_client_id` | none | The Client ID of your own Spotify app, which Spotsie signs in through (required for new sign-ins since 0.1.4) |
 | `personal_app_nudge_at` | none | Legacy daily-reminder timestamp, retained for older releases |
 | `personal_app_intro_seen` | `false` | Whether the Premium personal-app introduction was dismissed or followed (available since 0.8.0) |
 | `proxy_mode` | `system` | `off`, `system`, `http`, or `socks`. Older files without this field stay on `system` |
@@ -282,14 +282,20 @@ and `--demo-show` adds surfaces on top of it: a comma separated list of
 `collection-loading`, `shuffle-selected`, `shuffle-started`, `library-list`,
 `library-list-narrow`, `library-list-wide`, `library-grid`, `library-grid-narrow`,
 `library-grid-wide`, `rtl`,
-`lyrics-fullscreen-view`, `lyrics-fullscreen-instrumental`, `cover-view`, `signed-out`, and `connecting`. The Library variants show the list or cover grid with
+`lyrics-fullscreen-view`, `lyrics-fullscreen-instrumental`, `cover-view`, `signed-out`, `connecting`,
+`onboarding`, `onboarding-app`, `onboarding-app-ticked`, `onboarding-client-id`,
+`onboarding-typed`, `onboarding-returning`, `onboarding-waiting`,
+`onboarding-unknown-client`, and `onboarding-shared-retired`. The Library variants show the list or cover grid with
 a normal, narrow, or wide sidebar and collapsed artwork for matching captures.
 `shuffle-selected` and `shuffle-started` capture the selected-mode and
 playback-started outcomes of a collection Shuffle click. `update` shows a sample
-update badge for checking its layout. `personal-app` shows the personal Spotify
-app introduction.
-`signed-out` and `connecting` show the sign-in card before and while the
-session connects.
+update badge for checking its layout. `personal-app` shows the introduction
+offered to listeners still on the shared app.
+`signed-out` and `connecting` show onboarding before and while the session
+connects. The `onboarding` surfaces open it at each step: the welcome, the
+app setup (with two steps ticked), the Client ID (empty, filled in, or with
+Spotify's refusal of an unknown one), the returning listener's Welcome back,
+the wait for the browser, and the setup after Spotify refused a shared sign-in.
 `lyrics-fullscreen-view` and `lyrics-fullscreen-instrumental` draw full-screen
 lyrics, with words or without, at the window's own size.
 `rtl` gives the first songs of `playlist:pl1` invented Hebrew and Arabic

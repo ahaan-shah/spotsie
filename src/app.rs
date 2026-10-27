@@ -485,6 +485,11 @@ pub struct App {
     pub sign_in_url: Option<String>,
     /// The verified personal Web API application, when acceleration is ready.
     pub web_app: Option<String>,
+    /// A shared grant from an earlier version is signed in: Spotify can stop
+    /// accepting it at any time, so Settings offers the personal app.
+    pub shared_grant: bool,
+    /// Where onboarding is, while signed out.
+    pub onboarding: crate::ui::login::Onboarding,
     pending_remote_position: Option<(u32, Instant)>,
     pending_remote_volume: Option<(u8, Instant)>,
     /// A local volume set here that the engine has not echoed back yet. It
@@ -921,6 +926,8 @@ impl App {
             frame_now: None,
             sign_in_url: None,
             web_app: None,
+            shared_grant: false,
+            onboarding: Default::default(),
             pending_remote_position: None,
             pending_remote_volume: None,
             pending_local_volume: None,
@@ -1973,6 +1980,7 @@ impl App {
                     Err(error) => log::debug!("album type unavailable for {uri}: {error}"),
                 },
                 Event::WebApp { client_id } => self.web_app = client_id,
+                Event::SharedGrant(signed_in) => self.shared_grant = signed_in,
                 Event::UpdateSupport(result) => {
                     let wanted = std::mem::take(&mut self.update_wanted);
                     if result.is_ok()
@@ -2067,6 +2075,10 @@ impl App {
                 self.uploaded_covers.clear();
                 self.sign_in_url = None;
                 self.web_app = None;
+                self.shared_grant = false;
+                // Signing out starts over: back to the Client ID for an app
+                // set up before, to the welcome otherwise.
+                self.onboarding = Default::default();
                 self.user = None;
                 self.premium_notice_shown = false;
                 self.local = LocalState::default();
@@ -2084,6 +2096,8 @@ impl App {
                 self.sign_in_url = None;
                 self.toast_error(message.clone());
             }
+            // Onboarding explains it; a toast would say it twice.
+            AuthStatus::Refused(_) => self.sign_in_url = None,
             _ => {}
         }
         self.auth = status;
@@ -2885,7 +2899,11 @@ impl App {
         self.pending_proxy_preferences
             .insert(request, self.settings.proxy_preferences());
         self.backend.send(if sign_in {
-            Command::SignIn { request, config }
+            Command::SignIn {
+                request,
+                config,
+                client_id: self.settings.web_client_id.clone(),
+            }
         } else {
             Command::ApplyProxy { request, config }
         });
@@ -4716,7 +4734,16 @@ impl App {
                     }
                 }
                 Err(error) => {
-                    if matches!(error, crate::api::ApiError::SignInExpired { .. }) {
+                    if matches!(
+                        error,
+                        crate::api::ApiError::SignInExpired {
+                            api_source: crate::api::ApiSource::Shared
+                        }
+                    ) && self.web_app.is_some()
+                    {
+                        // Spotify refused the shared grant; the personal app
+                        // carries the session on its own.
+                    } else if matches!(error, crate::api::ApiError::SignInExpired { .. }) {
                         self.auth = AuthStatus::Failed(
                             gettext(
                                 self.locale,
@@ -8866,7 +8893,12 @@ impl App {
                 }
             }
             Action::Reload(page) => self.reload(page),
-            Action::SignIn => self.request_proxy(true),
+            Action::SignIn => {
+                // The Client ID typed in onboarding is kept for the next
+                // sign-in, as Settings keeps it.
+                self.save_settings();
+                self.request_proxy(true);
+            }
             Action::ApplyProxy => self.request_proxy(false),
             Action::ProxyEdited => self.proxy_form_edited = true,
             Action::CancelSignIn => {
@@ -9370,8 +9402,12 @@ impl App {
         });
     }
 
+    /// Offers the personal app once, to a connected Premium listener still
+    /// on a shared grant from an earlier version, which Spotify can stop
+    /// accepting at any time.
     fn maybe_suggest_personal_app(&mut self) {
-        if self.settings.personal_app_intro_seen
+        if !self.shared_grant
+            || self.settings.personal_app_intro_seen
             || self
                 .settings
                 .web_client_id
@@ -15271,6 +15307,7 @@ mod tests {
         app.auth = AuthStatus::Connected {
             username: "listener".into(),
         };
+        app.shared_grant = true;
         app.user = Some(User {
             product: Some("premium".into()),
             ..User::default()
@@ -15289,6 +15326,7 @@ mod tests {
         restarted.settings = serde_json::from_str(&saved).unwrap();
         restarted.auth = app.auth.clone();
         restarted.user = app.user.clone();
+        restarted.shared_grant = true;
         restarted.maybe_suggest_personal_app();
         assert!(restarted.dialog.is_none(), "dismissal survives a restart");
         assert!(app.toasts.is_empty(), "the old daily reminder is replaced");
@@ -15300,6 +15338,7 @@ mod tests {
         app.auth = AuthStatus::Connected {
             username: "listener".into(),
         };
+        app.shared_grant = true;
         for product in [None, Some("free"), Some("open")] {
             app.user = Some(User {
                 product: product.map(str::to_string),
@@ -15329,6 +15368,11 @@ mod tests {
         app.offline = true;
         app.maybe_suggest_personal_app();
         assert!(app.dialog.is_none());
+        // Signed in with their own app alone, nothing is left to suggest.
+        app.offline = false;
+        app.shared_grant = false;
+        app.maybe_suggest_personal_app();
+        assert!(app.dialog.is_none());
     }
 
     #[test]
@@ -15337,6 +15381,7 @@ mod tests {
         app.auth = AuthStatus::Connected {
             username: "listener".into(),
         };
+        app.shared_grant = true;
         app.user = Some(User {
             product: Some("premium".into()),
             ..User::default()

@@ -224,11 +224,18 @@ fn column_contents(app: &mut App, ui: &mut egui::Ui) {
     let sign_out = gettext(locale, "Sign out");
     let account_rows = [
         RowText::new(
-            gettext(locale, "Personal Spotify app"),
-            gettext(
-                locale,
-                "Use a personal Development Mode app for a separate API quota. The shared app stays active.",
-            ),
+            gettext(locale, "Your Spotify app"),
+            if app.shared_grant && !in_use {
+                gettext(
+                    locale,
+                    "You're still on the shared app Spotsie used before, which Spotify can stop accepting at any time. Add your own app's Client ID.",
+                )
+            } else {
+                gettext(
+                    locale,
+                    "Spotsie signs in through the app with this Client ID.",
+                )
+            },
         ),
         RowText::new(
             gettext(locale, "Create an app"),
@@ -239,11 +246,8 @@ fn column_contents(app: &mut App, ui: &mut egui::Ui) {
         )
         .when(!in_use),
         RowText::new(
-            gettext(locale, "Personal app ready"),
-            gettext(
-                locale,
-                "Supported requests use your app. Other requests use the shared app.",
-            ),
+            gettext(locale, "Your app is connected"),
+            gettext(locale, "Spotsie talks to Spotify through your own app."),
         )
         .when(in_use),
         RowText::new(
@@ -254,11 +258,6 @@ fn column_contents(app: &mut App, ui: &mut egui::Ui) {
             ),
         )
         .when(!in_use && wanted.is_some()),
-        RowText::new(
-            gettext(locale, "Remove personal app"),
-            gettext(locale, "Shared access remains signed in."),
-        )
-        .when(!in_use && wanted.is_none() && app.web_app.is_some()),
         RowText::new(sign_out.clone(), account.clone()),
     ];
     if section_matches(&needle, &account, &account_rows) {
@@ -315,7 +314,12 @@ fn column_contents(app: &mut App, ui: &mut egui::Ui) {
                 });
                 ui.add_space(10.0);
             }
-            let mut client_id = app.settings.web_client_id.clone().unwrap_or_default();
+            // Typed into a draft: the session signs in with the saved app, so
+            // clearing the field or typing half an ID keeps it.
+            let draft_id = egui::Id::new("personal-web-client-id-draft");
+            let mut client_id = ui
+                .data(|data| data.get_temp::<String>(draft_id))
+                .unwrap_or_else(|| app.settings.web_client_id.clone().unwrap_or_default());
             filtered_row(ui, &palette, &needle, &account, &account_rows[0], |ui| {
                 let response = Frame::new()
                     .fill(palette.surface)
@@ -346,9 +350,12 @@ fn column_contents(app: &mut App, ui: &mut egui::Ui) {
                 }
                 if response.changed() {
                     let trimmed = client_id.trim().to_string();
-                    app.settings.web_client_id = (!trimmed.is_empty()).then_some(trimmed);
-                    changed = true;
+                    if crate::auth::looks_like_client_id(&trimmed) {
+                        app.settings.web_client_id = Some(trimmed);
+                        changed = true;
+                    }
                 }
+                ui.data_mut(|data| data.insert_temp(draft_id, client_id.clone()));
             });
             filtered_row(ui, &palette, &needle, &account, &account_rows[1], |ui| {
                 if theme::pill_button(ui, &palette, &gettext(locale, "Setup guide"), false)
@@ -360,24 +367,16 @@ fn column_contents(app: &mut App, ui: &mut egui::Ui) {
                 }
             });
             if in_use {
+                // What signs the session in can't be removed on its own:
+                // Sign out does that.
                 filtered_row(ui, &palette, &needle, &account, &account_rows[2], |ui| {
-                    if theme::pill_button(ui, &palette, &gettext(locale, "Remove"), false).clicked()
-                    {
-                        app.settings.web_client_id = None;
-                        app.actions.push(Action::ConfigurePersonalWebApp);
-                    }
+                    let (rect, _) = ui.allocate_exact_size(Vec2::splat(22.0), egui::Sense::hover());
+                    theme::paint_icon(ui, Icon::CircleCheck, rect, 18.0, palette.accent);
                 });
             } else if wanted.is_some() {
                 filtered_row(ui, &palette, &needle, &account, &account_rows[3], |ui| {
                     if theme::pill_button(ui, &palette, &gettext(locale, "Authorize"), true)
                         .clicked()
-                    {
-                        app.actions.push(Action::ConfigurePersonalWebApp);
-                    }
-                });
-            } else if app.web_app.is_some() {
-                filtered_row(ui, &palette, &needle, &account, &account_rows[4], |ui| {
-                    if theme::pill_button(ui, &palette, &gettext(locale, "Remove"), false).clicked()
                     {
                         app.actions.push(Action::ConfigurePersonalWebApp);
                     }

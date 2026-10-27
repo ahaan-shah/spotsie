@@ -734,6 +734,50 @@ pub fn apply_flags(app: &mut App, page: Option<&str>, show: Option<&str>) {
                 app.auth = AuthStatus::Connecting;
                 app.user = None;
             }
+            // Onboarding, a step at a time.
+            "onboarding"
+            | "onboarding-app"
+            | "onboarding-app-ticked"
+            | "onboarding-client-id"
+            | "onboarding-typed"
+            | "onboarding-returning"
+            | "onboarding-waiting"
+            | "onboarding-unknown-client"
+            | "onboarding-shared-retired" => {
+                use crate::ui::login::{Onboarding, Step};
+                app.user = None;
+                app.auth = match surface {
+                    "onboarding-waiting" => AuthStatus::WaitingForBrowser {
+                        url: "https://accounts.spotify.com/authorize".into(),
+                    },
+                    "onboarding-unknown-client" => {
+                        AuthStatus::Refused(crate::backend::SignInProblem::UnknownClient)
+                    }
+                    "onboarding-shared-retired" => {
+                        AuthStatus::Refused(crate::backend::SignInProblem::SharedRetired)
+                    }
+                    _ => AuthStatus::SignedOut,
+                };
+                app.settings.web_client_id = match surface {
+                    "onboarding-typed" | "onboarding-unknown-client" => {
+                        Some("7f3a9c21e84b4d0f9a6c55e1b2d47c80".into())
+                    }
+                    "onboarding-returning" | "onboarding-waiting" => {
+                        Some("7f3a9c21e84b4d0f9a6c55e1b2d47c80".into())
+                    }
+                    _ => None,
+                };
+                app.onboarding = match surface {
+                    "onboarding-app" | "onboarding-shared-retired" => Onboarding::at(Step::MakeApp),
+                    "onboarding-app-ticked" => Onboarding::at(Step::MakeApp).ticked(2),
+                    "onboarding-client-id" | "onboarding-typed" | "onboarding-unknown-client" => {
+                        Onboarding::at(Step::ClientId).ticked(4)
+                    }
+                    "onboarding-waiting" => Onboarding::at(Step::ClientId),
+                    "onboarding-returning" => Onboarding::default(),
+                    _ => Onboarding::at(Step::Welcome),
+                };
+            }
             "recents" => {
                 app.show_queue_panel = true;
                 app.queue_tab = QueueTab::Recents;
@@ -834,7 +878,10 @@ pub fn apply_flags(app: &mut App, page: Option<&str>, show: Option<&str>) {
                     url: "https://github.com/ahaan-shah/spotsie/releases".into(),
                 });
             }
-            "personal-app" => app.dialog = Some(Dialog::PersonalAppIntro),
+            "personal-app" => {
+                app.shared_grant = true;
+                app.dialog = Some(Dialog::PersonalAppIntro);
+            }
             "many-devices" => {
                 app.show_devices = true;
                 app.devices.extend((0..40).map(|index| Device {
@@ -2599,11 +2646,7 @@ mod tests {
             let tree = accessible_frame(&ctx, &mut app, vec![]);
             let button = accessible_node(
                 &tree,
-                if setup {
-                    "Set up personal app"
-                } else {
-                    "Keep shared app"
-                },
+                if setup { "Set up my app" } else { "Later" },
                 Role::Button,
             );
             accessible_frame(
@@ -2892,7 +2935,7 @@ mod tests {
         app.dialog = Some(Dialog::PersonalAppIntro);
         accessible_frame(&ctx, &mut app, vec![]);
         let tree = accessible_frame(&ctx, &mut app, vec![]);
-        let setup = accessible_node(&tree, "Set up personal app", Role::Button);
+        let setup = accessible_node(&tree, "Set up my app", Role::Button);
         accessible_frame(
             &ctx,
             &mut app,
@@ -2984,13 +3027,13 @@ mod tests {
         let (ctx, mut app) = accessible_app("settings-search-availability");
         app.settings.web_client_id = None;
         app.web_app = None;
-        let text = settings_text(&ctx, &mut app, "Personal app ready");
+        let text = settings_text(&ctx, &mut app, "Your app is connected");
         assert!(!text.iter().any(|text| text == "Account"));
         assert!(text.iter().any(|text| text.starts_with("No settings for")));
         app.settings.web_client_id = Some("test-client".into());
         app.web_app = Some("test-client".into());
-        let text = settings_text(&ctx, &mut app, "Personal app ready");
-        assert!(text.iter().any(|text| text == "Personal app ready"));
+        let text = settings_text(&ctx, &mut app, "Your app is connected");
+        assert!(text.iter().any(|text| text == "Your app is connected"));
         app.backend.shutdown();
     }
 
@@ -3012,7 +3055,7 @@ mod tests {
 
         app.web_app = Some("test-client".into());
         let text = settings_text(&ctx, &mut app, "Account");
-        assert!(text.iter().any(|text| text == "Personal app ready"));
+        assert!(text.iter().any(|text| text == "Your app is connected"));
         assert!(!text.iter().any(|text| text == "Create an app"));
         assert!(!text.iter().any(|text| text == "Setup guide"));
         app.backend.shutdown();

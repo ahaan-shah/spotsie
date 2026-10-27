@@ -31,15 +31,16 @@ Spotsie uses the Web API for:
   next, previous, seek, shuffle, repeat, volume, and reading or adding to the
   queue.
 
-Users of the default app share Spotify's quota. Spotsie limits heavy
-requests and pauses a session when Spotify sends a `Retry-After` response.
+Each listener signs in through their own app, with its own quota. Spotsie
+limits heavy requests and pauses a session when Spotify sends a `Retry-After`
+response.
 
 Spotify also limits apps created since November 2024. These apps cannot access
 Spotify-owned playlists, related artists, recommendations, or audio features.
-This is why a personal app cannot handle every request. Complete playlist
-library views stay on the shared app. Playlists other people own, and every
-playlist when there is no personal app, are read over the librespot session
-while local playback is signed in. See [How It Connects](how-it-connects.md).
+This is why a personal app cannot handle every request. While a shared grant
+from before 0.1.4 lasts, complete playlist library views stay on it.
+Playlists other people own are read over the librespot session while local
+playback is signed in. See [How It Connects](how-it-connects.md).
 
 ## librespot session
 

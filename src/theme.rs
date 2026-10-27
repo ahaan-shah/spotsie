@@ -494,6 +494,20 @@ pub fn bold(size: f32) -> egui::FontId {
     }
 }
 
+const BRAND_FAMILY: &str = "brand";
+const BRAND_ITALIC_FAMILY: &str = "brand-italic";
+
+/// Spotsie's own headline face, Plus Jakarta Sans SemiBold, as the website
+/// sets its headings, whatever the interface font. For onboarding.
+pub fn brand(size: f32) -> egui::FontId {
+    egui::FontId::new(size, egui::FontFamily::Name(BRAND_FAMILY.into()))
+}
+
+/// Its italic, which the website gives the words it stresses.
+pub fn brand_italic(size: f32) -> egui::FontId {
+    egui::FontId::new(size, egui::FontFamily::Name(BRAND_ITALIC_FAMILY.into()))
+}
+
 /// How the desktop renders text, read once per process.
 ///
 /// Tests use the platform's default instead of asking the desktop, so they
@@ -728,6 +742,28 @@ fn install_fonts(ctx: &egui::Context, font: &str) {
     fonts
         .families
         .insert(egui::FontFamily::Name(DISPLAY_FAMILY.into()), family);
+    // The brand faces, with the semibold family behind them for scripts
+    // they lack.
+    for (name, face) in [
+        (
+            BRAND_FAMILY,
+            &include_bytes!("../assets/fonts/PlusJakartaSans-SemiBold.ttf")[..],
+        ),
+        (
+            BRAND_ITALIC_FAMILY,
+            &include_bytes!("../assets/fonts/PlusJakartaSans-SemiBoldItalic.ttf")[..],
+        ),
+    ] {
+        fonts.font_data.insert(
+            name.to_owned(),
+            std::sync::Arc::new(egui::FontData::from_static(face)),
+        );
+        let mut family = fonts.families[&Weight::SemiBold.family()].clone();
+        family.insert(0, name.to_owned());
+        fonts
+            .families
+            .insert(egui::FontFamily::Name(name.into()), family);
+    }
     // Previews, before the chosen font takes the interface's families.
     let regular = fonts.families[&Weight::Regular.family()].clone();
     for each in FONTS {
@@ -952,6 +988,12 @@ pub fn play_glyph_offset(icon: Icon, icon_size: f32) -> Vec2 {
 /// green label, rasterised once per size by `util::app_icon_rgba` and drawn
 /// wherever the app shows its logo.
 pub fn logo(ui: &egui::Ui, center: egui::Pos2, diameter: f32) {
+    logo_turned(ui, center, diameter, 0.0);
+}
+
+/// The logo turned by `angle` radians about its centre: the record
+/// spinning, as it does on the website.
+pub fn logo_turned(ui: &egui::Ui, center: egui::Pos2, diameter: f32, angle: f32) {
     let ppp = ui.ctx().pixels_per_point();
     // The icon leaves a little margin around the record; four pixels
     // more than the diameter keeps the record itself about that wide.
@@ -974,12 +1016,18 @@ pub fn logo(ui: &egui::Ui, center: egui::Pos2, diameter: f32) {
         });
     let side = pixels as f32 / ppp;
     let rect = egui::Rect::from_center_size(center, Vec2::splat(side));
-    ui.painter().image(
-        texture.id(),
-        rect,
-        egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
-        Color32::WHITE,
-    );
+    if angle == 0.0 {
+        ui.painter().image(
+            texture.id(),
+            rect,
+            egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
+            Color32::WHITE,
+        );
+    } else {
+        egui::Image::new(&texture)
+            .rotate(angle, Vec2::splat(0.5))
+            .paint_at(ui, rect);
+    }
 }
 
 pub fn circle_button(
