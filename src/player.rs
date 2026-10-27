@@ -611,9 +611,12 @@ impl Engine {
                     spirc.repeat_track(false)?;
                     spirc.repeat(true)?;
                 }
+                // Track first: between the two calls librespot reports
+                // both on, which still reads as repeating the song, where
+                // the other order reported repeat off for a moment.
                 RepeatMode::Track => {
-                    spirc.repeat(false)?;
                     spirc.repeat_track(true)?;
+                    spirc.repeat(false)?;
                 }
             },
             PlayerCommand::Transfer => spirc.transfer(None)?,

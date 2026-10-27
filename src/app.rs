@@ -32,6 +32,27 @@ use fastframe_now_playing::{
 
 const REMOTE_POLL_ACTIVE: Duration = Duration::from_secs(4);
 const REMOTE_POLL_IDLE: Duration = Duration::from_secs(20);
+
+/// How long a chosen repeat mode outlasts reports that disagree with it.
+const REPEAT_HOLD: Duration = Duration::from_secs(5);
+
+/// The chosen repeat mode while `held` and the report has not caught up,
+/// the report otherwise. A report that agrees ends the hold.
+fn held_repeat(held: &mut Option<(RepeatMode, Instant)>, reported: RepeatMode) -> RepeatMode {
+    match *held {
+        Some((mode, at)) if at.elapsed() < REPEAT_HOLD => {
+            if mode == reported {
+                *held = None;
+            }
+            mode
+        }
+        _ => {
+            *held = None;
+            reported
+        }
+    }
+}
+
 const REMOTE_FRESH: Duration = Duration::from_secs(45);
 const DEVICES_FRESH: Duration = Duration::from_secs(12);
 const SEARCH_DEBOUNCE: Duration = Duration::from_millis(280);
@@ -479,6 +500,9 @@ pub struct App {
     shuffle_wanted: bool,
     /// Last local shuffle change, used to ignore its echo from the engine.
     shuffle_set_at: Option<Instant>,
+    /// The repeat mode just chosen, held over answers that still tell of
+    /// the one before until the player or device agrees.
+    repeat_held: Option<(RepeatMode, Instant)>,
     /// When tracks recently came up unavailable, to spot a key-service
     /// cascade and reconnect once instead of skipping through an album.
     unavailable_at: Vec<Instant>,
@@ -905,6 +929,7 @@ impl App {
             intent_track: None,
             shuffle_wanted: session.shuffle_on,
             shuffle_set_at: None,
+            repeat_held: None,
             unavailable_at: Vec::new(),
             last_unavailable_reconnect: None,
             premium_notice_shown: false,
@@ -2284,6 +2309,7 @@ impl App {
             }));
         }
         self.local = state;
+        self.local.repeat = self.held_repeat(self.local.repeat);
         if let Some(volume) = held_volume {
             self.local.volume = volume;
         }
@@ -4768,6 +4794,11 @@ impl App {
                             state,
                             received_at: Instant::now(),
                         });
+                        if let Some(remote) = self.remote.as_mut() {
+                            let reported = RepeatMode::from_api(&remote.state.repeat_state);
+                            let shown = held_repeat(&mut self.repeat_held, reported);
+                            remote.state.repeat_state = shown.api_name().to_string();
+                        }
                         if let (Some(previous), Some(current)) = (
                             previous_shuffle,
                             self.remote
@@ -7237,7 +7268,14 @@ impl App {
         }
     }
 
+    /// What to show for a reported repeat mode: the one just chosen while
+    /// the report still lags behind it.
+    fn held_repeat(&mut self, reported: RepeatMode) -> RepeatMode {
+        held_repeat(&mut self.repeat_held, reported)
+    }
+
     fn set_repeat(&mut self, mode: RepeatMode) {
+        self.repeat_held = Some((mode, Instant::now()));
         match self.target() {
             Target::Local => {
                 self.local.repeat = mode;
@@ -12759,6 +12797,44 @@ mod tests {
             .collect();
         assert_eq!(app.backend.take_queued_tracks(), expected);
         assert!(app.pending_playlist_queue.is_none());
+    }
+
+    /// A repeat mode just chosen stays shown over a report that still tells
+    /// of the one before, and a report that agrees ends the hold.
+    #[test]
+    fn a_chosen_repeat_mode_outlasts_a_lagging_report() {
+        let mut held = Some((RepeatMode::Track, Instant::now()));
+        assert_eq!(
+            held_repeat(&mut held, RepeatMode::Context),
+            RepeatMode::Track
+        );
+        assert_eq!(held_repeat(&mut held, RepeatMode::Off), RepeatMode::Track);
+        assert!(held.is_some());
+        assert_eq!(held_repeat(&mut held, RepeatMode::Track), RepeatMode::Track);
+        assert!(held.is_none());
+        // Once the hold is over, another device's change shows.
+        assert_eq!(held_repeat(&mut held, RepeatMode::Off), RepeatMode::Off);
+        let mut stale = Some((RepeatMode::Track, Instant::now() - REPEAT_HOLD));
+        assert_eq!(
+            held_repeat(&mut stale, RepeatMode::Context),
+            RepeatMode::Context
+        );
+        assert!(stale.is_none());
+
+        let mut app = test_app("repeat-hold");
+        app.local_ready = true;
+        app.local.connected = true;
+        app.local.repeat = RepeatMode::Context;
+        app.apply(
+            Action::SetRepeat(RepeatMode::Track),
+            &egui::Context::default(),
+        );
+        let lagging = LocalState {
+            repeat: RepeatMode::Context,
+            ..app.local.clone()
+        };
+        app.handle_local(lagging);
+        assert_eq!(app.local.repeat, RepeatMode::Track);
     }
 
     #[test]
