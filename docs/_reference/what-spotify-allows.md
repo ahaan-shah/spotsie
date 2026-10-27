@@ -99,7 +99,9 @@ The Web API and librespot do not provide these features:
   `settings.json`. See [issue #31](https://github.com/crmne/spotifast/issues/31).
 - **Editing playlist folders.** librespot can only read them.
 - **Smart Shuffle, Jam, Blend, and similar Spotify features.** Spotify
-  generates these for its own clients. Spotsie only has plain shuffle.
+  generates these for its own clients. Spotsie only has plain shuffle, and
+  cannot start or host a Jam. You can still join one hosted from a phone:
+  the host picks **Spotsie** from their devices and the Jam plays here.
 - **Lossless audio.** librespot does not receive lossless streams. Spotsie
   will reconsider this if librespot gains lawful support, but it will not
   bypass Spotify's DRM.
