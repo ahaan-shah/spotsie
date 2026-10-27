@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Spotsie\n"
 "Report-Msgid-Bugs-To: https://github.com/ahaan-shah/spotsie/issues/new\n"
-"POT-Creation-Date: 2026-10-09 01:19+0530\n"
+"POT-Creation-Date: 2026-10-27 23:32+0530\n"
 "PO-Revision-Date: 2026-10-02 20:30+0300\n"
 "Last-Translator: Barış Berke Çetin <brsberkectn@gmail.com>\n"
 "Language-Team: Turkish\n"
@@ -27,13 +27,13 @@ msgstr "{name} duraklat"
 msgid "Play {name}"
 msgstr "{name} çal"
 
-#: src/ui/sidebar.rs:300 src/app.rs:2381 src/app.rs:15711
-#: src/ui/collection.rs:1720 src/ui/collection.rs:1897
+#: src/ui/sidebar.rs:300 src/app.rs:2430 src/app.rs:16015
+#: src/ui/collection.rs:1741 src/ui/collection.rs:1918
 msgid "Playlist"
 msgstr "Çalma Listesi"
 
-#: src/ui/sidebar.rs:310 src/app.rs:2355 src/app.rs:15716
-#: src/ui/collection.rs:1890 src/ui/home.rs:49 src/ui/keys.rs:243
+#: src/ui/sidebar.rs:310 src/app.rs:2404 src/app.rs:16020
+#: src/ui/collection.rs:1911 src/ui/home.rs:49 src/ui/keys.rs:243
 msgid "Liked Songs"
 msgstr "Beğenilenler"
 
@@ -45,7 +45,7 @@ msgstr "Kitaplık sıralaması"
 msgid "Recents"
 msgstr "Son çalınanlar"
 
-#: src/ui/sidebar.rs:416 src/ui/dialogs.rs:385 src/ui/dialogs.rs:540
+#: src/ui/sidebar.rs:416 src/ui/dialogs.rs:384 src/ui/dialogs.rs:539
 msgid "Name"
 msgstr "Ad"
 
@@ -76,7 +76,7 @@ msgstr "Çalma Listesi • {owner}"
 msgid "Home"
 msgstr "Ana Sayfa"
 
-#: src/ui/sidebar.rs:894 src/app.rs:5780 src/ui/keys.rs:230
+#: src/ui/sidebar.rs:894 src/app.rs:5855 src/ui/keys.rs:230
 #: src/ui/topbar.rs:444
 msgid "Search"
 msgstr "Ara"
@@ -109,7 +109,7 @@ msgstr "Kitaplığında Ara"
 msgid "Library"
 msgstr "Kitaplık"
 
-#: src/ui/sidebar.rs:1044 src/app.rs:5753 src/model.rs:636 src/ui/search.rs:647
+#: src/ui/sidebar.rs:1044 src/app.rs:5828 src/model.rs:636 src/ui/search.rs:647
 msgid "Playlists"
 msgstr "Çalma Listeleri"
 
@@ -132,7 +132,7 @@ msgstr "Podcast'ler"
 msgid "Search in Your Library"
 msgstr "Kitaplığında ara"
 
-#: src/ui/sidebar.rs:1195 src/app.rs:2416 src/ui/artist.rs:203
+#: src/ui/sidebar.rs:1195 src/app.rs:2465 src/ui/artist.rs:203
 #: src/ui/artist.rs:311 src/ui/home.rs:563 src/ui/library.rs:100
 #: src/ui/search.rs:145 src/ui/search.rs:472
 msgid "Artist"
@@ -156,7 +156,7 @@ msgstr "Eşleşme bulunamadı."
 msgid "Sort by recently played"
 msgstr "Son çalınanlara göre sırala"
 
-#: src/ui/sidebar.rs:1946 src/ui/player_bar.rs:431 src/ui/widgets.rs:1272
+#: src/ui/sidebar.rs:1946 src/ui/player_bar.rs:679 src/ui/widgets.rs:1272
 #: src/ui/artist.rs:341 src/ui/collection.rs:214 src/ui/search.rs:390
 #: src/ui/show.rs:311
 msgid "Play"
@@ -181,7 +181,7 @@ msgstr[1] "Çalma listesi • {count} şarkı"
 #. Translators: Keep {count} exactly as written. It becomes a number of songs.
 #. Translators: Keep {count} exactly as written. It becomes the number of selected songs.
 #. Translators: {count} is a number of songs.
-#: src/i18n.rs:189 src/ui/widgets.rs:841 src/ui/collection.rs:1984
+#: src/i18n.rs:189 src/ui/widgets.rs:841 src/ui/collection.rs:2005
 #, rust-format
 msgid "{count} song"
 msgid_plural "{count} songs"
@@ -214,85 +214,85 @@ msgstr "{name}, klasör, daraltılmış"
 msgid "{name}, folder, expanded"
 msgstr "{name}, klasör, genişletilmiş"
 
-#: src/ui/player_bar.rs:150 src/ui/lyrics.rs:121 src/ui/lyrics.rs:489
+#: src/ui/player_bar.rs:371 src/ui/lyrics.rs:121 src/ui/lyrics.rs:489
 msgid "Nothing playing"
 msgstr "Hiçbir şey çalmıyor"
 
-#: src/ui/player_bar.rs:156 src/app.rs:7065
+#: src/ui/player_bar.rs:377 src/app.rs:7140
 msgid "Pick a song, album, or playlist"
 msgstr "Bir şarkı, albüm veya çalma listesi seçin"
 
-#: src/ui/player_bar.rs:287 src/ui/widgets.rs:871 src/ui/widgets.rs:1102
-#: src/ui/widgets.rs:2007
+#: src/ui/player_bar.rs:512 src/ui/widgets.rs:871 src/ui/widgets.rs:1102
+#: src/ui/widgets.rs:2021
 msgid "Remove from Liked Songs"
 msgstr "Beğenilenler'den kaldır"
 
-#: src/ui/player_bar.rs:293 src/ui/widgets.rs:874 src/ui/widgets.rs:1105
-#: src/ui/widgets.rs:2009
+#: src/ui/player_bar.rs:518 src/ui/widgets.rs:874 src/ui/widgets.rs:1105
+#: src/ui/widgets.rs:2023
 msgid "Save to Liked Songs"
 msgstr "Beğenilenler'e kaydet"
 
-#: src/ui/player_bar.rs:375 src/ui/player_bar.rs:382 src/ui/collection.rs:260
+#: src/ui/player_bar.rs:622 src/ui/player_bar.rs:629 src/ui/collection.rs:260
 msgid "Shuffle"
 msgstr "Karışık çal"
 
-#: src/ui/player_bar.rs:396
+#: src/ui/player_bar.rs:644
 msgid "Previous"
 msgstr "Önceki"
 
-#: src/ui/player_bar.rs:429 src/ui/collection.rs:212
+#: src/ui/player_bar.rs:677 src/ui/collection.rs:212
 msgid "Pause"
 msgstr "Duraklat"
 
-#: src/ui/player_bar.rs:447
+#: src/ui/player_bar.rs:695
 msgid "Next"
 msgstr "Sonraki"
 
-#: src/ui/player_bar.rs:455
+#: src/ui/player_bar.rs:703
 msgid "Repeat"
 msgstr "Tekrarla"
 
-#: src/ui/player_bar.rs:459
+#: src/ui/player_bar.rs:707
 msgid "Repeat one"
 msgstr "Tek şarkıyı tekrarla"
 
-#: src/ui/player_bar.rs:464
+#: src/ui/player_bar.rs:712
 msgid "Repeat off"
 msgstr "Tekrarlamayı kapat"
 
-#: src/ui/player_bar.rs:525
+#: src/ui/player_bar.rs:779
 msgid "Playback position (%)"
 msgstr "Çalma konumu (%)"
 
-#: src/ui/player_bar.rs:568
+#: src/ui/player_bar.rs:842
 msgid "Volume (%)"
 msgstr "Ses düzeyi (%)"
 
-#: src/ui/player_bar.rs:601
+#: src/ui/player_bar.rs:882
 msgid "Unmute"
 msgstr "Sesi aç"
 
-#: src/ui/player_bar.rs:603
+#: src/ui/player_bar.rs:884
 msgid "Mute"
 msgstr "Sesi kapat"
 
-#: src/ui/player_bar.rs:619
+#: src/ui/player_bar.rs:900
 msgid "This device's volume can't be changed from Spotsie"
 msgstr "Bu cihazın ses düzeyi Spotsie üzerinden değiştirilemez"
 
-#: src/ui/player_bar.rs:634 src/ui/devices.rs:193
+#: src/ui/player_bar.rs:918 src/ui/devices.rs:193
 msgid "Connect to a device"
 msgstr "Bir cihaza bağlan"
 
-#: src/ui/player_bar.rs:653 src/ui/queue.rs:23 src/ui/queue.rs:80
+#: src/ui/player_bar.rs:939 src/ui/queue.rs:23 src/ui/queue.rs:80
 msgid "Queue"
 msgstr "Sıra"
 
-#: src/ui/player_bar.rs:679 src/ui/lyrics.rs:183
+#: src/ui/player_bar.rs:967 src/ui/lyrics.rs:183
 msgid "Lyrics"
 msgstr "Şarkı Sözleri"
 
-#: src/ui/player_bar.rs:695
+#: src/ui/player_bar.rs:984
 msgid "Cover view"
 msgstr "Kapak görünümü"
 
@@ -338,8 +338,8 @@ msgstr "Sıradaki"
 msgid "Next up"
 msgstr "Daha sonra"
 
-#: src/ui/queue.rs:513 src/ui/queue.rs:546 src/ui/widgets.rs:2790
-#: src/ui/collection.rs:1090
+#: src/ui/queue.rs:513 src/ui/queue.rs:546 src/ui/widgets.rs:2804
+#: src/ui/collection.rs:1111
 msgid "Retry"
 msgstr "Yeniden dene"
 
@@ -398,13 +398,12 @@ msgstr "Bu parça için şarkı sözü bulunamadı."
 msgid "Couldn't fetch the lyrics: {error}"
 msgstr "Şarkı sözleri alınamadı: {error}"
 
-#: src/ui/lyrics.rs:313 src/ui/widgets.rs:2775 src/app.rs:9821
-#: src/ui/collection.rs:753
+#: src/ui/lyrics.rs:313 src/ui/widgets.rs:2789 src/app.rs:10004
+#: src/ui/collection.rs:774
 msgid "Loading…"
 msgstr "Yükleniyor…"
 
-#: src/ui/lyrics.rs:333 src/ui/lyrics.rs:509 src/ui/settings.rs:408
-#: src/ui/login.rs:106
+#: src/ui/lyrics.rs:333 src/ui/lyrics.rs:509 src/ui/settings.rs:407
 msgid "Try again"
 msgstr "Tekrar dene"
 
@@ -413,7 +412,7 @@ msgid "Play a song to see its lyrics."
 msgstr "Şarkı sözlerini görmek için bir şarkı çalın."
 
 #: src/ui/widgets.rs:857 src/ui/widgets.rs:1090 src/ui/widgets.rs:1294
-#: src/ui/collection.rs:308
+#: src/ui/widgets.rs:1308 src/ui/collection.rs:308 src/ui/collection.rs:336
 msgid "Add to queue"
 msgstr "Sıraya ekle"
 
@@ -429,7 +428,7 @@ msgstr "Çalma listesine ekle"
 msgid "Filter playlists"
 msgstr "Çalma listelerini filtrele"
 
-#: src/ui/widgets.rs:1004 src/ui/dialogs.rs:378
+#: src/ui/widgets.rs:1004 src/ui/dialogs.rs:377
 msgid "New playlist"
 msgstr "Yeni çalma listesi"
 
@@ -469,11 +468,11 @@ msgstr "Albüme git"
 msgid "Go to podcast"
 msgstr "Podcast'e git"
 
-#: src/ui/widgets.rs:1245 src/ui/widgets.rs:1357
+#: src/ui/widgets.rs:1245 src/ui/widgets.rs:1371
 msgid "Copy link"
 msgstr "Bağlantıyı kopyala"
 
-#: src/ui/widgets.rs:1253 src/ui/widgets.rs:1365
+#: src/ui/widgets.rs:1253 src/ui/widgets.rs:1379
 msgid "Open in Spotify"
 msgstr "Spotify'da aç"
 
@@ -481,58 +480,58 @@ msgstr "Spotify'da aç"
 msgid "Shuffle play"
 msgstr "Karışık çal"
 
-#: src/ui/widgets.rs:1304
+#: src/ui/widgets.rs:1318
 msgctxt "artist"
 msgid "Unfollow"
 msgstr "Takipten Çık"
 
-#: src/ui/widgets.rs:1305 src/ui/artist.rs:357
+#: src/ui/widgets.rs:1319 src/ui/artist.rs:357
 msgctxt "artist"
 msgid "Follow"
 msgstr "Takip Et"
 
-#: src/ui/widgets.rs:1306 src/ui/collection.rs:1768 src/ui/collection.rs:1790
+#: src/ui/widgets.rs:1320 src/ui/collection.rs:1789 src/ui/collection.rs:1811
 #: src/ui/show.rs:169
 msgid "Remove from Your Library"
 msgstr "Kitaplığından kaldır"
 
-#: src/ui/widgets.rs:1307 src/ui/collection.rs:1767
+#: src/ui/widgets.rs:1321 src/ui/collection.rs:1788
 msgid "Add to Your Library"
 msgstr "Kitaplığına ekle"
 
-#: src/ui/widgets.rs:1317 src/ui/dialogs.rs:477
+#: src/ui/widgets.rs:1331 src/ui/dialogs.rs:476
 msgid "Edit details"
 msgstr "Ayrıntıları düzenle"
 
-#: src/ui/widgets.rs:1331 src/ui/dialogs.rs:116
+#: src/ui/widgets.rs:1345 src/ui/dialogs.rs:115
 msgid "Delete"
 msgstr "Sil"
 
-#: src/ui/widgets.rs:1342
+#: src/ui/widgets.rs:1356
 msgid "Go to playlist radio"
 msgstr "Çalma listesi radyosuna git"
 
-#: src/ui/widgets.rs:1343
+#: src/ui/widgets.rs:1357
 msgid "Go to album radio"
 msgstr "Albüm radyosuna git"
 
-#: src/ui/widgets.rs:1344
+#: src/ui/widgets.rs:1358
 msgid "Go to artist radio"
 msgstr "Sanatçı radyosuna git"
 
 #. Translators: {title} is a song or episode name, {subtitle} its artists or podcast.
-#: src/ui/widgets.rs:1544
+#: src/ui/widgets.rs:1558
 #, rust-format
 msgid "Play {title}, {subtitle}"
 msgstr "{title}, {subtitle} çal"
 
-#: src/ui/widgets.rs:2054 src/ui/artist.rs:371 src/ui/collection.rs:331
+#: src/ui/widgets.rs:2068 src/ui/artist.rs:371 src/ui/collection.rs:352
 #: src/ui/show.rs:187 src/ui/show.rs:389
 msgid "More"
 msgstr "Daha fazla"
 
 #. Translators: The label beside the pointer while songs are dragged. {name} is the first song's name and {count} how many more songs are dragged with it.
-#: src/ui/widgets.rs:2190
+#: src/ui/widgets.rs:2204
 #, rust-format
 msgid "{name} + {count} more"
 msgid_plural "{name} + {count} more"
@@ -540,80 +539,80 @@ msgstr[0] "{name} + {count} tane daha"
 msgstr[1] "{name} + {count} tane daha"
 
 #. Translators: {column} is a column heading of a song list, such as Title.
-#: src/ui/widgets.rs:2307
+#: src/ui/widgets.rs:2321
 #, rust-format
 msgid "Sort by {column}"
 msgstr "{column} sütununa göre sırala"
 
-#: src/ui/widgets.rs:2357
+#: src/ui/widgets.rs:2371
 msgid "Sort by playlist order"
 msgstr "Çalma listesi sırasına göre sırala"
 
-#: src/ui/widgets.rs:2392
+#: src/ui/widgets.rs:2406
 msgid "Original order, reversed"
 msgstr "Özgün sıra, ters çevrilmiş"
 
-#: src/ui/widgets.rs:2405
+#: src/ui/widgets.rs:2419
 msgctxt "column heading"
 msgid "TITLE"
 msgstr "BAŞLIK"
 
-#: src/ui/widgets.rs:2428
+#: src/ui/widgets.rs:2442
 msgctxt "column heading"
 msgid "ALBUM"
 msgstr "ALBÜM"
 
-#: src/ui/widgets.rs:2437
+#: src/ui/widgets.rs:2451
 msgctxt "column heading"
 msgid "ADDED BY"
 msgstr "EKLEYEN"
 
-#: src/ui/widgets.rs:2446
+#: src/ui/widgets.rs:2460
 msgctxt "column heading"
 msgid "DATE ADDED"
 msgstr "EKLENME TARİHİ"
 
-#: src/ui/widgets.rs:2467 src/ui/widgets.rs:2497
+#: src/ui/widgets.rs:2481 src/ui/widgets.rs:2511
 msgid "Sort by duration"
 msgstr "Süreye göre sırala"
 
-#: src/ui/widgets.rs:3023
+#: src/ui/widgets.rs:3037
 msgid "Cut"
 msgstr "Kes"
 
-#: src/ui/widgets.rs:3028
+#: src/ui/widgets.rs:3042 src/ui/login.rs:749
 msgid "Copy"
 msgstr "Kopyala"
 
-#: src/ui/widgets.rs:3033
+#: src/ui/widgets.rs:3047
 msgid "Paste"
 msgstr "Yapıştır"
 
-#: src/ui/widgets.rs:3050
+#: src/ui/widgets.rs:3064
 msgid "Select all"
 msgstr "Tümünü seç"
 
-#: src/ui/widgets.rs:3181
+#: src/ui/widgets.rs:3195
 msgid "Clear"
 msgstr "Temizle"
 
-#: src/ui/widgets.rs:3359
+#: src/ui/widgets.rs:3373
 msgid "Host"
 msgstr "Sunucu"
 
-#: src/ui/widgets.rs:3376
+#: src/ui/widgets.rs:3390
 msgid "Port"
 msgstr "Port"
 
-#: src/ui/widgets.rs:3394
+#: src/ui/widgets.rs:3408
 msgid "Username"
 msgstr "Kullanıcı adı"
 
-#: src/ui/widgets.rs:3405
+#: src/ui/widgets.rs:3419
 msgid "Password"
 msgstr "Parola"
 
-#: src/ui/widgets.rs:3423
+#: src/ui/widgets.rs:3437
 msgid ""
 "Proxy login applies to Web requests. Local playback uses this proxy only "
 "without a login."
@@ -621,7 +620,7 @@ msgstr ""
 "Proxy girişi web istekleri için geçerlidir. Yerel çalma bu proxy'yi yalnızca "
 "kimlik doğrulamasız kullanır."
 
-#: src/ui/widgets.rs:3427
+#: src/ui/widgets.rs:3441
 msgid ""
 "Spotify hostnames are resolved by the proxy. Local playback connects "
 "directly."
@@ -629,18 +628,18 @@ msgstr ""
 "Spotify sunucu adları proxy tarafından çözümlenir. Yerel çalma doğrudan "
 "bağlanır."
 
-#: src/app.rs:693
+#: src/app.rs:729
 msgid "Restoring proxy settings"
 msgstr "Proxy ayarları geri yükleniyor"
 
 #. Translators: {name} is the name of a speaker or other playback device.
-#: src/app.rs:1824
+#: src/app.rs:1864
 #, rust-format
 msgid "{name} is ready"
 msgstr "{name} hazır"
 
 #. Translators: {error} is a sentence saying why the proxy password could not be stored.
-#: src/app.rs:1850
+#: src/app.rs:1890
 #, rust-format
 msgid ""
 "{error} The original settings file is kept intact; changed preferences are "
@@ -650,53 +649,53 @@ msgstr ""
 "kaydedilmedi."
 
 #. Translators: {version} is a version number such as 1.4.0.
-#: src/app.rs:1979
+#: src/app.rs:2020
 #, rust-format
 msgid "Spotsie {version} is available"
 msgstr "Spotsie {version} sürümü hazır"
 
-#: src/app.rs:1998
+#: src/app.rs:2039
 msgid "Spotsie is up to date"
 msgstr "Spotsie güncel"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:2006 src/app.rs:9203
+#: src/app.rs:2047 src/app.rs:9382
 #, rust-format
 msgid "Couldn't check for updates: {error}"
 msgstr "Güncellemeler denetlenemedi: {error}"
 
 #. Translators: {error} is an error message from the playback engine.
-#: src/app.rs:2079
+#: src/app.rs:2126
 #, rust-format
 msgid "Local playback: {error}"
 msgstr "Yerel çalma: {error}"
 
-#: src/app.rs:2256
+#: src/app.rs:2304
 msgid "Spotify audio disconnected. Reconnecting local playback"
 msgstr "Spotify ses bağlantısı kesildi. Yerel çalma yeniden bağlanıyor"
 
-#: src/app.rs:2363 src/app/radio.rs:171 src/ui/radio.rs:35 src/ui/radio.rs:79
+#: src/app.rs:2412 src/app/radio.rs:171 src/ui/radio.rs:35 src/ui/radio.rs:79
 msgid "Radio"
 msgstr "Radyo"
 
-#: src/app.rs:2397 src/api/models.rs:259
+#: src/app.rs:2446 src/api/models.rs:259
 msgid "Album"
 msgstr "Albüm"
 
-#: src/app.rs:2435 src/ui/show.rs:124
+#: src/app.rs:2484 src/ui/show.rs:124
 msgid "Podcast"
 msgstr "Podcast"
 
-#: src/app.rs:2877
+#: src/app.rs:2930
 msgid "Proxy applied. Restarting local playback."
 msgstr "Proxy uygulandı. Yerel çalma yeniden başlatılıyor."
 
-#: src/app.rs:2879
+#: src/app.rs:2932
 msgid "Proxy settings applied"
 msgstr "Proxy ayarları uygulandı"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:2886
+#: src/app.rs:2939
 #, rust-format
 msgid ""
 "Proxy could not be applied: {error}. Previous connection settings are still "
@@ -705,39 +704,39 @@ msgstr ""
 "Proxy uygulanamadı: {error}. Önceki bağlantı ayarları kullanılmaya devam "
 "ediyor."
 
-#: src/app.rs:4217
+#: src/app.rs:4270
 msgid "Queue cleared"
 msgstr "Sıra temizlendi"
 
 #. Translators: Keep {date} unchanged. It is a date in YYYY-MM-DD form.
-#: src/app.rs:4247 src/app.rs:15701
+#: src/app.rs:4300 src/app.rs:16005
 #, rust-format
 msgid "Queue {date}"
 msgstr "Sıra {date}"
 
-#: src/app.rs:4687
+#: src/app.rs:4749 src/ui/login.rs:786
 msgid "Your Spotify sign-in expired. Please sign in again."
 msgstr "Spotify oturumunuzun süresi doldu. Lütfen yeniden giriş yapın."
 
 #. Translators: {error} is an error message.
-#: src/app.rs:4694
+#: src/app.rs:4756
 #, rust-format
 msgid "Couldn't load your profile: {error}"
 msgstr "Profiliniz yüklenemedi: {error}"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:4733
+#: src/app.rs:4795
 #, rust-format
 msgid "Couldn't list devices: {error}"
 msgstr "Cihazlar listelenemedi: {error}"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5056
+#: src/app.rs:5123
 #, rust-format
 msgid "Couldn't load more playlists: {error}"
 msgstr "Daha fazla çalma listesi yüklenemedi: {error}"
 
-#: src/app.rs:5102
+#: src/app.rs:5169
 msgid ""
 "Spotify hasn't confirmed your playlist changes yet. Try refreshing again."
 msgstr ""
@@ -745,157 +744,167 @@ msgstr ""
 "yenilemeyi deneyin."
 
 #. Translators: {name} is a playlist name.
-#: src/app.rs:5298
+#: src/app.rs:5373
 #, rust-format
 msgid "Created {name}"
 msgstr "{name} oluşturuldu"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5320
+#: src/app.rs:5395
 #, rust-format
 msgid "Couldn't create the playlist: {error}"
 msgstr "Çalma listesi oluşturulamadı: {error}"
 
-#: src/app.rs:5374
+#: src/app.rs:5449
 msgid "Playlist cover updated"
 msgstr "Çalma listesi kapağı güncellendi"
 
-#: src/app.rs:5383
+#: src/app.rs:5458
 msgid "Playlist updated"
 msgstr "Çalma listesi güncellendi"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5393 src/app.rs:5508
+#: src/app.rs:5468 src/app.rs:5583
 #, rust-format
 msgid "Couldn't update the playlist: {error}"
 msgstr "Çalma listesi güncellenemedi: {error}"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5467
+#: src/app.rs:5542
 #, rust-format
 msgid "Playlist change failed: {error}"
 msgstr "Çalma listesi değişikliği başarısız oldu: {error}"
 
-#: src/app.rs:5493
+#: src/app.rs:5568
 msgid "Added to Your Library"
 msgstr "Kitaplığına eklendi"
 
-#: src/app.rs:5495 src/app.rs:5687
+#: src/app.rs:5570 src/app.rs:5762
 msgid "Removed from Your Library"
 msgstr "Kitaplığından kaldırıldı"
 
-#: src/app.rs:5680
+#: src/app.rs:5755
 msgid "Added to Liked Songs"
 msgstr "Beğenilenler'e eklendi"
 
-#: src/app.rs:5682
+#: src/app.rs:5757
 msgid "Removed from Liked Songs"
 msgstr "Beğenilenler'den kaldırıldı"
 
-#: src/app.rs:5684
+#: src/app.rs:5759
 msgid "Following artist"
 msgstr "Sanatçı takip ediliyor"
 
-#: src/app.rs:5685
+#: src/app.rs:5760
 msgid "Unfollowed artist"
 msgstr "Sanatçı takipten çıkarıldı"
 
-#: src/app.rs:5686
+#: src/app.rs:5761
 msgid "Saved to Your Library"
 msgstr "Kitaplığına kaydedildi"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5701
+#: src/app.rs:5776
 #, rust-format
 msgid "Couldn't update your library: {error}"
 msgstr "Kitaplığınız güncellenemedi: {error}"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5953
+#: src/app.rs:6028
 #, rust-format
 msgid "Cannot open this song: {error}"
 msgstr "Bu şarkı açılamıyor: {error}"
 
-#: src/app.rs:5967
+#: src/app.rs:6042
 msgid "This episode's podcast is not on Spotify"
 msgstr "Bu bölümün podcast'i Spotify'da bulunmuyor"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:5972
+#: src/app.rs:6047
 #, rust-format
 msgid "Cannot open this episode: {error}"
 msgstr "Bu bölüm açılamıyor: {error}"
 
-#: src/app.rs:6009
+#: src/app.rs:6084
 msgid "Choose a device from the devices menu first."
 msgstr "Önce cihazlar menüsünden bir cihaz seçin."
 
 #. Translators: {error} is an error message.
-#: src/app.rs:6032
+#: src/app.rs:6107
 #, rust-format
 msgid "Couldn't switch device: {error}"
 msgstr "Cihaz değiştirilemedi: {error}"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:6043 src/app.rs:6067
+#: src/app.rs:6118 src/app.rs:6142
 #, rust-format
 msgid "Couldn't add to queue: {error}"
 msgstr "Sıraya eklenemedi: {error}"
 
-#: src/app.rs:6146
+#: src/app.rs:6221
 msgid "This song's album is not on Spotify"
 msgstr "Bu şarkının albümü Spotify'da bulunmuyor"
 
-#: src/app.rs:6163
+#: src/app.rs:6238
 msgid "Spotsie cannot open this kind of Spotify link"
 msgstr "Spotsie bu tür bir Spotify bağlantısını açamaz"
 
-#: src/app.rs:6326
+#: src/app.rs:6401
 msgid "Nothing is playing. Pick something first"
 msgstr "Hiçbir şey çalmıyor. Önce bir şey seçin"
 
-#: src/app.rs:6686
+#: src/app.rs:6761
 msgid "Choose a device, or enable playback on this computer"
 msgstr "Bir cihaz seçin veya bu bilgisayarda çalmayı etkinleştirin"
 
-#: src/app.rs:7048 src/app.rs:7053
+#: src/app.rs:7123 src/app.rs:7128
 msgid "Pick something to play"
 msgstr "Çalmak için bir şey seçin"
 
 #. Translators: {name} is an album name.
-#: src/app.rs:7328
+#. Translators: {name} is a playlist name.
+#: src/app.rs:7410 src/app.rs:7556
 #, rust-format
 msgid "Loading {name} to queue…"
 msgstr "{name} sıraya ekleniyor…"
 
-#: src/app.rs:7347
+#: src/app.rs:7429
 msgid "Playback device changed. Add the album to queue again"
 msgstr "Çalma cihazı değişti. Albümü sıraya tekrar ekleyin"
 
-#: src/app.rs:7356 src/app.rs:7374 src/app.rs:7383
+#: src/app.rs:7438 src/app.rs:7456 src/app.rs:7465
 msgid "Couldn't load the album's songs in order. Try again"
 msgstr "Albümün şarkıları sırayla yüklenemedi. Yeniden deneyin"
 
 #. Translators: {name} is an album name and {error} is an error message.
-#: src/app.rs:7363
+#. Translators: {name} is a playlist name and {error} is an error message.
+#: src/app.rs:7445 src/app.rs:7575
 #, rust-format
 msgid "Couldn't add {name} to queue: {error}"
 msgstr "{name} sıraya eklenemedi: {error}"
 
-#: src/app.rs:7421
+#: src/app.rs:7503
 msgid "This album has no playable songs to queue"
 msgstr "Bu albümde sıraya eklenebilecek çalınabilir şarkı yok"
 
 #. Translators: {count} is a number of songs and {name} is an album name.
-#: src/app.rs:7430
+#: src/app.rs:7512
 #, rust-format
 msgid "{count} song from {name} added to queue"
 msgid_plural "{count} songs from {name} added to queue"
 msgstr[0] "{count} şarkı ({name}) sıraya eklendi"
 msgstr[1] "{count} şarkı ({name}) sıraya eklendi"
 
+#: src/app.rs:7594
+msgid "Playback device changed. Add the playlist to queue again"
+msgstr "Çalma cihazı değişti. Çalma listesini kuyruğa yeniden ekleyin"
+
+#: src/app.rs:7613
+msgid "This playlist has no playable songs to queue"
+msgstr "Bu çalma listesinde kuyruğa eklenebilecek çalınabilir şarkı yok"
+
 #. Translators: {count} is a number of songs.
-#: src/app.rs:7474
+#: src/app.rs:7647
 #, rust-format
 msgid "{count} song added to queue"
 msgid_plural "{count} songs added to queue"
@@ -903,42 +912,42 @@ msgstr[0] "{count} şarkı sıraya eklendi"
 msgstr[1] "{count} şarkı sıraya eklendi"
 
 #. Translators: {name} is a song, episode, album, or playlist name.
-#: src/app.rs:7511
+#: src/app.rs:7684
 #, rust-format
 msgid "{name} added to queue"
 msgstr "{name} sıraya eklendi"
 
-#: src/app.rs:7921
+#: src/app.rs:8094
 msgid "The clipboard has no Spotify song links"
 msgstr "Panoda Spotify şarkı bağlantısı yok"
 
 #. Translators: {count} is the number of pasted links that failed.
-#: src/app.rs:8002
+#: src/app.rs:8175
 #, rust-format
 msgid "{count} pasted link could not be added"
 msgid_plural "{count} pasted links could not be added"
 msgstr[0] "Yapıştırılan {count} bağlantı eklenemedi"
 msgstr[1] "Yapıştırılan {count} bağlantı eklenemedi"
 
-#: src/app.rs:8589
+#: src/app.rs:8763
 msgid "Spotify doesn't let apps remove a playlist description, so it was kept"
 msgstr ""
 "Spotify uygulamaların çalma listesi açıklamasını silmesine izin vermiyor, bu "
 "nedenle korundu"
 
-#: src/app.rs:8633 src/app.rs:8646
+#: src/app.rs:8807 src/app.rs:8820
 msgid "Link copied"
 msgstr "Bağlantı kopyalandı"
 
 #. Translators: {count} is a number of song links, always more than one.
-#: src/app.rs:8650
+#: src/app.rs:8824
 #, rust-format
 msgid "{count} link copied"
 msgid_plural "{count} links copied"
 msgstr[0] "{count} bağlantı kopyalandı"
 msgstr[1] "{count} bağlantı kopyalandı"
 
-#: src/app.rs:8925
+#: src/app.rs:9104
 msgid ""
 "Spotify doesn't let apps reorder your playlists, so this order is saved on "
 "this computer"
@@ -946,71 +955,71 @@ msgstr ""
 "Spotify uygulamaların çalma listelerinizi yeniden sıralamasına izin "
 "vermiyor, bu nedenle bu sıra bu bilgisayara kaydedildi"
 
-#: src/app.rs:9000
+#: src/app.rs:9179
 msgid "Restarting local playback"
 msgstr "Yerel çalma yeniden başlatılıyor"
 
-#: src/app.rs:9033
+#: src/app.rs:9212
 msgid "Local playback needs Spotify Premium"
 msgstr "Yerel çalma için Spotify Premium gerekir"
 
-#: src/app.rs:9045
+#: src/app.rs:9224
 msgid "Opening your browser to set up local playback"
 msgstr "Yerel çalmayı ayarlamak için tarayıcınız açılıyor"
 
-#: src/app.rs:9062
+#: src/app.rs:9241
 msgid "Play history cleared"
 msgstr "Çalma geçmişi temizlendi"
 
 #. Translators: {size} is a size in megabytes, such as 12.5.
-#: src/app.rs:9073
+#: src/app.rs:9252
 #, rust-format
 msgid "Cleared {size} MB of artwork"
 msgstr "{size} MB albüm kapağı temizlendi"
 
 #. Translators: {error} is an error message.
-#: src/app.rs:9079
+#: src/app.rs:9258
 #, rust-format
 msgid "Couldn't clear artwork: {error}"
 msgstr "Albüm kapakları temizlenemedi: {error}"
 
-#: src/app.rs:9204
+#: src/app.rs:9383
 msgid "Spotsie is offline."
 msgstr "Spotsie çevrimdışı."
 
-#: src/app.rs:9911
+#: src/app.rs:10094
 msgid "Couldn't start playback"
 msgstr "Çalma başlatılamadı"
 
-#: src/app.rs:9912
+#: src/app.rs:10095
 msgid "Couldn't pause"
 msgstr "Duraklatılamadı"
 
-#: src/app.rs:9913
+#: src/app.rs:10096
 msgid "Couldn't skip"
 msgstr "Atlanamadı"
 
-#: src/app.rs:9914
+#: src/app.rs:10097
 msgid "Couldn't go back"
 msgstr "Geri gidilemedi"
 
-#: src/app.rs:9915
+#: src/app.rs:10098
 msgid "Couldn't seek"
 msgstr "Konum değiştirilemedi"
 
-#: src/app.rs:9916
+#: src/app.rs:10099
 msgid "Couldn't change the volume"
 msgstr "Ses düzeyi değiştirilemedi"
 
-#: src/app.rs:9917
+#: src/app.rs:10100
 msgid "Couldn't change shuffle"
 msgstr "Karışık çalma modu değiştirilemedi"
 
-#: src/app.rs:9918
+#: src/app.rs:10101
 msgid "Couldn't change repeat"
 msgstr "Tekrarlama modu değiştirilemedi"
 
-#: src/app.rs:9961
+#: src/app.rs:10144
 msgid ""
 "No audio output device was found. Connect or enable one, then press play "
 "again."
@@ -1018,20 +1027,20 @@ msgstr ""
 "Hiçbir ses çıkış cihazı bulunamadı. Bir cihaz bağlayın veya etkinleştirin, "
 "ardından tekrar çala basın."
 
-#: src/app.rs:9972
+#: src/app.rs:10155
 msgid ""
 "Spotify doesn't make this playlist's songs available to third-party apps."
 msgstr ""
 "Spotify bu çalma listesindeki şarkıları üçüncü taraf uygulamaların erişimine "
 "açmıyor."
 
-#: src/app.rs:10102
+#: src/app.rs:10285
 msgid "Spotify sign-in expired. Sign in again, then retry the cover upload."
 msgstr ""
 "Spotify oturumunuzun süresi doldu. Tekrar giriş yapın ve kapak yüklemeyi "
 "yeniden deneyin."
 
-#: src/app.rs:10107
+#: src/app.rs:10290
 msgid ""
 "Spotify refused this cover. Check that you own the playlist, then sign in "
 "again to grant image upload permission. If using a personal app, reconnect "
@@ -1041,19 +1050,19 @@ msgstr ""
 "ve görsel yükleme izni vermek için yeniden giriş yapın. Kişisel bir uygulama "
 "kullanıyorsanız Ayarlar'dan da yeniden bağlayın."
 
-#: src/app.rs:10111
+#: src/app.rs:10294
 msgid "Spotify rejected the image size. Choose a smaller image."
 msgstr "Spotify görsel boyutunu reddetti. Daha küçük bir görsel seçin."
 
 #. Translators: {error} is an error message.
-#: src/app.rs:10114
+#: src/app.rs:10297
 #, rust-format
 msgid "Couldn't upload the cover: {error}. Try again."
 msgstr "Kapak yüklenemedi: {error}. Yeniden deneyin."
 
 #. Translators: Keep {track} unchanged. It is the name of the song,
 #. playlist, album, or artist the radio is based on, not translated.
-#: src/app.rs:15721 src/app/radio.rs:39
+#: src/app.rs:16025 src/app/radio.rs:39
 #, rust-format
 msgid "{track} Radio"
 msgstr "{track} Radyosu"
@@ -1076,215 +1085,208 @@ msgid "Sign out"
 msgstr "Oturumu kapat"
 
 #: src/ui/settings.rs:227
-msgid "Personal Spotify app"
-msgstr "Kişisel Spotify uygulaması"
+msgid "Your Spotify app"
+msgstr "Spotify uygulamanız"
 
-#: src/ui/settings.rs:230
+#: src/ui/settings.rs:231
 msgid ""
-"Use a personal Development Mode app for a separate API quota. The shared app "
-"stays active."
+"You're still on the shared app Spotsie used before, which Spotify can stop "
+"accepting at any time. Add your own app's Client ID."
 msgstr ""
-"Ayrı bir API kotası için kişisel bir Geliştirici Modu uygulaması kullanın. "
-"Paylaşılan uygulama etkin kalır."
+"Hâlâ Spotsie'nin eskiden kullandığı paylaşılan uygulamayı kullanıyorsunuz ve "
+"Spotify onu her an kabul etmeyi bırakabilir. Kendi uygulamanızın İstemci "
+"Kimliğini (Client ID) ekleyin."
 
-#: src/ui/settings.rs:234
+#: src/ui/settings.rs:236
+msgid "Spotsie signs in through the app with this Client ID."
+msgstr ""
+"Spotsie, bu İstemci Kimliğine (Client ID) sahip uygulama üzerinden giriş "
+"yapar."
+
+#: src/ui/settings.rs:241
 msgid "Create an app"
 msgstr "Bir uygulama oluştur"
 
-#: src/ui/settings.rs:237
+#: src/ui/settings.rs:244
 msgid "Create one for free in Spotify's developer dashboard."
 msgstr "Spotify geliştirici panelinde ücretsiz bir uygulama oluşturun."
 
-#: src/ui/settings.rs:242
-msgid "Personal app ready"
-msgstr "Kişisel uygulama hazır"
-
-#: src/ui/settings.rs:245
-msgid "Supported requests use your app. Other requests use the shared app."
-msgstr ""
-"Desteklenen istekler uygulamanızı kullanır. Diğer istekler paylaşılan "
-"uygulamayı kullanır."
+#: src/ui/settings.rs:249
+msgid "Your app is connected"
+msgstr "Uygulamanız bağlandı"
 
 #: src/ui/settings.rs:250
+msgid "Spotsie talks to Spotify through your own app."
+msgstr "Spotsie, Spotify ile kendi uygulamanız üzerinden konuşur."
+
+#: src/ui/settings.rs:254
 msgid "Authorize your personal app"
 msgstr "Kişisel uygulamanızı yetkilendirin"
 
-#: src/ui/settings.rs:253
+#: src/ui/settings.rs:257
 msgid "Spotify opens in your browser to verify the account."
 msgstr "Hesabı doğrulamak için Spotify tarayıcınızda açılır."
 
-#: src/ui/settings.rs:258
-msgid "Remove personal app"
-msgstr "Kişisel uygulamayı kaldır"
-
-#: src/ui/settings.rs:259
-msgid "Shared access remains signed in."
-msgstr "Paylaşılan erişim oturumu açık kalır."
-
-#: src/ui/settings.rs:289
+#: src/ui/settings.rs:288
 msgid "Spotify Free, local playback needs Premium"
 msgstr "Spotify Free, yerel çalma için Premium gerekir"
 
 #. Translators: {username} is the Spotify account's user name.
-#: src/ui/settings.rs:303
+#: src/ui/settings.rs:302
 #, rust-format
 msgid "Connected as {username}"
 msgstr "{username} olarak bağlandı"
 
-#: src/ui/settings.rs:331
+#: src/ui/settings.rs:335 src/ui/login.rs:947
 msgid "Client ID"
 msgstr "İstemci Kimliği (Client ID)"
 
-#: src/ui/settings.rs:354
+#: src/ui/settings.rs:361
 msgid "Setup guide"
 msgstr "Kurulum rehberi"
 
-#: src/ui/settings.rs:364 src/ui/settings.rs:380 src/ui/dialogs.rs:118
-msgid "Remove"
-msgstr "Kaldır"
-
-#: src/ui/settings.rs:372
+#: src/ui/settings.rs:378
 msgid "Authorize"
 msgstr "Yetkilendir"
 
-#: src/ui/settings.rs:391
+#: src/ui/settings.rs:390
 msgctxt "playback status"
 msgid "Ready"
 msgstr "Hazır"
 
-#: src/ui/settings.rs:392
+#: src/ui/settings.rs:391
 msgid "This computer is a Spotify Connect device."
 msgstr "Bu bilgisayar bir Spotify Connect cihazıdır."
 
-#: src/ui/settings.rs:396
+#: src/ui/settings.rs:395
 msgctxt "playback status"
 msgid "Setting up"
 msgstr "Ayarlanıyor"
 
-#: src/ui/settings.rs:397
+#: src/ui/settings.rs:396
 msgid "Finish authorizing in your browser."
 msgstr "Yetkilendirmeyi tarayıcınızda tamamlayın."
 
-#: src/ui/settings.rs:401
+#: src/ui/settings.rs:400
 msgctxt "playback status"
 msgid "Connecting"
 msgstr "Bağlanıyor"
 
-#: src/ui/settings.rs:402 src/ui/login.rs:97
+#: src/ui/settings.rs:401 src/ui/login.rs:1013
 msgid "Connecting to Spotify…"
 msgstr "Spotify'a bağlanıyor…"
 
-#: src/ui/settings.rs:406
+#: src/ui/settings.rs:405
 msgctxt "playback status"
 msgid "Unavailable"
 msgstr "Kullanılamıyor"
 
-#: src/ui/settings.rs:411
+#: src/ui/settings.rs:410
 msgctxt "playback status"
 msgid "Not set up"
 msgstr "Ayarlanmadı"
 
-#: src/ui/settings.rs:414
+#: src/ui/settings.rs:413
 msgid "Requires Spotify Premium and a one-time browser sign-in."
 msgstr "Spotify Premium ve tarayıcıda bir kerelik oturum açma gerektirir."
 
-#: src/ui/settings.rs:416
+#: src/ui/settings.rs:415
 msgid "Enable playback here"
 msgstr "Burada çalmayı etkinleştir"
 
-#: src/ui/settings.rs:419
+#: src/ui/settings.rs:418
 msgid "Playback on this computer"
 msgstr "Bu bilgisayarda çalma"
 
-#: src/ui/settings.rs:420
+#: src/ui/settings.rs:419
 msgid "Normalize volume"
 msgstr "Ses düzeyini eşitle"
 
-#: src/ui/settings.rs:421
+#: src/ui/settings.rs:420
 msgid "Autoplay"
 msgstr "Otomatik çalma"
 
-#: src/ui/settings.rs:422
+#: src/ui/settings.rs:421
 msgid "Gapless playback"
 msgstr "Kesintisiz çalma"
 
-#: src/ui/settings.rs:423
+#: src/ui/settings.rs:422
 msgid "Keep music playing when the window closes"
 msgstr "Pencere kapandığında müzik çalmaya devam etsin"
 
-#: src/ui/settings.rs:424
+#: src/ui/settings.rs:423
 msgid "Audio cache"
 msgstr "Ses önbelleği"
 
-#: src/ui/settings.rs:425
+#: src/ui/settings.rs:424
 msgid "Apply and restart playback"
 msgstr "Uygula ve çalmayı yeniden başlat"
 
-#: src/ui/settings.rs:426
+#: src/ui/settings.rs:425
 msgid "Restart local playback to apply these settings."
 msgstr "Bu ayarları uygulamak için yerel çalmayı yeniden başlatın."
 
 #. Translators: {status} is a playback state such as Ready or Not set up.
-#: src/ui/settings.rs:430
+#: src/ui/settings.rs:429
 #, rust-format
 msgid "Status: {status}"
 msgstr "Durum: {status}"
 
-#: src/ui/settings.rs:434
+#: src/ui/settings.rs:433
 msgid "Device name"
 msgstr "Cihaz adı"
 
-#: src/ui/settings.rs:435
+#: src/ui/settings.rs:434
 msgid "How this computer appears in Spotify Connect."
 msgstr "Bu bilgisayarın Spotify Connect'te nasıl görüneceği."
 
-#: src/ui/settings.rs:438
+#: src/ui/settings.rs:437
 msgid "Audio quality"
 msgstr "Ses kalitesi"
 
-#: src/ui/settings.rs:439
+#: src/ui/settings.rs:438
 msgid "Higher bitrates use more data and cache space."
 msgstr "Daha yüksek bit hızları daha fazla veri ve önbellek alanı kullanır."
 
-#: src/ui/settings.rs:443
+#: src/ui/settings.rs:442
 msgid "Keep loud and quiet tracks at a similar level."
 msgstr "Yüksek ve kısık sesli parçaları benzer bir ses düzeyinde tutar."
 
-#: src/ui/settings.rs:447
+#: src/ui/settings.rs:446
 msgid "Keep playing similar songs when your music ends."
 msgstr "Müziğiniz bittiğinde benzer şarkıları çalmaya devam eder."
 
-#: src/ui/settings.rs:451
+#: src/ui/settings.rs:450
 msgid "Play tracks without silence between them."
 msgstr "Parçaları aralarında sessizlik olmadan çalar."
 
-#: src/ui/settings.rs:458
+#: src/ui/settings.rs:457
 msgid ""
 "Spotsie hides to the system tray. Quit from the tray menu or with Ctrl+Q."
 msgstr ""
 "Spotsie sistem tepsisine gizlenir. Tepsi menüsünden veya Ctrl+Q ile çıkın."
 
-#: src/ui/settings.rs:462
+#: src/ui/settings.rs:461
 msgid ""
 "Spotsie hides to the system tray. Quit from the tray menu or with Cmd+Q."
 msgstr ""
 "Spotsie sistem tepsisine gizlenir. Tepsi menüsünden veya Cmd+Q ile çıkın."
 
-#: src/ui/settings.rs:468
+#: src/ui/settings.rs:467
 msgid "Audio output"
 msgstr "Ses çıkışı"
 
-#: src/ui/settings.rs:471
+#: src/ui/settings.rs:470
 msgid "PulseAudio also covers PipeWire. Rodio talks to ALSA directly."
 msgstr ""
 "PulseAudio aynı zamanda PipeWire'ı da kapsar. Rodio doğrudan ALSA ile "
 "iletişim kurar."
 
-#: src/ui/settings.rs:476
+#: src/ui/settings.rs:475
 msgid "Output buffer"
 msgstr "Çıkış arabelleği"
 
-#: src/ui/settings.rs:479
+#: src/ui/settings.rs:478
 msgid ""
 "More buffering can prevent clicks on busy computers. Less buffering makes "
 "controls respond sooner."
@@ -1292,121 +1294,121 @@ msgstr ""
 "Daha fazla arabellek yoğun bilgisayarlarda çıtırtıları önleyebilir. Daha az "
 "arabellek kontrollerin daha hızlı tepki vermesini sağlar."
 
-#: src/ui/settings.rs:485
+#: src/ui/settings.rs:484
 msgid "Save downloaded audio for later playback."
 msgstr "İndirilen sesi daha sonra çalmak üzere saklar."
 
-#: src/ui/settings.rs:488
+#: src/ui/settings.rs:487
 msgid "Playback settings applied"
 msgstr "Çalma ayarları uygulandı"
 
-#: src/ui/settings.rs:490 src/ui/settings.rs:638
+#: src/ui/settings.rs:489 src/ui/settings.rs:637
 msgid "MacBook notch widget"
 msgstr "MacBook çentik araç takımı"
 
-#: src/ui/settings.rs:493
+#: src/ui/settings.rs:492
 msgid "Show interactive Now Playing widget when hovering over the notch."
 msgstr ""
 "İmleç çentiğin üzerine getirildiğinde etkileşimli Şu An Çalınan araç "
 "takımını göster."
 
-#: src/ui/settings.rs:511
+#: src/ui/settings.rs:510
 msgid "Reconnect"
 msgstr "Yeniden Bağlan"
 
-#: src/ui/settings.rs:543
+#: src/ui/settings.rs:542
 msgid "Normal · 96 kbps"
 msgstr "Normal · 96 kbps"
 
-#: src/ui/settings.rs:544
+#: src/ui/settings.rs:543
 msgid "High · 160 kbps"
 msgstr "Yüksek · 160 kbps"
 
-#: src/ui/settings.rs:545
+#: src/ui/settings.rs:544
 msgid "Very high · 320 kbps"
 msgstr "Çok yüksek · 320 kbps"
 
-#: src/ui/settings.rs:733
+#: src/ui/settings.rs:732
 msgid "Playback settings applied."
 msgstr "Çalma ayarları uygulandı."
 
-#: src/ui/settings.rs:740
+#: src/ui/settings.rs:739
 msgid "Appearance"
 msgstr "Görünüm"
 
-#: src/ui/settings.rs:741
+#: src/ui/settings.rs:740
 msgid "Theme"
 msgstr "Tema"
 
-#: src/ui/settings.rs:742
+#: src/ui/settings.rs:741
 msgid "Colour from album art"
 msgstr "Albüm kapağından renk al"
 
-#: src/ui/settings.rs:743
+#: src/ui/settings.rs:742
 msgid "Compact library sidebar"
 msgstr "Kompakt kitaplık kenar çubuğu"
 
-#: src/ui/settings.rs:744
+#: src/ui/settings.rs:743
 msgid "Compact track list"
 msgstr "Kompakt parça listesi"
 
-#: src/ui/settings.rs:745
+#: src/ui/settings.rs:744
 msgid "Font"
 msgstr "Yazı tipi"
 
-#: src/ui/settings.rs:746
+#: src/ui/settings.rs:745
 msgid "Custom title bar"
 msgstr "Özel başlık çubuğu"
 
-#: src/ui/settings.rs:757
+#: src/ui/settings.rs:756
 msgid "Follow system uses your Omarchy colours."
 msgstr "Sistemi takip et seçeneği Omarchy renklerinizi kullanır."
 
-#: src/ui/settings.rs:761
+#: src/ui/settings.rs:760
 msgid "Follow system uses your desktop's light or dark appearance."
 msgstr ""
 "Sistemi takip et seçeneği masaüstünüzün açık veya koyu görünümünü kullanır."
 
-#: src/ui/settings.rs:766 src/ui/settings.rs:1341
+#: src/ui/settings.rs:765 src/ui/settings.rs:1340
 msgid "Language"
 msgstr "Dil"
 
-#: src/ui/settings.rs:769
+#: src/ui/settings.rs:768
 msgid ""
 "System follows your computer's language. Untranslated text stays in English."
 msgstr ""
 "Sistem seçeneği bilgisayarınızın dilini takip eder. Çevrilmemiş metinler "
 "İngilizce kalır."
 
-#: src/ui/settings.rs:776
+#: src/ui/settings.rs:775
 msgid "Use the current cover's colour on pages and the player bar."
 msgstr "Sayfalarda ve çalar çubuğunda mevcut kapağın rengini kullanır."
 
-#: src/ui/settings.rs:781
+#: src/ui/settings.rs:780
 msgid "Show names without covers in the sidebar."
 msgstr "Kenar çubuğunda adları kapaksız gösterir."
 
-#: src/ui/settings.rs:785
+#: src/ui/settings.rs:784
 msgid "Show each track on one line without a cover."
 msgstr "Her parçayı tek bir satırda ve kapaksız gösterir."
 
-#: src/ui/settings.rs:788
+#: src/ui/settings.rs:787
 msgid "Interface zoom"
 msgstr "Arayüz yakınlaştırma"
 
-#: src/ui/settings.rs:792
+#: src/ui/settings.rs:791
 msgid "Ctrl+Plus and Ctrl+Minus work anywhere; Ctrl+0 resets."
 msgstr "Ctrl+Artı ve Ctrl+Eksi her yerde çalışır; Ctrl+0 sıfırlar."
 
-#: src/ui/settings.rs:796
+#: src/ui/settings.rs:795
 msgid "Cmd+Plus and Cmd+Minus work anywhere; Cmd+0 resets."
 msgstr "Cmd+Artı ve Cmd+Eksi her yerde çalışır; Cmd+0 sıfırlar."
 
-#: src/ui/settings.rs:803
+#: src/ui/settings.rs:802
 msgid "Every font is bundled with Spotsie and works offline."
 msgstr "Tüm yazı tipleri Spotsie ile gelir ve çevrimdışı çalışır."
 
-#: src/ui/settings.rs:809
+#: src/ui/settings.rs:808
 msgid ""
 "Draw Spotsie's own title bar and window buttons instead of the standard "
 "Windows ones."
@@ -1414,24 +1416,24 @@ msgstr ""
 "Standart Windows başlık çubuğu ve pencere düğmeleri yerine Spotsie'in kendi "
 "stilini çizer."
 
-#: src/ui/settings.rs:996
+#: src/ui/settings.rs:995
 msgid "Proxy"
 msgstr "Proxy"
 
-#: src/ui/settings.rs:998
+#: src/ui/settings.rs:997
 msgid "Mode, host, port, username and password"
 msgstr "Mod, sunucu, port, kullanıcı adı ve parola"
 
-#: src/ui/settings.rs:1001
+#: src/ui/settings.rs:1000
 msgid "Off, System, HTTP or SOCKS5 proxy for network requests."
 msgstr "Ağ istekleri için Kapalı, Sistem, HTTP veya SOCKS5 proxy."
 
-#: src/ui/settings.rs:1011
+#: src/ui/settings.rs:1010
 msgctxt "proxy"
 msgid "Mode"
 msgstr "Mod"
 
-#: src/ui/settings.rs:1014
+#: src/ui/settings.rs:1013
 msgid ""
 "Off ignores environment variables. System uses them, and the OS proxy on "
 "macOS and Windows."
@@ -1439,129 +1441,129 @@ msgstr ""
 "Kapalı, ortam değişkenlerini yok sayar. Sistem, bu değişkenleri ve macOS ile "
 "Windows'ta işletim sistemi proxy'sini kullanır."
 
-#: src/ui/settings.rs:1066 src/ui/login.rs:249
+#: src/ui/settings.rs:1065 src/ui/login.rs:1437
 msgid "Apply settings"
 msgstr "Ayarları uygula"
 
-#: src/ui/settings.rs:1078
+#: src/ui/settings.rs:1077
 msgid "Not using a proxy."
 msgstr "Proxy kullanılmıyor."
 
-#: src/ui/settings.rs:1079
+#: src/ui/settings.rs:1078
 msgid "Using the system proxy."
 msgstr "Sistem proxy'si kullanılıyor."
 
-#: src/ui/settings.rs:1088
+#: src/ui/settings.rs:1087
 msgid "Equalizer"
 msgstr "Ekolayzer"
 
-#: src/ui/settings.rs:1094
+#: src/ui/settings.rs:1093
 msgid ""
 "A ten-band equalizer for playback on this computer. It does not affect other "
 "devices."
 msgstr ""
 "Bu bilgisayarda çalma için on bantlı ekolayzer. Diğer cihazları etkilemez."
 
-#: src/ui/settings.rs:1100
+#: src/ui/settings.rs:1099
 msgid "Presets"
 msgstr "Hazır ayarlar"
 
 #. Translators: a search keyword for the equalizer's preamplifier slider.
-#: src/ui/settings.rs:1102
+#: src/ui/settings.rs:1101
 msgid "Preamp"
 msgstr "Ön amfi"
 
 #. Translators: a search keyword for the equalizer's frequency band sliders.
-#: src/ui/settings.rs:1104
+#: src/ui/settings.rs:1103
 msgid "Bands"
 msgstr "Bantlar"
 
 #. Translators: short label under the equalizer's preamplifier slider.
-#: src/ui/settings.rs:1162
+#: src/ui/settings.rs:1161
 msgctxt "equalizer"
 msgid "Pre"
 msgstr "Ön"
 
-#: src/ui/settings.rs:1179
+#: src/ui/settings.rs:1178
 msgid "Storage"
 msgstr "Depolama"
 
-#: src/ui/settings.rs:1182
+#: src/ui/settings.rs:1181
 msgid "Artwork cache"
 msgstr "Albüm kapağı önbelleği"
 
 #. Translators: {folder} is the path of a cache folder.
-#: src/ui/settings.rs:1184 src/ui/settings.rs:1190
+#: src/ui/settings.rs:1183 src/ui/settings.rs:1189
 #, rust-format
 msgid "Stored in {folder}"
 msgstr "{folder} konumunda saklanır"
 
-#: src/ui/settings.rs:1196
+#: src/ui/settings.rs:1195
 msgid "Play history"
 msgstr "Çalma geçmişi"
 
 #. Translators: {file} is the path of the play history file.
-#: src/ui/settings.rs:1200
+#: src/ui/settings.rs:1199
 #, rust-format
 msgid "Tracks played here are stored in {file}. This file is never uploaded."
 msgstr ""
 "Burada çalınan parçalar {file} dosyasında saklanır. Bu dosya asla karşıya "
 "yüklenmez."
 
-#: src/ui/settings.rs:1205
+#: src/ui/settings.rs:1204
 msgid "Sign-in"
 msgstr "Oturum Açma"
 
-#: src/ui/settings.rs:1208
+#: src/ui/settings.rs:1207
 msgid "Sign-ins are saved in the system credential store when available."
 msgstr ""
 "Oturum bilgileri kullanılabilir olduğunda sistem kimlik bilgisi deposuna "
 "kaydedilir."
 
-#: src/ui/settings.rs:1220
+#: src/ui/settings.rs:1219
 msgid "Clear artwork"
 msgstr "Kapakları temizle"
 
-#: src/ui/settings.rs:1234
+#: src/ui/settings.rs:1233
 msgid "Clear history"
 msgstr "Geçmişi temizle"
 
-#: src/ui/settings.rs:1246 src/ui/show.rs:34
+#: src/ui/settings.rs:1245 src/ui/show.rs:34
 msgid "About"
 msgstr "Hakkında"
 
-#: src/ui/settings.rs:1247
+#: src/ui/settings.rs:1246
 msgid "Not affiliated with Spotify."
 msgstr "Spotify ile bağlantılı değildir."
 
-#: src/ui/settings.rs:1248
+#: src/ui/settings.rs:1247
 msgid "Check for updates"
 msgstr "Güncellemeleri denetle"
 
-#: src/ui/settings.rs:1249
+#: src/ui/settings.rs:1248
 msgid "Checking…"
 msgstr "Denetleniyor…"
 
-#: src/ui/settings.rs:1250 src/ui/dialogs.rs:175 src/ui/keys.rs:265
+#: src/ui/settings.rs:1249 src/ui/dialogs.rs:174 src/ui/keys.rs:265
 #: src/ui/topbar.rs:561
 msgid "Keyboard shortcuts"
 msgstr "Klavye kısayolları"
 
-#: src/ui/settings.rs:1251
+#: src/ui/settings.rs:1250
 msgid "Source code"
 msgstr "Kaynak kodu"
 
 #. Translators: {query} is the text typed into the settings search field.
-#: src/ui/settings.rs:1318
+#: src/ui/settings.rs:1317
 #, rust-format
 msgid "No settings for “{query}”"
 msgstr "“{query}” için ayar bulunamadı"
 
-#: src/ui/settings.rs:1319
+#: src/ui/settings.rs:1318
 msgid "Try fewer words, or check the spelling."
 msgstr "Daha az kelime deneyin veya yazımı kontrol edin."
 
-#: src/ui/settings.rs:1335
+#: src/ui/settings.rs:1334
 msgctxt "language"
 msgid "System"
 msgstr "Sistem"
@@ -1720,57 +1722,57 @@ msgstr "Bu görünümde çalınabilir şarkı yok"
 msgid "Shuffle off"
 msgstr "Karışık çalmayı kapat"
 
-#: src/ui/collection.rs:293 src/ui/collection.rs:344
+#: src/ui/collection.rs:293 src/ui/collection.rs:365
 msgid "Save as playlist"
 msgstr "Çalma listesi olarak kaydet"
 
-#: src/ui/collection.rs:366
+#: src/ui/collection.rs:387
 msgid "Refreshing…"
 msgstr "Yenileniyor…"
 
-#: src/ui/collection.rs:368 src/ui/devices.rs:206
+#: src/ui/collection.rs:389 src/ui/devices.rs:206
 msgid "Refresh"
 msgstr "Yenile"
 
-#: src/ui/collection.rs:387
+#: src/ui/collection.rs:408
 msgid "Filter"
 msgstr "Filtrele"
 
-#: src/ui/collection.rs:747 src/ui/collection.rs:773
+#: src/ui/collection.rs:768 src/ui/collection.rs:794
 msgid "Unavailable"
 msgstr "Kullanılamıyor"
 
-#: src/ui/collection.rs:901
+#: src/ui/collection.rs:922
 msgid "Nothing here yet"
 msgstr "Burada henüz bir şey yok"
 
-#: src/ui/collection.rs:902
+#: src/ui/collection.rs:923
 msgid "Added songs appear here."
 msgstr "Eklenen şarkılar burada görünür."
 
-#: src/ui/collection.rs:1312 src/ui/home.rs:674
+#: src/ui/collection.rs:1333 src/ui/home.rs:674
 msgid "Your top songs"
 msgstr "En çok dinlediğin şarkılar"
 
-#: src/ui/collection.rs:1321
+#: src/ui/collection.rs:1342
 msgid "Your most-played tracks from the last four weeks."
 msgstr "Son dört haftada en çok dinlediğin parçalar."
 
-#: src/ui/collection.rs:1716
+#: src/ui/collection.rs:1737
 msgid "Collaborative Playlist"
 msgstr "Ortak Çalma Listesi"
 
-#: src/ui/collection.rs:1718
+#: src/ui/collection.rs:1739
 msgid "Public Playlist"
 msgstr "Herkese Açık Çalma Listesi"
 
-#: src/ui/collection.rs:1789
+#: src/ui/collection.rs:1810
 msgid "Save to Your Library"
 msgstr "Kitaplığına kaydet"
 
 #. Translators: {count} is a number of songs and {duration} their total
 #. length, such as "2 hr 13 min".
-#: src/ui/collection.rs:1997
+#: src/ui/collection.rs:2018
 #, rust-format
 msgid "{count} song, {duration}"
 msgid_plural "{count} songs, {duration}"
@@ -1778,19 +1780,19 @@ msgstr[0] "{count} şarkı, {duration}"
 msgstr[1] "{count} şarkı, {duration}"
 
 #. Translators: {name} is the name of someone who added songs to the playlist.
-#: src/ui/collection.rs:2011
+#: src/ui/collection.rs:2032
 #, rust-format
 msgid "with {name}"
 msgstr "{name} ile"
 
 #. Translators: {first} and {second} are names of people who added songs.
-#: src/ui/collection.rs:2015
+#: src/ui/collection.rs:2036
 #, rust-format
 msgid "with {first} and {second}"
 msgstr "{first} ve {second} ile"
 
 #. Translators: {count} is how many other people added songs to the playlist.
-#: src/ui/collection.rs:2022
+#: src/ui/collection.rs:2043
 #, rust-format
 msgid "and {count} other"
 msgid_plural "and {count} others"
@@ -1836,92 +1838,85 @@ msgid "Play here"
 msgstr "Burada çal"
 
 #: src/ui/dialogs.rs:60
-msgid "Spend less time waiting for Spotify"
-msgstr "Spotify'ı beklerken daha az zaman harcayın"
+msgid "Move to your own Spotify app"
+msgstr "Kendi Spotify uygulamanıza geçin"
 
 #: src/ui/dialogs.rs:63
 msgid ""
-"Spotsie's default connection shares Spotify's request limit with other "
-"listeners. When it gets busy, loading music and using playback controls can "
-"take longer."
+"You're signed in through the shared app Spotsie used before. Spotsie no "
+"longer offers it, and Spotify can stop accepting it at any time."
 msgstr ""
-"Spotsie'in varsayılan bağlantısı, Spotify'ın istek limitini diğer "
-"dinleyicilerle paylaşır. Yoğunlaştığında, müzik yüklemek ve çalma "
-"kontrollerini kullanmak daha uzun sürebilir."
+"Spotsie'nin eskiden kullandığı paylaşılan uygulama üzerinden giriş yaptınız. "
+"Spotsie artık bunu sunmuyor ve Spotify onu her an kabul etmeyi bırakabilir."
 
 #: src/ui/dialogs.rs:64
 msgid ""
-"Your Premium account lets you create a free personal Spotify app. Connect it "
-"here to give supported requests your own allowance. Some pages still use the "
-"shared connection."
+"Set up your own free Spotify app so nothing stops your music. It takes a few "
+"minutes, and you can also find it later in Settings under Your Spotify app."
 msgstr ""
-"Premium hesabınız ücretsiz bir kişisel Spotify uygulaması oluşturmanıza "
-"olanak tanır. Desteklenen isteklerinize kendi kotanızı tanımlamak için "
-"buradan bağlayın. Bazı sayfalar paylaşılan bağlantıyı kullanmaya devam eder."
+"Müziğinizin hiç durmaması için kendi ücretsiz Spotify uygulamanızı kurun. "
+"Birkaç dakika sürer; daha sonra Ayarlar'da Spotify uygulamanız bölümünde de "
+"bulabilirsiniz."
 
-#: src/ui/dialogs.rs:65
-msgid ""
-"Setup takes a few minutes. You can also find it later in Settings under "
-"Personal Spotify app."
-msgstr ""
-"Kurulum birkaç dakika sürer. Daha sonra Ayarlar'da Kişisel Spotify "
-"uygulaması altında da bulabilirsiniz."
+#: src/ui/dialogs.rs:71
+msgid "Set up my app"
+msgstr "Uygulamamı kur"
 
-#: src/ui/dialogs.rs:72
-msgid "Set up personal app"
-msgstr "Kişisel uygulamayı ayarla"
+#: src/ui/dialogs.rs:74
+msgid "Later"
+msgstr "Daha sonra"
 
-#: src/ui/dialogs.rs:75
-msgid "Keep shared app"
-msgstr "Paylaşılan uygulamada kal"
-
-#: src/ui/dialogs.rs:86
+#: src/ui/dialogs.rs:85
 msgid "Delete playlist?"
 msgstr "Çalma listesi silinsin mi?"
 
-#: src/ui/dialogs.rs:88
+#: src/ui/dialogs.rs:87
 msgid "Remove from Your Library?"
 msgstr "Kitaplığından kaldırılsın mı?"
 
 #. Translators: {name} is a playlist name.
-#: src/ui/dialogs.rs:96
+#: src/ui/dialogs.rs:95
 #, rust-format
 msgid "Delete “{name}”? You can recover it from Spotify for 90 days."
 msgstr ""
 "“{name}” silinsin mi? 90 gün boyunca Spotify üzerinden kurtarabilirsiniz."
 
 #. Translators: {name} is a playlist name.
-#: src/ui/dialogs.rs:99
+#: src/ui/dialogs.rs:98
 #, rust-format
 msgid "“{name}” will no longer appear in Your Library."
 msgstr "“{name}” artık Kitaplığınızda görünmeyecek."
 
-#: src/ui/dialogs.rs:126 src/ui/dialogs.rs:169 src/ui/dialogs.rs:444
-#: src/ui/dialogs.rs:623 src/ui/login.rs:89
+#: src/ui/dialogs.rs:117
+msgid "Remove"
+msgstr "Kaldır"
+
+#: src/ui/dialogs.rs:125 src/ui/dialogs.rs:168 src/ui/dialogs.rs:443
+#: src/ui/dialogs.rs:622 src/ui/login.rs:1103
 msgid "Cancel"
 msgstr "İptal"
 
-#: src/ui/dialogs.rs:142
+#: src/ui/dialogs.rs:141
 msgid "Songs already in this playlist"
 msgstr "Bu çalma listesinde zaten bulunan şarkılar"
 
-#: src/ui/dialogs.rs:144
+#: src/ui/dialogs.rs:143
 msgid "Song already in this playlist"
 msgstr "Şarkı bu çalma listesinde zaten var"
 
-#: src/ui/dialogs.rs:161
+#: src/ui/dialogs.rs:160
 msgid "Add anyway"
 msgstr "Yine de ekle"
 
-#: src/ui/dialogs.rs:218
+#: src/ui/dialogs.rs:217
 msgid "Done"
 msgstr "Bitti"
 
-#: src/ui/dialogs.rs:226
+#: src/ui/dialogs.rs:225
 msgid "This account cannot play music here"
 msgstr "Bu hesap burada müzik çalamaz"
 
-#: src/ui/dialogs.rs:235
+#: src/ui/dialogs.rs:234
 msgid ""
 "Playback needs Spotify Premium. Free accounts can browse and search, but "
 "cannot play music through Spotsie."
@@ -1929,39 +1924,39 @@ msgstr ""
 "Çalma için Spotify Premium gerekir. Ücretsiz hesaplar göz atabilir ve "
 "arayabilir, ancak Spotsie üzerinden müzik çalamaz."
 
-#: src/ui/dialogs.rs:244
+#: src/ui/dialogs.rs:243
 msgid "OK"
 msgstr "Tamam"
 
-#: src/ui/dialogs.rs:282
+#: src/ui/dialogs.rs:281
 #, rust-format
 msgid "This song is already in “{playlist}”. Add it again?"
 msgstr "Bu şarkı “{playlist}” çalma listesinde zaten var. Tekrar eklensin mi?"
 
-#: src/ui/dialogs.rs:289
+#: src/ui/dialogs.rs:288
 #, rust-format
 msgid "This song is already in “{playlist}”. Add them anyway?"
 msgstr "Bu şarkı “{playlist}” çalma listesinde zaten var. Yine de eklensin mi?"
 
 #. Translators: {name} is a song name and {playlist} a playlist name.
-#: src/ui/dialogs.rs:294
+#: src/ui/dialogs.rs:293
 #, rust-format
 msgid "“{name}” is already in “{playlist}”. Add it again?"
 msgstr "“{name}” zaten “{playlist}” içinde var. Tekrar eklensin mi?"
 
-#: src/ui/dialogs.rs:302
+#: src/ui/dialogs.rs:301
 #, rust-format
 msgid "“{name}” is already in “{playlist}”. Add them anyway?"
 msgstr "“{name}” zaten “{playlist}” içinde var. Yine de eklensin mi?"
 
-#: src/ui/dialogs.rs:311
+#: src/ui/dialogs.rs:310
 #, rust-format
 msgid "“{first}” and “{second}” are already in “{playlist}”. Add them anyway?"
 msgstr ""
 "“{first}” ve “{second}” zaten “{playlist}” içinde var. Yine de eklensin mi?"
 
 #. Translators: {first} and {second} are song names, {count} is how many more songs are already in the playlist, and {playlist} is a playlist name.
-#: src/ui/dialogs.rs:320
+#: src/ui/dialogs.rs:319
 #, rust-format
 msgid ""
 "“{first}”, “{second}”, and {count} more are already in “{playlist}”. Add "
@@ -1976,64 +1971,64 @@ msgstr[1] ""
 "“{first}”, “{second}” ve {count} şarkı daha zaten “{playlist}” içinde var. "
 "Yine de eklensin mi?"
 
-#: src/ui/dialogs.rs:395
+#: src/ui/dialogs.rs:394
 msgid "My playlist"
 msgstr "Çalma listem"
 
-#: src/ui/dialogs.rs:400 src/ui/dialogs.rs:403 src/ui/dialogs.rs:588
-#: src/ui/dialogs.rs:597
+#: src/ui/dialogs.rs:399 src/ui/dialogs.rs:402 src/ui/dialogs.rs:587
+#: src/ui/dialogs.rs:596
 msgid "Public playlist"
 msgstr "Herkese açık çalma listesi"
 
 #. Translators: {count} is the number of songs.
-#: src/ui/dialogs.rs:416
+#: src/ui/dialogs.rs:415
 #, rust-format
 msgid "{count} song will be added."
 msgid_plural "{count} songs will be added."
 msgstr[0] "{count} şarkı eklenecek."
 msgstr[1] "{count} şarkı eklenecek."
 
-#: src/ui/dialogs.rs:434
+#: src/ui/dialogs.rs:433
 msgid "Create"
 msgstr "Oluştur"
 
-#: src/ui/dialogs.rs:492
+#: src/ui/dialogs.rs:491
 msgid "Selected playlist cover"
 msgstr "Seçilen çalma listesi kapağı"
 
-#: src/ui/dialogs.rs:498
+#: src/ui/dialogs.rs:497
 msgid "Current playlist cover"
 msgstr "Mevcut çalma listesi kapağı"
 
-#: src/ui/dialogs.rs:507
+#: src/ui/dialogs.rs:506
 msgid "Uploading cover…"
 msgstr "Kapak yükleniyor…"
 
-#: src/ui/dialogs.rs:509
+#: src/ui/dialogs.rs:508
 msgid "Choosing cover…"
 msgstr "Kapak seçiliyor…"
 
-#: src/ui/dialogs.rs:515
+#: src/ui/dialogs.rs:514
 msgid "Change cover"
 msgstr "Kapağı değiştir"
 
-#: src/ui/dialogs.rs:524
+#: src/ui/dialogs.rs:523
 msgid "Upload cover"
 msgstr "Kapak yükle"
 
-#: src/ui/dialogs.rs:550
+#: src/ui/dialogs.rs:549
 msgid "Playlist name"
 msgstr "Çalma listesi adı"
 
-#: src/ui/dialogs.rs:556
+#: src/ui/dialogs.rs:555
 msgid "Description"
 msgstr "Açıklama"
 
-#: src/ui/dialogs.rs:571
+#: src/ui/dialogs.rs:570
 msgid "Optional description"
 msgstr "İsteğe bağlı açıklama"
 
-#: src/ui/dialogs.rs:613
+#: src/ui/dialogs.rs:612
 msgid "Save"
 msgstr "Kaydet"
 
@@ -2228,43 +2223,171 @@ msgstr "Kayıtlı bölüm yok"
 msgid "Saved episodes appear here."
 msgstr "Kaydedilen bölümler burada görünür."
 
-#: src/ui/login.rs:74
-msgid "A native Spotify client."
-msgstr "Yerel bir Spotify istemcisi."
-
-#: src/ui/login.rs:82
-msgid "Waiting for Spotify in your browser…"
-msgstr "Tarayıcınızda Spotify bekleniyor…"
-
-#: src/ui/login.rs:85
-msgid "Didn't open? Open the sign-in page again"
-msgstr "Açılmadı mı? Giriş sayfasını tekrar açın"
-
-#: src/ui/login.rs:114 src/ui/login.rs:149
-msgid "Use the shared Spotify app instead"
-msgstr "Bunun yerine paylaşılan Spotify uygulamasını kullan"
-
-#: src/ui/login.rs:128
-msgid "Sign in with Spotify"
-msgstr "Spotify ile giriş yap"
-
-#: src/ui/login.rs:134
-msgid ""
-"Sign in through your browser. Spotsie never sees your password. Local "
-"playback needs Spotify Premium."
-msgstr ""
-"Tarayıcınız üzerinden giriş yapın. Spotsie parolanızı asla görmez. Yerel "
-"çalma için Spotify Premium gerekir."
-
-#: src/ui/login.rs:167
-msgid "Proxy Settings"
-msgstr "Proxy Ayarları"
-
-#. Translators: {version} is the app's version number, such as 1.2.0.
-#: src/ui/login.rs:188
+#: src/ui/login.rs:179
 #, rust-format
 msgid "Spotsie {version} • not affiliated with Spotify"
 msgstr "Spotsie {version} • Spotify ile bağlantılı değildir"
+
+#. Translators: {name} is Spotsie, set in italics in the accent colour.
+#: src/ui/login.rs:385
+#, rust-format
+msgid "Welcome to {name}"
+msgstr "{name} uygulamasına hoş geldiniz"
+
+#: src/ui/login.rs:403
+msgid "Your Spotify, without the weight."
+msgstr "Spotify'ınız, ağırlığı olmadan."
+
+#: src/ui/login.rs:417
+msgid "Get started"
+msgstr "Başlayın"
+
+#: src/ui/login.rs:428
+msgid "Playing music in Spotsie needs Spotify Premium."
+msgstr "Spotsie'de müzik çalmak için Spotify Premium gerekir."
+
+#: src/ui/login.rs:458
+msgid "Open Spotify's developer dashboard"
+msgstr "Spotify'ın geliştirici panosunu açın"
+
+#: src/ui/login.rs:462
+msgid "Click Create app. Any name and description works."
+msgstr "Create app'e tıklayın. Herhangi bir ad ve açıklama olur."
+
+#: src/ui/login.rs:467
+msgid "Add this redirect URI"
+msgstr "Bu Redirect URI'yi ekleyin"
+
+#: src/ui/login.rs:471
+msgid "Tick Web API, then click Save"
+msgstr "Web API'yi işaretleyin, ardından Save'e tıklayın"
+
+#: src/ui/login.rs:484
+msgid "Make your Spotify app"
+msgstr "Spotify uygulamanızı oluşturun"
+
+#: src/ui/login.rs:492 src/ui/login.rs:784
+msgid ""
+"Spotify no longer accepts the shared sign-in Spotsie used before. Make your "
+"own app to keep listening."
+msgstr ""
+"Spotify, Spotsie'nin eskiden kullandığı paylaşılan girişi artık kabul "
+"etmiyor. Dinlemeye devam etmek için kendi uygulamanızı oluşturun."
+
+#: src/ui/login.rs:495
+msgid "It's free and takes about two minutes."
+msgstr "Ücretsizdir ve yaklaşık iki dakika sürer."
+
+#: src/ui/login.rs:514 src/ui/topbar.rs:373
+msgid "Back"
+msgstr "Geri"
+
+#: src/ui/login.rs:518
+msgid "Continue"
+msgstr "Devam et"
+
+#: src/ui/login.rs:543 src/ui/login.rs:693
+msgid "Open"
+msgstr "Aç"
+
+#. Translators: shown on the Copy button for a moment after it copied.
+#: src/ui/login.rs:747 src/ui/login.rs:1090
+msgid "Copied"
+msgstr "Kopyalandı"
+
+#: src/ui/login.rs:772
+msgid ""
+"That doesn't look like a Client ID. It is 32 letters and digits, on your "
+"app's page in the dashboard."
+msgstr ""
+"Bu bir İstemci Kimliğine (Client ID) benzemiyor. 32 harf ve rakamdan oluşur "
+"ve panodaki uygulama sayfanızda yer alır."
+
+#: src/ui/login.rs:776
+msgid ""
+"Spotify doesn't know this Client ID. Copy it again from your app's page in "
+"the dashboard."
+msgstr ""
+"Spotify bu İstemci Kimliğini (Client ID) tanımıyor. Panodaki uygulama "
+"sayfanızdan yeniden kopyalayın."
+
+#: src/ui/login.rs:780
+msgid ""
+"Spotify didn't let this account use the app. Sign in with the Spotify "
+"account that made it, which needs Premium."
+msgstr ""
+"Spotify bu hesabın uygulamayı kullanmasına izin vermedi. Uygulamayı "
+"oluşturan Spotify hesabıyla giriş yapın; bu hesabın Premium olması gerekir."
+
+#: src/ui/login.rs:800
+msgid "Welcome back"
+msgstr "Tekrar hoş geldiniz"
+
+#: src/ui/login.rs:803
+msgid "Sign in through your Spotify app to pick up where you left off."
+msgstr "Kaldığınız yerden devam etmek için Spotify uygulamanızla giriş yapın."
+
+#: src/ui/login.rs:808
+msgid "Paste your Client ID"
+msgstr "İstemci Kimliğinizi (Client ID) yapıştırın"
+
+#: src/ui/login.rs:811
+msgid "It's on your app's page in the dashboard, under Basic Information."
+msgstr "Panodaki uygulama sayfanızda, Basic Information altında yer alır."
+
+#: src/ui/login.rs:850
+msgid "Sign in with Spotify"
+msgstr "Spotify ile giriş yap"
+
+#: src/ui/login.rs:863
+msgid ""
+"Spotify opens in your browser to sign you in. Spotsie never sees your "
+"password."
+msgstr ""
+"Giriş yapmanız için Spotify tarayıcınızda açılır. Spotsie şifrenizi asla "
+"görmez."
+
+#: src/ui/login.rs:871
+msgid "Set up a different app"
+msgstr "Başka bir uygulama kur"
+
+#: src/ui/login.rs:873
+msgid "Back to the steps"
+msgstr "Adımlara dön"
+
+#: src/ui/login.rs:990
+msgid "A Client ID is 32 letters and digits. Copy it from your app's page."
+msgstr ""
+"Bir İstemci Kimliği (Client ID) 32 harf ve rakamdan oluşur. Uygulama "
+"sayfanızdan kopyalayın."
+
+#: src/ui/login.rs:1020
+msgid "Getting your music ready."
+msgstr "Müziğiniz hazırlanıyor."
+
+#: src/ui/login.rs:1029
+msgid "Approve Spotsie in your browser"
+msgstr "Spotsie'yi tarayıcınızda onaylayın"
+
+#: src/ui/login.rs:1038
+msgid "Agree on Spotify's page, and Spotsie carries on by itself."
+msgstr "Spotify'ın sayfasında onaylayın, Spotsie kendiliğinden devam eder."
+
+#: src/ui/login.rs:1049
+msgid "Didn't open? Open the sign-in page again"
+msgstr "Açılmadı mı? Giriş sayfasını tekrar açın"
+
+#: src/ui/login.rs:1063
+msgid ""
+"If Spotify says “Invalid redirect URI”, add the address below to your app "
+"exactly, save, and sign in again."
+msgstr ""
+"Spotify “Invalid redirect URI” derse aşağıdaki adresi uygulamanıza tam "
+"olarak ekleyin, kaydedin ve yeniden giriş yapın."
+
+#: src/ui/login.rs:1365
+msgid "Proxy Settings"
+msgstr "Proxy Ayarları"
 
 #: src/ui/mod.rs:555
 msgid "Minimize"
@@ -2416,10 +2539,6 @@ msgstr "Kenar çubuğunu göster (Ctrl+B)"
 #: src/ui/topbar.rs:354
 msgid "Show sidebar (Cmd+B)"
 msgstr "Kenar çubuğunu göster (Cmd+B)"
-
-#: src/ui/topbar.rs:373
-msgid "Back"
-msgstr "Geri"
 
 #: src/ui/topbar.rs:384
 msgid "Forward"
@@ -2658,3 +2777,78 @@ msgstr "İyi günler"
 #: src/util.rs:259
 msgid "Good evening"
 msgstr "İyi akşamlar"
+
+#~ msgid "Personal Spotify app"
+#~ msgstr "Kişisel Spotify uygulaması"
+
+#~ msgid ""
+#~ "Use a personal Development Mode app for a separate API quota. The shared "
+#~ "app stays active."
+#~ msgstr ""
+#~ "Ayrı bir API kotası için kişisel bir Geliştirici Modu uygulaması "
+#~ "kullanın. Paylaşılan uygulama etkin kalır."
+
+#~ msgid "Personal app ready"
+#~ msgstr "Kişisel uygulama hazır"
+
+#~ msgid "Supported requests use your app. Other requests use the shared app."
+#~ msgstr ""
+#~ "Desteklenen istekler uygulamanızı kullanır. Diğer istekler paylaşılan "
+#~ "uygulamayı kullanır."
+
+#~ msgid "Remove personal app"
+#~ msgstr "Kişisel uygulamayı kaldır"
+
+#~ msgid "Shared access remains signed in."
+#~ msgstr "Paylaşılan erişim oturumu açık kalır."
+
+#~ msgid "Spend less time waiting for Spotify"
+#~ msgstr "Spotify'ı beklerken daha az zaman harcayın"
+
+#~ msgid ""
+#~ "Spotsie's default connection shares Spotify's request limit with other "
+#~ "listeners. When it gets busy, loading music and using playback controls "
+#~ "can take longer."
+#~ msgstr ""
+#~ "Spotsie'in varsayılan bağlantısı, Spotify'ın istek limitini diğer "
+#~ "dinleyicilerle paylaşır. Yoğunlaştığında, müzik yüklemek ve çalma "
+#~ "kontrollerini kullanmak daha uzun sürebilir."
+
+#~ msgid ""
+#~ "Your Premium account lets you create a free personal Spotify app. Connect "
+#~ "it here to give supported requests your own allowance. Some pages still "
+#~ "use the shared connection."
+#~ msgstr ""
+#~ "Premium hesabınız ücretsiz bir kişisel Spotify uygulaması oluşturmanıza "
+#~ "olanak tanır. Desteklenen isteklerinize kendi kotanızı tanımlamak için "
+#~ "buradan bağlayın. Bazı sayfalar paylaşılan bağlantıyı kullanmaya devam "
+#~ "eder."
+
+#~ msgid ""
+#~ "Setup takes a few minutes. You can also find it later in Settings under "
+#~ "Personal Spotify app."
+#~ msgstr ""
+#~ "Kurulum birkaç dakika sürer. Daha sonra Ayarlar'da Kişisel Spotify "
+#~ "uygulaması altında da bulabilirsiniz."
+
+#~ msgid "Set up personal app"
+#~ msgstr "Kişisel uygulamayı ayarla"
+
+#~ msgid "Keep shared app"
+#~ msgstr "Paylaşılan uygulamada kal"
+
+#~ msgid "A native Spotify client."
+#~ msgstr "Yerel bir Spotify istemcisi."
+
+#~ msgid "Waiting for Spotify in your browser…"
+#~ msgstr "Tarayıcınızda Spotify bekleniyor…"
+
+#~ msgid "Use the shared Spotify app instead"
+#~ msgstr "Bunun yerine paylaşılan Spotify uygulamasını kullan"
+
+#~ msgid ""
+#~ "Sign in through your browser. Spotsie never sees your password. Local "
+#~ "playback needs Spotify Premium."
+#~ msgstr ""
+#~ "Tarayıcınız üzerinden giriş yapın. Spotsie parolanızı asla görmez. Yerel "
+#~ "çalma için Spotify Premium gerekir."
