@@ -314,9 +314,20 @@ Playback runs on a separate runtime. Librespot maintains the Spotify Connect
 session, exposes this computer as a device, receives transfers, and reports
 playback state. If the session drops, it reconnects with the stored credential.
 A session counts as dropped when its Connect task ends, or as soon as its
-streaming connection is lost (after a suspend, say), even while the Connect
-task hangs on the dead connection. A song picked on a session that has just
-lost its connection is what the new session plays.
+streaming connection is lost, even while the Connect task hangs on the dead
+connection. Waking from a sleep of a minute or more counts too: librespot's
+keep-alive would only notice a minute later, and a sleep does not count
+towards the limit on drops. A Connect task left hanging is dropped after a
+few seconds, so it does not keep its session in memory.
+
+A song sent to the local player that has not reached it within five seconds
+means the Connect session stopped listening: the engine reconnects (once a
+minute at most) and the interface holds the song, still shown, until the new
+session plays it. A song on its way when the engine drops is held the same
+way. The interface checks the playback state it already polls every twenty
+seconds: if Spotify reports another device playing while this one plays too
+for three polls in a row, this device missed the takeover (its Connect link
+is gone), so it reconnects and leaves the playing to the other device.
 
 Since 0.9.0, selecting this computer in the device picker asks
 librespot to transfer playback from the active Connect device. Spotify supplies

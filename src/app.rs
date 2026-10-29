@@ -76,6 +76,17 @@ const ASSUMED_CONTEXT_HOLD: Duration = Duration::from_secs(8);
 const PLAYBACK_HOLD: Duration = Duration::from_secs(6);
 /// Delay before checking playback again after a command.
 const REMOTE_RECHECK: Duration = Duration::from_millis(1200);
+/// How long a song sent to the local player may take to reach it before
+/// the engine is taken for stuck. Under `PLAYBACK_HOLD`, so the song stays
+/// shown while the engine reconnects to play it.
+const LOAD_ANSWER: Duration = Duration::from_secs(5);
+/// The least time between reconnects for songs that never reached the
+/// player, so a song that cannot load does not keep the engine cycling.
+const UNANSWERED_RECONNECT_GAP: Duration = Duration::from_secs(60);
+/// Polls in a row (twenty seconds apart while this computer plays) that
+/// must report another device playing before this one is taken to have
+/// missed the takeover.
+const UNHEARD_TAKEOVER_POLLS: u8 = 3;
 /// Delay before checking the queue after a local change.
 const QUEUE_RECHECK: Duration = Duration::from_millis(700);
 /// Number of stale queue responses accepted before trusting Spotify's state.
@@ -89,6 +100,14 @@ const CONTAINS_BATCH: usize = 40;
 pub struct RemoteSnapshot {
     pub state: PlaybackState,
     pub received_at: Instant,
+}
+
+/// A song sent to the local player, until the player begins loading it.
+struct SentLoad {
+    request: PlayRequest,
+    /// The player's load count when it was sent.
+    loads_begun: u64,
+    at: Instant,
 }
 
 /// A context shown as playing before Spotify confirms it.
@@ -512,6 +531,14 @@ pub struct App {
     /// cascade and reconnect once instead of skipping through an album.
     unavailable_at: Vec<Instant>,
     last_unavailable_reconnect: Option<Instant>,
+    /// A song sent to the local player that has not reached it yet.
+    local_load_sent: Option<SentLoad>,
+    /// When a song that never reached the player last made the engine
+    /// reconnect.
+    last_unanswered_reconnect: Option<Instant>,
+    /// Polls in a row that reported another device playing while this one
+    /// played too.
+    unheard_takeover_polls: u8,
     /// The Premium notice has been shown for this sign-in.
     premium_notice_shown: bool,
     /// Context shown immediately after play, until Spotify confirms it. An
@@ -939,6 +966,9 @@ impl App {
             repeat_held: None,
             unavailable_at: Vec::new(),
             last_unavailable_reconnect: None,
+            local_load_sent: None,
+            last_unanswered_reconnect: None,
+            unheard_takeover_polls: 0,
             premium_notice_shown: false,
             assumed_context: None,
             last_now_playing_uri: None,
@@ -2118,6 +2148,7 @@ impl App {
             }
             LocalPlayback::Failed(message) => {
                 self.local_ready = false;
+                self.local_load_sent = None;
                 if self.queued_play.take().is_some() {
                     self.clear_play_pending();
                     self.intent_track = None;
@@ -2127,7 +2158,8 @@ impl App {
                     gettext(self.locale, "Local playback: {error}").replace("{error}", message),
                 );
             }
-            LocalPlayback::Authorizing | LocalPlayback::Connecting => {}
+            LocalPlayback::Connecting => self.hold_unsent_load(),
+            LocalPlayback::Authorizing => {}
         }
         self.local_playback = status;
     }
@@ -2245,6 +2277,15 @@ impl App {
         let track_changed =
             state.track != self.local.track || state.track_sequence != self.local.track_sequence;
         let reconnected = state.connected && !self.local.connected;
+        if self
+            .local_load_sent
+            .as_ref()
+            .is_some_and(|sent| state.loads_begun > sent.loads_begun)
+        {
+            self.local_load_sent = None;
+        } else if !state.connected && self.local.connected {
+            self.hold_unsent_load();
+        }
         if state.shuffle != self.local.shuffle
             && self
                 .shuffle_set_at
@@ -2740,6 +2781,9 @@ impl App {
 
     fn tick(&mut self, ctx: &egui::Context) {
         self.poll_custom_themes(ctx);
+        if let Some(due) = self.check_sent_load() {
+            ctx.request_repaint_after(due);
+        }
         let now = Instant::now();
         if !self.zoom_applied {
             self.zoom_applied = true;
@@ -4085,6 +4129,68 @@ impl App {
         });
     }
 
+    /// The local engine went down with a song on its way to the player:
+    /// hold the song, still shown, for the next engine to play.
+    fn hold_unsent_load(&mut self) {
+        if let Some(sent) = self.local_load_sent.take() {
+            self.queued_play = Some(sent.request);
+        }
+    }
+
+    /// A song sent to the local player that has not reached it in
+    /// `LOAD_ANSWER` means its Connect session has stopped listening, with
+    /// whatever was playing still playing. Reconnect, holding the song for
+    /// the new session. Returns how long until the next look is due.
+    fn check_sent_load(&mut self) -> Option<Duration> {
+        let waited = self.local_load_sent.as_ref()?.at.elapsed();
+        if waited < LOAD_ANSWER {
+            return Some(LOAD_ANSWER - waited);
+        }
+        let sent = self.local_load_sent.take()?;
+        if self.local.connected
+            && self
+                .last_unanswered_reconnect
+                .is_none_or(|at| at.elapsed() > UNANSWERED_RECONNECT_GAP)
+        {
+            log::warn!("a song sent to the local player never reached it; reconnecting");
+            self.last_unanswered_reconnect = Some(Instant::now());
+            self.queued_play = Some(sent.request);
+            self.backend.send(Command::Reconnect);
+        }
+        None
+    }
+
+    /// Counts polls in which Spotify reports another device playing while
+    /// this one plays too. With Connect working, the other device starting
+    /// would have stopped this one within a second, so a minute of both
+    /// means this one's Connect link is gone. Rejoin, and leave the playing
+    /// to the other device.
+    fn note_unheard_takeover(&mut self, state: Option<&PlaybackState>) {
+        let elsewhere = state.is_some_and(|state| {
+            state.is_playing
+                && state
+                    .device
+                    .as_ref()
+                    .and_then(|device| device.id.as_deref())
+                    .is_some_and(|id| Some(id) != self.local_device_id.as_deref())
+        });
+        let both_playing = elsewhere
+            && self.local_ready
+            && self.local.connected
+            && self.local.playback == Playback::Playing
+            && self.local_device_id.is_some();
+        if !both_playing {
+            self.unheard_takeover_polls = 0;
+            return;
+        }
+        self.unheard_takeover_polls += 1;
+        if self.unheard_takeover_polls >= UNHEARD_TAKEOVER_POLLS {
+            self.unheard_takeover_polls = 0;
+            log::warn!("another device plays while this one does too; rejoining Spotify Connect");
+            self.backend.send(Command::Rejoin);
+        }
+    }
+
     fn refresh_devices(&mut self) {
         if !self.is_connected() || self.devices_loading {
             return;
@@ -4806,6 +4912,7 @@ impl App {
                 self.remote_poll_pending = false;
                 match result {
                     Ok(state) => {
+                        self.note_unheard_takeover(state.as_ref());
                         let previous_uri = self.remote.as_ref().and_then(|remote| {
                             remote
                                 .state
@@ -6720,6 +6827,11 @@ impl App {
                 if shuffle_after {
                     self.backend.player(PlayerCommand::Shuffle(true));
                 }
+                self.local_load_sent = Some(SentLoad {
+                    request,
+                    loads_begun: self.local.loads_begun,
+                    at: Instant::now(),
+                });
                 self.optimistic_playing = Some((true, Instant::now()));
             }
             Target::Remote(Some(device_id)) => {
@@ -21049,6 +21161,168 @@ mod tests {
         }
         app.backend.shutdown();
         let _ = std::fs::remove_dir_all(state_dir);
+    }
+
+    /// A connected app playing an old song here, as after a long sleep.
+    fn playing_here() -> (App, Vec<String>) {
+        let mut app = headless_app();
+        crate::demo::populate(&mut app);
+        app.remote = None;
+        app.selected_device = None;
+        app.shuffle_wanted = false;
+        app.local_ready = true;
+        app.local_device_id = Some("here".into());
+        let rows = app.context_track_uris("spotify:playlist:pl1").unwrap();
+        app.local = LocalState {
+            connected: true,
+            track: Some(crate::player::LocalTrack {
+                uri: rows[7].clone(),
+                duration_ms: 200_000,
+                ..Default::default()
+            }),
+            playback: Playback::Playing,
+            loads_begun: 40,
+            ..Default::default()
+        };
+        app.backend.take_engine_commands();
+        (app, rows)
+    }
+
+    /// A song that never reaches the player (its Connect session stopped
+    /// listening while the old song played on) reconnects the engine, stays
+    /// shown meanwhile, and plays on the new session.
+    #[test]
+    fn a_song_that_never_reaches_the_player_reconnects_and_plays_after() {
+        let (mut app, rows) = playing_here();
+        app.play_request(PlayRequest::context("spotify:playlist:pl1"), false);
+        app.backend.take_player_commands();
+        assert_eq!(
+            app.check_sent_load().map(|due| due <= LOAD_ANSWER),
+            Some(true)
+        );
+        assert!(app.backend.take_engine_commands().is_empty(), "not yet");
+
+        app.local_load_sent.as_mut().unwrap().at = Instant::now() - LOAD_ANSWER;
+        assert_eq!(app.check_sent_load(), None);
+        assert_eq!(app.backend.take_engine_commands(), ["reconnect"]);
+        assert!(app.queued_play.is_some(), "held for the new session");
+        app.intent_track.as_mut().unwrap().at = Instant::now() - PLAYBACK_HOLD;
+        assert_eq!(
+            app.current_track_uri().as_deref(),
+            Some(rows[0].as_str()),
+            "the song stays shown while the engine reconnects"
+        );
+
+        let mut gone = app.local.clone();
+        gone.connected = false;
+        gone.playback = Playback::Stopped;
+        app.handle_local(gone);
+        let mut back = app.local.clone();
+        back.connected = true;
+        app.handle_local(back);
+        assert!(app.queued_play.is_none());
+        assert!(
+            app.backend
+                .take_player_commands()
+                .iter()
+                .any(|command| matches!(command, PlayerCommand::Load(_))),
+            "the new session plays it"
+        );
+        app.backend.shutdown();
+    }
+
+    /// A song that reaches the player is left alone, however long it then
+    /// takes to buffer.
+    #[test]
+    fn a_song_that_reaches_the_player_is_not_sent_again() {
+        let (mut app, _) = playing_here();
+        app.play_request(PlayRequest::context("spotify:playlist:pl1"), false);
+        let mut loading = app.local.clone();
+        loading.loads_begun += 1;
+        app.handle_local(loading);
+        assert!(app.local_load_sent.is_none());
+        assert_eq!(app.check_sent_load(), None);
+        assert!(app.backend.take_engine_commands().is_empty());
+        assert!(app.queued_play.is_none());
+        app.backend.shutdown();
+    }
+
+    /// An engine that goes down (a lost connection, a wake from sleep) with
+    /// a song on its way holds the song for the next engine, without asking
+    /// for another reconnect.
+    #[test]
+    fn a_song_on_its_way_when_the_engine_drops_waits_for_the_next() {
+        let (mut app, _) = playing_here();
+        app.play_request(PlayRequest::context("spotify:playlist:pl1"), false);
+        let mut gone = app.local.clone();
+        gone.connected = false;
+        gone.playback = Playback::Stopped;
+        app.handle_local(gone);
+        assert!(app.queued_play.is_some());
+        assert!(app.local_load_sent.is_none());
+
+        let (mut app, _) = playing_here();
+        app.play_request(PlayRequest::context("spotify:playlist:pl1"), false);
+        app.handle_playback(LocalPlayback::Connecting);
+        assert!(app.queued_play.is_some(), "the backend reconnected first");
+        assert!(app.backend.take_engine_commands().is_empty());
+        app.backend.shutdown();
+    }
+
+    /// A song that cannot load does not keep the engine cycling: one
+    /// reconnect a minute at most.
+    #[test]
+    fn unanswered_songs_reconnect_at_most_once_a_minute() {
+        let (mut app, _) = playing_here();
+        for _ in 0..2 {
+            app.play_request(PlayRequest::context("spotify:playlist:pl1"), false);
+            app.local_load_sent.as_mut().unwrap().at = Instant::now() - LOAD_ANSWER;
+            app.check_sent_load();
+        }
+        assert_eq!(app.backend.take_engine_commands(), ["reconnect"]);
+        app.backend.shutdown();
+    }
+
+    /// Spotify reporting another device playing while this one plays too,
+    /// poll after poll, means this one missed the takeover: it rejoins
+    /// Connect. A device change still settling does not.
+    #[test]
+    fn a_takeover_this_device_missed_rejoins_connect() {
+        let (mut app, _) = playing_here();
+        let on = |id: &str, playing: bool| PlaybackState {
+            is_playing: playing,
+            device: Some(crate::api::models::Device {
+                id: Some(id.into()),
+                is_active: true,
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let phone = on("phone", true);
+        app.note_unheard_takeover(Some(&phone));
+        app.note_unheard_takeover(Some(&phone));
+        app.note_unheard_takeover(Some(&on("here", true)));
+        app.note_unheard_takeover(Some(&phone));
+        app.note_unheard_takeover(Some(&on("phone", false)));
+        app.note_unheard_takeover(None);
+        assert!(
+            app.backend.take_engine_commands().is_empty(),
+            "a takeover still settling"
+        );
+        for _ in 0..UNHEARD_TAKEOVER_POLLS {
+            app.note_unheard_takeover(Some(&phone));
+        }
+        assert_eq!(app.backend.take_engine_commands(), ["rejoin"]);
+
+        app.local.playback = Playback::Paused;
+        for _ in 0..UNHEARD_TAKEOVER_POLLS {
+            app.note_unheard_takeover(Some(&phone));
+        }
+        assert!(
+            app.backend.take_engine_commands().is_empty(),
+            "paused here, the other device is simply playing"
+        );
+        app.backend.shutdown();
     }
 
     #[test]

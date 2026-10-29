@@ -683,6 +683,14 @@ pub enum Command {
     },
     /// Internal: librespot's session ended on its own.
     Reconnect,
+    /// Internal: the computer woke from a sleep that dropped the session.
+    /// Reconnects like `Reconnect`, without counting as the session
+    /// falling over: sleeping often is not flapping.
+    Woke,
+    /// Spotify plays on another device while this one still plays, so
+    /// Connect no longer reaches this one. Reconnect and leave the playing
+    /// to the other device, as a working session would have.
+    Rejoin,
     /// Look for Spotify Connect receivers on the local network.
     DiscoverReceivers,
     /// Send the account to a receiver so it joins Spotify Connect.
@@ -924,6 +932,8 @@ pub struct Backend {
     #[cfg(test)]
     player_commands: std::sync::Mutex<Vec<PlayerCommand>>,
     #[cfg(test)]
+    engine_commands: std::sync::Mutex<Vec<&'static str>>,
+    #[cfg(test)]
     album_type_requests: std::sync::Mutex<Vec<Vec<String>>>,
     #[cfg(test)]
     home_episode_requests: std::sync::Mutex<Vec<(Vec<String>, u64)>>,
@@ -1010,6 +1020,8 @@ impl Backend {
             #[cfg(test)]
             player_commands: std::sync::Mutex::new(Vec::new()),
             #[cfg(test)]
+            engine_commands: std::sync::Mutex::new(Vec::new()),
+            #[cfg(test)]
             album_type_requests: std::sync::Mutex::new(Vec::new()),
             #[cfg(test)]
             home_episode_requests: std::sync::Mutex::new(Vec::new()),
@@ -1029,6 +1041,12 @@ impl Backend {
     }
 
     pub fn send(&self, command: Command) {
+        #[cfg(test)]
+        match command {
+            Command::Reconnect => self.engine_commands.lock().unwrap().push("reconnect"),
+            Command::Rejoin => self.engine_commands.lock().unwrap().push("rejoin"),
+            _ => {}
+        }
         if self.offline
             && !matches!(
                 command,
@@ -1215,6 +1233,12 @@ impl Backend {
     #[cfg(test)]
     pub(crate) fn take_player_commands(&self) -> Vec<PlayerCommand> {
         std::mem::take(&mut *self.player_commands.lock().unwrap())
+    }
+
+    /// The reconnects the interface asked of the engine.
+    #[cfg(test)]
+    pub(crate) fn take_engine_commands(&self) -> Vec<&'static str> {
+        std::mem::take(&mut *self.engine_commands.lock().unwrap())
     }
 
     pub fn player(&self, command: PlayerCommand) {
@@ -1712,9 +1736,10 @@ impl Worker {
                 }
                 Command::ApplyProxy { request, config } => self.change_proxy(request, config, None),
                 Command::Player(command) => match &self.engine {
-                    Some(engine) if engine.is_disconnected() => {
-                        self.reconnect_for(command);
-                    }
+                    // Reconnect now rather than leave it to the watcher. A
+                    // song picked meanwhile is held by the interface, which
+                    // plays it once the new session is ready.
+                    Some(engine) if engine.is_disconnected() => self.reconnect_engine(),
                     Some(engine) => {
                         if let Err(error) = engine.command(command) {
                             self.emit(Event::Error(format!("Playback error: {error}")));
@@ -1872,6 +1897,12 @@ impl Worker {
                     self.finish_playback_authorization(attempt)
                 }
                 Command::Reconnect => self.reconnect_engine(),
+                Command::Woke => {
+                    if self.signed_in {
+                        self.replace_engine();
+                    }
+                }
+                Command::Rejoin => self.rejoin(),
                 Command::DiscoverReceivers => self.discover_receivers(),
                 Command::ActivateReceiver(receiver) => self.activate_receiver(*receiver),
                 Command::CheckForUpdates { manual, source } => {
@@ -2627,6 +2658,9 @@ impl Worker {
                 EngineEvent::SessionEnded => {
                     let _ = commands.send(Command::Reconnect);
                 }
+                EngineEvent::Woke => {
+                    let _ = commands.send(Command::Woke);
+                }
             }
         })
     }
@@ -2698,18 +2732,16 @@ impl Worker {
         self.replace_engine();
     }
 
-    /// A command reached an engine whose session has lost its connection,
-    /// before its watcher noticed. Reconnect now rather than drop it, and
-    /// play what was just picked on the new session instead of what the
-    /// dead one was playing.
-    fn reconnect_for(&mut self, command: PlayerCommand) {
-        self.reconnect_engine();
-        if let PlayerCommand::Load(spec) = command
-            && self.engine.is_none()
-            && self.engine_busy
-        {
-            self.resume = Some(PlaybackResume::Track(spec));
+    /// Reconnect without picking up what this engine was playing: another
+    /// device has taken over, and this one only missed being told.
+    fn rejoin(&mut self) {
+        if !self.signed_in || self.engine_busy {
+            return;
         }
+        log::info!("another device took over unheard; reconnecting local playback");
+        self.reconnect_engine();
+        self.resume = None;
+        self.resume_verify = None;
     }
 
     /// Keeps the level being heard for the next engine, and lets what the
@@ -5367,6 +5399,53 @@ mod authorization_tests {
             worker.heard.is_none(),
             "what was heard goes with its engine"
         );
+    }
+
+    /// Waking from sleep reconnects without counting as the session
+    /// falling over, so closing the lid often never ends in "keeps
+    /// dropping". A session that drops on its own still counts.
+    #[test]
+    fn waking_from_sleep_does_not_count_as_a_dropping_session() {
+        let (runtime, mut worker, _) = worker("woke");
+        worker.signed_in = true;
+        let (commands, receiver) = mpsc::unbounded_channel();
+        for _ in 0..RECONNECT_LIMIT + 2 {
+            commands.send(Command::Woke).unwrap();
+        }
+        commands.send(Command::Reconnect).unwrap();
+        commands.send(Command::Shutdown).unwrap();
+        runtime.block_on(async {
+            tokio::time::timeout(Duration::from_secs(1), worker.run(receiver))
+                .await
+                .unwrap();
+        });
+        assert_eq!(worker.reconnects.len(), 1);
+    }
+
+    /// Rejoining after a missed takeover leaves the playing to the device
+    /// that took over, rather than taking it back.
+    #[test]
+    fn rejoining_after_a_missed_takeover_does_not_take_playback_back() {
+        let (runtime, mut worker, _) = worker("rejoin");
+        worker.signed_in = true;
+        let spec = crate::player::LoadSpec {
+            uris: vec!["spotify:track:here".into()],
+            play: true,
+            ..crate::player::LoadSpec::default()
+        };
+        worker.resume = Some(PlaybackResume::Track(spec.clone()));
+        worker.resume_verify = Some((PlaybackResume::Track(spec), 0));
+        let (commands, receiver) = mpsc::unbounded_channel();
+        commands.send(Command::Rejoin).unwrap();
+        commands.send(Command::Shutdown).unwrap();
+        runtime.block_on(async {
+            tokio::time::timeout(Duration::from_secs(1), worker.run(receiver))
+                .await
+                .unwrap();
+        });
+        assert!(worker.resume.is_none());
+        assert!(worker.resume_verify.is_none());
+        assert_eq!(worker.reconnects.len(), 1, "a missed takeover is a drop");
     }
 
     /// Signing out takes the engine down outside the reconnect path. The

@@ -185,6 +185,10 @@ pub struct LocalState {
     /// `Paused` that brings the position counts as a seek for media
     /// controls, which would otherwise count on past the end (#587).
     pub replay_pending: bool,
+    /// Track loads librespot has begun, counted across engines. A load the
+    /// interface sent has reached the player once this passes the count
+    /// from when it was sent.
+    pub loads_begun: u64,
 }
 
 /// What local playback was doing when its session ended, so the engine
@@ -297,44 +301,137 @@ pub enum PlayerCommand {
 /// How often the watcher looks at whether the streaming session still has
 /// its connection.
 const SESSION_CHECK: Duration = Duration::from_secs(2);
+/// How long a sleep has to be before Spotify has dropped the connection.
+/// Its keep-alive expects an answer within about two minutes.
+const SLEPT: Duration = Duration::from_secs(60);
+/// How long a Connect task shut down on purpose gets to say goodbye before
+/// it is dropped, so one stuck on a dead connection does not hold its
+/// session in memory.
+const SHUTDOWN_GRACE: Duration = Duration::from_secs(10);
+/// How long a Connect task woken on a lost connection gets to keep what
+/// was playing before it is dropped.
+const SNAPSHOT_WAIT: Duration = Duration::from_secs(2);
 
-/// Waits for an engine's session to end: its Connect task finishing, or the
-/// streaming session losing its connection, whichever comes first. True when
-/// the connection was lost.
+/// Every track load librespot has begun, across engines, so a new engine
+/// never reads as having answered a load sent to the one before it.
+static LOADS_BEGUN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// Notices the computer sleeping. The clock timers run on stops while
+/// asleep on Linux and macOS and the wall clock does not, so a gap between
+/// them is time spent asleep. librespot's keep-alive runs on the first, so
+/// it only notices the dead connection a minute or more after waking.
+/// Where the timer clock keeps counting through sleep, the keep-alive
+/// fires on waking and there is nothing to notice here.
+struct SleepCheck {
+    wall: std::time::SystemTime,
+    monotonic: Instant,
+}
+
+impl SleepCheck {
+    fn new(wall: std::time::SystemTime, monotonic: Instant) -> Self {
+        Self { wall, monotonic }
+    }
+
+    fn slept(&mut self, wall: std::time::SystemTime, monotonic: Instant) -> bool {
+        let wall_elapsed = wall.duration_since(self.wall).unwrap_or_default();
+        let monotonic_elapsed = monotonic.duration_since(self.monotonic);
+        self.wall = wall;
+        self.monotonic = monotonic;
+        wall_elapsed.saturating_sub(monotonic_elapsed) >= SLEPT
+    }
+}
+
+/// What the watcher sees of an engine's connection on each check.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Health {
+    Connected,
+    /// The streaming session is invalid, or the Connect task stopped on its
+    /// own while something was playing.
+    Lost,
+    /// The computer slept long enough for Spotify to drop the connection.
+    Slept,
+}
+
+/// Why the watcher let an engine go.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Ended {
+    /// The Connect task finished.
+    Finished,
+    /// Shut down on purpose, and the Connect task did not finish in time.
+    Abandoned,
+    Lost,
+    Slept,
+}
+
+/// Waits for an engine's session to end: its Connect task finishing, or
+/// its connection being lost, whichever comes first.
 ///
 /// librespot marks a session invalid when its connection to Spotify dies
-/// (after a suspend, say) and never reconnects it. The Connect task may then
-/// keep running, or stop and hang telling Spotify it left over that dead
-/// connection. Either way nothing can load, and waiting on the task alone
-/// left the old track playing and every new one spinning. A deliberate
-/// shutdown leaves the task to finish on its own.
+/// and never reconnects it. The Connect task may then keep running, or stop
+/// and hang telling Spotify it left over that dead connection. Either way
+/// nothing can load, and waiting on the task alone left the old track
+/// playing and every new one spinning.
 async fn watch_session(
     task: impl std::future::Future<Output = ()>,
-    lost: impl Fn() -> bool,
+    mut health: impl FnMut() -> Health,
     shutting_down: &std::sync::atomic::AtomicBool,
-) -> bool {
-    let connection_lost = async {
+) -> Ended {
+    let watch = async {
         let mut check = tokio::time::interval(SESSION_CHECK);
         loop {
             check.tick().await;
             if shutting_down.load(std::sync::atomic::Ordering::SeqCst) {
-                return std::future::pending().await;
+                tokio::time::sleep(SHUTDOWN_GRACE).await;
+                return Ended::Abandoned;
             }
-            if lost() {
-                return;
+            match health() {
+                Health::Connected => {}
+                Health::Lost => return Ended::Lost,
+                Health::Slept => return Ended::Slept,
             }
         }
     };
     tokio::select! {
-        () = task => false,
-        () = connection_lost => true,
+        () = task => Ended::Finished,
+        ended = watch => ended,
     }
+}
+
+/// Lets a Connect task whose session is gone notice, so it keeps what was
+/// playing (queue and context included) for the next session. It checks
+/// the session only between events, and while paused none come, so it is
+/// sent the volume it already has: an event it ignores.
+async fn keep_playback(
+    spirc: &Spirc,
+    player: &Player,
+    state: &Mutex<LocalState>,
+    task: &tokio::task::JoinHandle<()>,
+) {
+    if spirc.disconnected_playback().is_some() {
+        return;
+    }
+    let volume = {
+        let current = state.lock().unwrap_or_else(|p| p.into_inner());
+        if !current.is_active() {
+            return;
+        }
+        current.volume
+    };
+    player.emit_volume_changed_event(volume);
+    let _ = tokio::time::timeout(SNAPSHOT_WAIT, async {
+        while spirc.disconnected_playback().is_none() && !task.is_finished() {
+            tokio::time::sleep(Duration::from_millis(100)).await;
+        }
+    })
+    .await;
 }
 
 #[allow(clippy::large_enum_variant)]
 pub enum EngineEvent {
     State(LocalState),
     SessionEnded,
+    /// The computer slept and Spotify dropped the connection meanwhile.
+    Woke,
 }
 
 pub type Notify = Arc<dyn Fn(EngineEvent) + Send + Sync>;
@@ -394,6 +491,7 @@ impl Engine {
 
         let state = Arc::new(Mutex::new(LocalState {
             volume: config.initial_volume,
+            loads_begun: LOADS_BEGUN.load(std::sync::atomic::Ordering::SeqCst),
             ..LocalState::default()
         }));
         let session = Session::new(session_config, Some(cache));
@@ -445,10 +543,50 @@ impl Engine {
         let ended_notify = Arc::clone(&notify);
         let ended_state = Arc::clone(&state);
         let ended_interrupted = Arc::clone(&interrupted);
-        let watched = session.clone();
+        let spirc = Arc::new(spirc);
+        let watched_session = session.clone();
+        let watched_spirc = Arc::clone(&spirc);
+        let watched_player = Arc::clone(&player);
+        let mut task = tokio::spawn(spirc_task);
         tokio::spawn(async move {
-            if watch_session(spirc_task, || watched.is_invalid(), &ended_flag).await {
-                log::info!("the streaming session lost its connection to Spotify");
+            let mut sleep = SleepCheck::new(std::time::SystemTime::now(), Instant::now());
+            let ended = watch_session(
+                async {
+                    let _ = (&mut task).await;
+                },
+                || {
+                    if sleep.slept(std::time::SystemTime::now(), Instant::now()) {
+                        Health::Slept
+                    } else if watched_session.is_invalid()
+                        || watched_spirc.disconnected_playback().is_some()
+                    {
+                        Health::Lost
+                    } else {
+                        Health::Connected
+                    }
+                },
+                &ended_flag,
+            )
+            .await;
+            match ended {
+                Ended::Finished => {}
+                Ended::Abandoned => {
+                    // The next engine reports for itself; a late word from
+                    // this one would only contradict it.
+                    task.abort();
+                    return;
+                }
+                Ended::Lost | Ended::Slept => {
+                    if ended == Ended::Slept {
+                        log::info!("woke from sleep; reconnecting the streaming session");
+                        // What librespot's keep-alive does a minute later.
+                        watched_session.shutdown();
+                    } else {
+                        log::info!("the streaming session lost its connection to Spotify");
+                    }
+                    keep_playback(&watched_spirc, &watched_player, &ended_state, &task).await;
+                    task.abort();
+                }
             }
             {
                 let mut current = ended_state.lock().unwrap_or_else(|p| p.into_inner());
@@ -462,13 +600,17 @@ impl Engine {
                 ended_notify(EngineEvent::State(current.clone()));
             }
             if !ended_flag.load(std::sync::atomic::Ordering::SeqCst) {
-                ended_notify(EngineEvent::SessionEnded);
+                ended_notify(if ended == Ended::Slept {
+                    EngineEvent::Woke
+                } else {
+                    EngineEvent::SessionEnded
+                });
             }
         });
 
         Ok(Self {
             player,
-            spirc: Arc::new(spirc),
+            spirc,
             session,
             mixer,
             device_id,
@@ -809,7 +951,15 @@ async fn run_events(
             play_request_id: next,
         } = &event
         {
+            // librespot sends this first for every load, whatever follows.
             play_request_id = Some(*next);
+            let snapshot = {
+                let mut current = state.lock().unwrap_or_else(|p| p.into_inner());
+                current.loads_begun =
+                    LOADS_BEGUN.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
+                current.clone()
+            };
+            notify(EngineEvent::State(snapshot));
             continue;
         }
         if let (Some(current), Some(incoming)) = (play_request_id, event.get_play_request_id())
@@ -1628,7 +1778,13 @@ mod tests {
         let shutting_down = std::sync::atomic::AtomicBool::new(false);
         let watch = watch_session(
             std::future::pending(),
-            || lost.load(std::sync::atomic::Ordering::SeqCst),
+            || {
+                if lost.load(std::sync::atomic::Ordering::SeqCst) {
+                    Health::Lost
+                } else {
+                    Health::Connected
+                }
+            },
             &shutting_down,
         );
         tokio::pin!(watch);
@@ -1640,28 +1796,75 @@ mod tests {
         );
         lost.store(true, std::sync::atomic::Ordering::SeqCst);
         let ended = tokio::time::timeout(SESSION_CHECK * 2, &mut watch).await;
-        assert_eq!(ended, Ok(true), "a lost connection ends the engine");
+        assert_eq!(ended, Ok(Ended::Lost), "a lost connection ends the engine");
+    }
+
+    /// Waking from sleep ends the engine at once, before librespot's
+    /// keep-alive would notice a minute later.
+    #[tokio::test(start_paused = true)]
+    async fn waking_from_sleep_ends_the_engine() {
+        let shutting_down = std::sync::atomic::AtomicBool::new(false);
+        let ended = watch_session(std::future::pending(), || Health::Slept, &shutting_down).await;
+        assert_eq!(ended, Ended::Slept);
     }
 
     /// A Connect task that finishes ends the engine as before.
     #[tokio::test(start_paused = true)]
     async fn a_finished_connect_task_ends_the_engine() {
         let shutting_down = std::sync::atomic::AtomicBool::new(false);
-        let ended = watch_session(async {}, || false, &shutting_down).await;
-        assert!(!ended);
+        let ended = watch_session(async {}, || Health::Connected, &shutting_down).await;
+        assert_eq!(ended, Ended::Finished);
     }
 
-    /// Shutting an engine down on purpose is not a lost connection: the
-    /// watcher leaves its Connect task to finish, and no reconnect follows.
+    /// Shutting an engine down on purpose is not a lost connection: its
+    /// Connect task gets time to say goodbye to Spotify.
     #[tokio::test(start_paused = true)]
-    async fn a_deliberate_shutdown_is_not_a_lost_connection() {
+    async fn a_deliberate_shutdown_lets_the_connect_task_finish() {
         let shutting_down = std::sync::atomic::AtomicBool::new(true);
         let ended = watch_session(
-            tokio::time::sleep(Duration::from_secs(30)),
-            || true,
+            tokio::time::sleep(SHUTDOWN_GRACE / 2),
+            || Health::Lost,
             &shutting_down,
         )
         .await;
-        assert!(!ended);
+        assert_eq!(ended, Ended::Finished);
+    }
+
+    /// A Connect task stuck on a dead connection after a deliberate
+    /// shutdown is let go, so it does not keep its session in memory.
+    #[tokio::test(start_paused = true)]
+    async fn a_connect_task_stuck_after_shutdown_is_let_go() {
+        let shutting_down = std::sync::atomic::AtomicBool::new(true);
+        let ended = watch_session(std::future::pending(), || Health::Lost, &shutting_down);
+        let ended = tokio::time::timeout(SHUTDOWN_GRACE + SESSION_CHECK * 2, ended).await;
+        assert_eq!(ended, Ok(Ended::Abandoned));
+    }
+
+    /// Time the wall clock moved on but the timer clock did not is time
+    /// asleep; a minute of it means Spotify has dropped the connection.
+    #[test]
+    fn a_sleep_shows_as_wall_time_the_timer_clock_missed() {
+        let wall = std::time::SystemTime::now();
+        let monotonic = Instant::now();
+        let mut check = SleepCheck::new(wall, monotonic);
+        assert!(
+            !check.slept(wall + SESSION_CHECK, monotonic + SESSION_CHECK),
+            "awake, both clocks move together"
+        );
+        let (wall, monotonic) = (wall + SESSION_CHECK, monotonic + SESSION_CHECK);
+        assert!(
+            !check.slept(wall + Duration::from_secs(20), monotonic + SESSION_CHECK),
+            "a short sleep keeps the connection"
+        );
+        let (wall, monotonic) = (wall + Duration::from_secs(20), monotonic + SESSION_CHECK);
+        assert!(
+            check.slept(wall + Duration::from_secs(3600), monotonic + SESSION_CHECK),
+            "an hour asleep does not"
+        );
+        let (wall, monotonic) = (wall + Duration::from_secs(3600), monotonic + SESSION_CHECK);
+        assert!(
+            !check.slept(wall - Duration::from_secs(600), monotonic + SESSION_CHECK),
+            "a clock set back is not a sleep"
+        );
     }
 }
