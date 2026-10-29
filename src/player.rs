@@ -294,6 +294,43 @@ pub enum PlayerCommand {
     Transfer,
 }
 
+/// How often the watcher looks at whether the streaming session still has
+/// its connection.
+const SESSION_CHECK: Duration = Duration::from_secs(2);
+
+/// Waits for an engine's session to end: its Connect task finishing, or the
+/// streaming session losing its connection, whichever comes first. True when
+/// the connection was lost.
+///
+/// librespot marks a session invalid when its connection to Spotify dies
+/// (after a suspend, say) and never reconnects it. The Connect task may then
+/// keep running, or stop and hang telling Spotify it left over that dead
+/// connection. Either way nothing can load, and waiting on the task alone
+/// left the old track playing and every new one spinning. A deliberate
+/// shutdown leaves the task to finish on its own.
+async fn watch_session(
+    task: impl std::future::Future<Output = ()>,
+    lost: impl Fn() -> bool,
+    shutting_down: &std::sync::atomic::AtomicBool,
+) -> bool {
+    let connection_lost = async {
+        let mut check = tokio::time::interval(SESSION_CHECK);
+        loop {
+            check.tick().await;
+            if shutting_down.load(std::sync::atomic::Ordering::SeqCst) {
+                return std::future::pending().await;
+            }
+            if lost() {
+                return;
+            }
+        }
+    };
+    tokio::select! {
+        () = task => false,
+        () = connection_lost => true,
+    }
+}
+
 #[allow(clippy::large_enum_variant)]
 pub enum EngineEvent {
     State(LocalState),
@@ -408,8 +445,11 @@ impl Engine {
         let ended_notify = Arc::clone(&notify);
         let ended_state = Arc::clone(&state);
         let ended_interrupted = Arc::clone(&interrupted);
+        let watched = session.clone();
         tokio::spawn(async move {
-            spirc_task.await;
+            if watch_session(spirc_task, || watched.is_invalid(), &ended_flag).await {
+                log::info!("the streaming session lost its connection to Spotify");
+            }
             {
                 let mut current = ended_state.lock().unwrap_or_else(|p| p.into_inner());
                 // Kept before the state is marked stopped, so a reconnect
@@ -543,6 +583,12 @@ impl Engine {
     /// The streaming session, for reads that need no Web API quota.
     pub fn session(&self) -> &Session {
         &self.session
+    }
+
+    /// The streaming session has lost its connection to Spotify for good;
+    /// nothing more will load on this engine.
+    pub fn is_disconnected(&self) -> bool {
+        self.session.is_invalid()
     }
 
     pub fn shutdown(&self) {
@@ -1570,5 +1616,52 @@ mod tests {
     fn an_engine_is_heard_at_the_level_set_last() {
         let set_here = 3276;
         assert_eq!(Heard::at(set_here).level(), set_here);
+    }
+
+    /// After a suspend the streaming session loses its connection, and the
+    /// Connect task can hang telling Spotify it left. The watcher still ends
+    /// the engine, so playback reconnects instead of new tracks spinning
+    /// while the old one plays on.
+    #[tokio::test(start_paused = true)]
+    async fn a_lost_connection_ends_the_engine_while_its_task_hangs() {
+        let lost = std::sync::atomic::AtomicBool::new(false);
+        let shutting_down = std::sync::atomic::AtomicBool::new(false);
+        let watch = watch_session(
+            std::future::pending(),
+            || lost.load(std::sync::atomic::Ordering::SeqCst),
+            &shutting_down,
+        );
+        tokio::pin!(watch);
+        assert!(
+            tokio::time::timeout(Duration::from_secs(60), &mut watch)
+                .await
+                .is_err(),
+            "a working session keeps its engine"
+        );
+        lost.store(true, std::sync::atomic::Ordering::SeqCst);
+        let ended = tokio::time::timeout(SESSION_CHECK * 2, &mut watch).await;
+        assert_eq!(ended, Ok(true), "a lost connection ends the engine");
+    }
+
+    /// A Connect task that finishes ends the engine as before.
+    #[tokio::test(start_paused = true)]
+    async fn a_finished_connect_task_ends_the_engine() {
+        let shutting_down = std::sync::atomic::AtomicBool::new(false);
+        let ended = watch_session(async {}, || false, &shutting_down).await;
+        assert!(!ended);
+    }
+
+    /// Shutting an engine down on purpose is not a lost connection: the
+    /// watcher leaves its Connect task to finish, and no reconnect follows.
+    #[tokio::test(start_paused = true)]
+    async fn a_deliberate_shutdown_is_not_a_lost_connection() {
+        let shutting_down = std::sync::atomic::AtomicBool::new(true);
+        let ended = watch_session(
+            tokio::time::sleep(Duration::from_secs(30)),
+            || true,
+            &shutting_down,
+        )
+        .await;
+        assert!(!ended);
     }
 }

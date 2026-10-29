@@ -313,6 +313,10 @@ uses the Web API for subsequent control requests.
 Playback runs on a separate runtime. Librespot maintains the Spotify Connect
 session, exposes this computer as a device, receives transfers, and reports
 playback state. If the session drops, it reconnects with the stored credential.
+A session counts as dropped when its Connect task ends, or as soon as its
+streaming connection is lost (after a suspend, say), even while the Connect
+task hangs on the dead connection. A song picked on a session that has just
+lost its connection is what the new session plays.
 
 Since 0.9.0, selecting this computer in the device picker asks
 librespot to transfer playback from the active Connect device. Spotify supplies

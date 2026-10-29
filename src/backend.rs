@@ -1712,6 +1712,9 @@ impl Worker {
                 }
                 Command::ApplyProxy { request, config } => self.change_proxy(request, config, None),
                 Command::Player(command) => match &self.engine {
+                    Some(engine) if engine.is_disconnected() => {
+                        self.reconnect_for(command);
+                    }
                     Some(engine) => {
                         if let Err(error) = engine.command(command) {
                             self.emit(Event::Error(format!("Playback error: {error}")));
@@ -2693,6 +2696,20 @@ impl Worker {
             self.reconnects.len()
         );
         self.replace_engine();
+    }
+
+    /// A command reached an engine whose session has lost its connection,
+    /// before its watcher noticed. Reconnect now rather than drop it, and
+    /// play what was just picked on the new session instead of what the
+    /// dead one was playing.
+    fn reconnect_for(&mut self, command: PlayerCommand) {
+        self.reconnect_engine();
+        if let PlayerCommand::Load(spec) = command
+            && self.engine.is_none()
+            && self.engine_busy
+        {
+            self.resume = Some(PlaybackResume::Track(spec));
+        }
     }
 
     /// Keeps the level being heard for the next engine, and lets what the
