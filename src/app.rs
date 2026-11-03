@@ -2159,7 +2159,14 @@ impl App {
                 );
             }
             LocalPlayback::Connecting => self.hold_unsent_load(),
-            LocalPlayback::Authorizing => {}
+            LocalPlayback::Authorizing => {
+                if !matches!(self.local_playback, LocalPlayback::Authorizing) {
+                    self.toast(gettext(
+                        self.locale,
+                        "Opening your browser to set up local playback",
+                    ));
+                }
+            }
         }
         self.local_playback = status;
     }
@@ -6865,6 +6872,17 @@ impl App {
                     && matches!(self.auth, AuthStatus::Starting | AuthStatus::Connecting))
                 {
                     self.queued_play = Some(request);
+                } else if self.settings.playback_authorized
+                    && matches!(self.local_playback, LocalPlayback::Failed(_))
+                    && matches!(self.auth, AuthStatus::Connected { .. })
+                {
+                    // Playback was set up here and its engine went down
+                    // (a long idle, a sleep, no network for a while). The
+                    // saved credential brings it back without the browser;
+                    // the song waits for it, as it does while connecting.
+                    self.queued_play = Some(request);
+                    self.handle_playback(LocalPlayback::Connecting);
+                    self.backend.send(Command::ResumePlayback);
                 } else {
                     self.queue_start_pending = None;
                     self.clear_play_pending();
@@ -9331,11 +9349,10 @@ impl App {
                 {
                     self.settings.playback_authorized = true;
                     self.settings_dirty = true;
+                    // The backend reconnects with the saved credential when
+                    // it has one, and says Authorizing only when it opens
+                    // the browser instead.
                     self.backend.send(Command::AuthorizePlayback);
-                    self.toast(gettext(
-                        self.locale,
-                        "Opening your browser to set up local playback",
-                    ));
                 }
             }
             Action::OpenUrl(url) => {
@@ -20555,6 +20572,56 @@ mod tests {
         ];
         draw_collection_actions(ctx, app, uri, vec![]);
         draw_collection_actions(ctx, app, uri, click);
+    }
+
+    #[test]
+    fn playing_after_local_playback_failed_reconnects_instead_of_asking_for_a_device() {
+        let ctx = egui::Context::default();
+        let mut app = headless_app();
+        app.attach(&ctx);
+        crate::demo::populate(&mut app);
+        app.remote = None;
+        app.local_ready = false;
+        app.local_device_id = None;
+        app.local.connected = false;
+        app.selected_device = None;
+        app.settings.playback_authorized = true;
+        app.auth = AuthStatus::Connected {
+            username: "demo".into(),
+        };
+        app.handle_playback(LocalPlayback::Failed("Couldn't reach Spotify".into()));
+        app.toasts.clear();
+        app.backend.take_engine_commands();
+        assert!(matches!(app.target(), Target::Remote(None)));
+
+        let request = PlayRequest::tracks(vec!["spotify:track:demo".into()]);
+        app.play_request(request.clone(), false);
+        assert_eq!(app.backend.take_engine_commands(), ["resume"]);
+        assert_eq!(app.queued_play.as_ref(), Some(&request));
+        assert!(matches!(app.local_playback, LocalPlayback::Connecting));
+        assert!(!app.show_devices, "no device picker while reconnecting");
+        assert!(app.toasts.is_empty(), "no browser, no device prompt");
+
+        // The reconnected engine plays the held song.
+        app.local.connected = true;
+        app.handle_playback(LocalPlayback::Ready {
+            device_id: "demo-local".into(),
+        });
+        assert!(app.queued_play.is_none());
+    }
+
+    #[test]
+    fn enabling_playback_says_the_browser_opens_only_when_it_does() {
+        let mut app = headless_app();
+        app.local_ready = false;
+        app.local_playback = LocalPlayback::Failed("Couldn't reach Spotify".into());
+        app.toasts.clear();
+        app.backend.take_engine_commands();
+        app.apply(Action::EnablePlayback, &egui::Context::default());
+        assert_eq!(app.backend.take_engine_commands(), ["authorize"]);
+        assert!(app.toasts.is_empty(), "a saved grant reconnects silently");
+        app.handle_playback(LocalPlayback::Authorizing);
+        assert_eq!(app.toasts.len(), 1);
     }
 
     #[test]

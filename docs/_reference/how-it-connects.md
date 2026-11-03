@@ -320,6 +320,17 @@ keep-alive would only notice a minute later, and a sleep does not count
 towards the limit on drops. A Connect task left hanging is dropped after a
 few seconds, so it does not keep its session in memory.
 
+The stored credential outlives long idles and sleeps, so bringing local
+playback back never needs the browser while Spotify still accepts it. A
+reconnect that fails for a reason that can pass (no network yet after
+waking, a timeout) is shown once and then tried again in the background,
+after 5, 15, 30 and 60 seconds and then every two minutes, until it
+connects. Playing a song while the engine is down reconnects with the
+stored credential and holds the song until it plays, and **Try again** and
+**Set up playback here** do the same. Only when Spotify refuses the stored
+credential itself is it removed, and the next attempt asks for a new
+browser approval.
+
 A song sent to the local player that has not reached it within five seconds
 means the Connect session stopped listening: the engine reconnects (once a
 minute at most) and the interface holds the song, still shown, until the new

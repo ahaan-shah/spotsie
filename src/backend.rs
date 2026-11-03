@@ -49,6 +49,26 @@ const HOME_EPISODES_PER_SHOW: u32 = 5;
 pub const PLAYLIST_PAGE_SIZE: u32 = 50;
 const RECONNECT_WINDOW: Duration = Duration::from_secs(600);
 const RECONNECT_LIMIT: usize = 6;
+/// What a failed engine connection says when Spotify refused the saved
+/// playback credential itself. Only then is a new browser approval needed.
+const PLAYBACK_REJECTED: &str = "Spotify rejected the saved sign-in. Please sign in again.";
+/// Shown when playing needs the engine but no saved credential is left.
+const PLAYBACK_SET_UP_AGAIN: &str =
+    "Set up playback on this computer again from Settings or the device picker.";
+
+/// How long to wait before trying the saved playback credential again
+/// after a connection failed for a reason that can pass, such as a network
+/// that is still coming back after a sleep. The last delay repeats.
+fn engine_retry_delay(failures: u32) -> Duration {
+    const DELAYS: [u64; 5] = [5, 15, 30, 60, 120];
+    Duration::from_secs(DELAYS[(failures as usize).min(DELAYS.len() - 1)])
+}
+
+/// Whether a failed engine connection can be tried again with the same
+/// credential. A rejected credential or a Free account cannot.
+fn engine_error_is_transient(message: &str) -> bool {
+    message != PLAYBACK_REJECTED && message != PREMIUM_NEEDED
+}
 
 async fn connect_engine_with_deadline<F: std::future::Future>(
     connect: F,
@@ -616,8 +636,12 @@ pub enum Command {
     },
     CancelSignIn,
     SignOut,
-    /// Authorize local playback on this computer (a separate browser grant).
+    /// Bring up local playback on this computer: with the saved playback
+    /// credential when there is one, else through a browser approval.
     AuthorizePlayback,
+    /// Reconnect local playback with the saved credential, never opening
+    /// the browser. Sent when a song is played while the engine is down.
+    ResumePlayback,
     /// Reload the engine config (audio settings changed).
     RestartEngine(EngineConfig),
     /// Rebuild the HTTP client. Restart local playback only when its HTTP
@@ -683,6 +707,11 @@ pub enum Command {
     },
     /// Internal: librespot's session ended on its own.
     Reconnect,
+    /// Internal: time to try the saved playback credential again after a
+    /// connection failed. Stale when `generation` has moved on.
+    RetryEngine {
+        generation: u64,
+    },
     /// Internal: the computer woke from a sleep that dropped the session.
     /// Reconnects like `Reconnect`, without counting as the session
     /// falling over: sleeping often is not flapping.
@@ -1045,6 +1074,8 @@ impl Backend {
         match command {
             Command::Reconnect => self.engine_commands.lock().unwrap().push("reconnect"),
             Command::Rejoin => self.engine_commands.lock().unwrap().push("rejoin"),
+            Command::ResumePlayback => self.engine_commands.lock().unwrap().push("resume"),
+            Command::AuthorizePlayback => self.engine_commands.lock().unwrap().push("authorize"),
             _ => {}
         }
         if self.offline
@@ -1413,6 +1444,15 @@ struct Worker {
     authorizing_source: Option<ApiSource>,
     pending_authorization: Option<ApiSource>,
     reconnects: Vec<Instant>,
+    /// Connection attempts with the saved playback credential that failed
+    /// in a row, for the retry delay.
+    engine_failures: u32,
+    /// Bumped whenever a scheduled retry stops applying (the engine came
+    /// up, or the account signed out), so its timer does nothing.
+    engine_retry_generation: u64,
+    /// The attempt in flight is a background retry after a failure the
+    /// interface already showed: it reports only if it succeeds.
+    engine_quiet: bool,
     /// What the engine was playing when it went down, to load again once
     /// the next one is up.
     resume: Option<PlaybackResume>,
@@ -1473,6 +1513,9 @@ impl Worker {
             authorizing_source: None,
             pending_authorization: None,
             reconnects: Vec::new(),
+            engine_failures: 0,
+            engine_retry_generation: 0,
+            engine_quiet: false,
             resume: None,
             resume_verify: None,
         }
@@ -1727,6 +1770,13 @@ impl Worker {
                 }
                 Command::SignOut => self.sign_out(),
                 Command::AuthorizePlayback => self.authorize_playback(),
+                Command::ResumePlayback => {
+                    if !self.reconnect_with_saved_grant() && self.signed_in {
+                        self.emit(Event::Playback(LocalPlayback::Failed(
+                            PLAYBACK_SET_UP_AGAIN.into(),
+                        )));
+                    }
+                }
                 Command::RestartEngine(mut config) => {
                     // Audio settings must not revert a proxy change whose UI
                     // acknowledgement was still in flight when this was clicked.
@@ -1897,6 +1947,15 @@ impl Worker {
                     self.finish_playback_authorization(attempt)
                 }
                 Command::Reconnect => self.reconnect_engine(),
+                Command::RetryEngine { generation } => {
+                    if generation == self.engine_retry_generation && self.engine.is_none() {
+                        self.engine_quiet = true;
+                        self.resume_engine();
+                        if !self.engine_busy {
+                            self.engine_quiet = false;
+                        }
+                    }
+                }
                 Command::Woke => {
                     if self.signed_in {
                         self.replace_engine();
@@ -2605,6 +2664,9 @@ impl Worker {
         self.web_tokens = [None, None];
         self.playback_grant = None;
         self.engine_busy = false;
+        self.engine_quiet = false;
+        self.engine_failures = 0;
+        self.engine_retry_generation += 1;
         self.premium = None;
         self.resume = None;
         self.resume_verify = None;
@@ -2767,6 +2829,54 @@ impl Worker {
         }
     }
 
+    /// Connect with the saved playback credential, the one librespot handed
+    /// back after the last browser approval. It stays valid across long
+    /// idles, sleeps and dropped connections, so bringing playback back
+    /// never needs the browser while Spotify still accepts it. Returns false
+    /// when there is no usable saved credential.
+    fn reconnect_with_saved_grant(&mut self) -> bool {
+        if !self.signed_in || self.engine.is_some() {
+            return false;
+        }
+        let Some(grant) = self.playback_grant.clone() else {
+            return false;
+        };
+        if !playback_account_matches(&grant, self.api.account()) {
+            return false;
+        }
+        if self.engine_busy {
+            // A background retry is already connecting: let its result
+            // show, so the interface waiting on it hears either way.
+            if std::mem::take(&mut self.engine_quiet) {
+                self.emit(Event::Playback(LocalPlayback::Connecting));
+            }
+            return true;
+        }
+        // Someone asked for playback: it is not the session flapping.
+        self.reconnects.clear();
+        self.engine_retry_generation += 1;
+        self.connect_engine(grant);
+        true
+    }
+
+    /// Try the saved credential again later, after a connection failed for
+    /// a reason that can pass (no network yet after waking, a timeout).
+    fn schedule_engine_retry(&mut self) {
+        let delay = engine_retry_delay(self.engine_failures);
+        self.engine_failures = self.engine_failures.saturating_add(1);
+        self.engine_retry_generation += 1;
+        let generation = self.engine_retry_generation;
+        log::info!(
+            "local playback could not connect; trying again in {}s",
+            delay.as_secs()
+        );
+        let commands = self.commands.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(delay).await;
+            let _ = commands.send(Command::RetryEngine { generation });
+        });
+    }
+
     /// Start (or re-enter) the playback authorization in the browser. This is
     /// a distinct grant from the Web API sign-in: it uses Spotify's streaming
     /// client identity, the one librespot can play with.
@@ -2778,7 +2888,10 @@ impl Worker {
                 return;
             }
         };
-        if self.engine_busy || self.cancel_signin.is_some() {
+        if self.cancel_signin.is_some() || self.reconnect_with_saved_grant() {
+            return;
+        }
+        if self.engine_busy {
             return;
         }
         if self.premium == Some(false) {
@@ -2859,7 +2972,9 @@ impl Worker {
         }
         self.cancel_signin = None;
         self.engine_busy = true;
-        self.emit(Event::Playback(LocalPlayback::Connecting));
+        if !self.engine_quiet {
+            self.emit(Event::Playback(LocalPlayback::Connecting));
+        }
         let lease = self.credentials.lease(CredentialSlot::Playback);
         let config = self.engine_config.clone();
         let proxy = config.proxy.librespot_url();
@@ -2932,6 +3047,7 @@ impl Worker {
             return;
         }
         self.engine_busy = false;
+        let quiet = std::mem::take(&mut self.engine_quiet);
         if std::mem::take(&mut self.engine_restart_pending) {
             if let Some(engine) = engine {
                 engine.shutdown();
@@ -2972,6 +3088,8 @@ impl Worker {
                 self.engine = Some(engine);
                 self.start_rootlist();
                 self.reconnects.clear();
+                self.engine_failures = 0;
+                self.engine_retry_generation += 1;
                 self.emit(Event::Playback(LocalPlayback::Ready { device_id }));
                 self.start_album_type_lookup();
                 self.start_audiobook_lookup();
@@ -2980,7 +3098,17 @@ impl Worker {
             None => {
                 self.resume = None;
                 let message = error.unwrap_or_else(|| "Local playback is unavailable".into());
-                self.emit(Event::Playback(LocalPlayback::Failed(message)));
+                if message == PLAYBACK_REJECTED {
+                    // Only now is the saved credential gone for good; the
+                    // next attempt has to be a browser approval.
+                    self.playback_grant = None;
+                    self.delete_stored_grant(CredentialSlot::Playback);
+                } else if engine_error_is_transient(&message) && self.playback_grant.is_some() {
+                    self.schedule_engine_retry();
+                }
+                if !quiet {
+                    self.emit(Event::Playback(LocalPlayback::Failed(message)));
+                }
             }
         }
     }
@@ -3468,7 +3596,7 @@ fn friendly_connect_error(error: &anyhow::Error) -> String {
     let text = format!("{error:#}");
     let lower = text.to_lowercase();
     if lower.contains("badcredentials") || lower.contains("bad credentials") {
-        "Spotify rejected the saved sign-in. Please sign in again.".to_string()
+        PLAYBACK_REJECTED.to_string()
     } else if lower.contains("premium") {
         PREMIUM_NEEDED.to_string()
     } else if lower.contains("dns") || lower.contains("connect") || lower.contains("resolve") {
@@ -6094,6 +6222,119 @@ mod authorization_tests {
                 .try_iter()
                 .any(|event| matches!(event, Event::Playback(LocalPlayback::Failed(_))))
         );
+    }
+
+    #[test]
+    fn enabling_playback_with_a_saved_grant_reconnects_without_the_browser() {
+        let (runtime, mut worker, events) = worker("playback-saved-grant");
+        let _entered = runtime.enter();
+        verify(&mut worker, ApiSource::Shared, "alice");
+        worker.playback_grant = Some(Credentials::with_password("alice", "dummy-reusable-grant"));
+        worker.authorize_playback();
+        assert!(worker.engine_busy);
+        assert!(worker.cancel_signin.is_none());
+        let events: Vec<_> = events.try_iter().collect();
+        assert!(
+            events
+                .iter()
+                .any(|event| matches!(event, Event::Playback(LocalPlayback::Connecting)))
+        );
+        assert!(
+            !events
+                .iter()
+                .any(|event| matches!(event, Event::Playback(LocalPlayback::Authorizing)))
+        );
+    }
+
+    #[test]
+    fn enabling_playback_without_a_saved_grant_opens_the_browser() {
+        let (runtime, mut worker, events) = worker("playback-no-grant");
+        let _entered = runtime.enter();
+        verify(&mut worker, ApiSource::Shared, "alice");
+        // A grant for another account is no use to this one.
+        worker.playback_grant = Some(Credentials::with_password("bob", "dummy-reusable-grant"));
+        assert!(!worker.reconnect_with_saved_grant());
+        worker.playback_grant = None;
+        assert!(!worker.reconnect_with_saved_grant());
+        worker.authorize_playback();
+        assert!(worker.cancel_signin.is_some());
+        assert!(
+            events
+                .try_iter()
+                .any(|event| matches!(event, Event::Playback(LocalPlayback::Authorizing)))
+        );
+    }
+
+    #[test]
+    fn a_failed_connection_keeps_the_saved_grant_and_retries_quietly() {
+        let (runtime, mut worker, events) = worker("playback-retry");
+        let _entered = runtime.enter();
+        verify(&mut worker, ApiSource::Shared, "alice");
+        let grant = Credentials::with_password("alice", "dummy-reusable-grant");
+        worker.playback_grant = Some(grant.clone());
+        let session = worker.album_type_lookup.session_generation;
+        worker.engine_busy = true;
+        worker.on_engine_connected(session, None, Some("Couldn't reach Spotify: dns".into()));
+        assert_eq!(worker.playback_grant, Some(grant.clone()));
+        assert_eq!(worker.engine_failures, 1);
+        assert!(
+            events
+                .try_iter()
+                .any(|event| matches!(event, Event::Playback(LocalPlayback::Failed(_))))
+        );
+        // The background retry says nothing until it works.
+        worker.engine_busy = true;
+        worker.engine_quiet = true;
+        worker.on_engine_connected(
+            session,
+            None,
+            Some("Connecting to Spotify timed out".into()),
+        );
+        assert_eq!(worker.playback_grant, Some(grant));
+        assert_eq!(worker.engine_failures, 2);
+        assert!(!worker.engine_quiet);
+        assert!(events.try_iter().next().is_none());
+    }
+
+    #[test]
+    fn a_play_during_a_quiet_retry_hears_its_result() {
+        let (runtime, mut worker, events) = worker("playback-retry-play");
+        let _entered = runtime.enter();
+        verify(&mut worker, ApiSource::Shared, "alice");
+        worker.playback_grant = Some(Credentials::with_password("alice", "dummy-reusable-grant"));
+        worker.engine_busy = true;
+        worker.engine_quiet = true;
+        let _ = events.try_iter().count();
+        assert!(worker.reconnect_with_saved_grant());
+        assert!(!worker.engine_quiet);
+        assert!(
+            events
+                .try_iter()
+                .any(|event| matches!(event, Event::Playback(LocalPlayback::Connecting)))
+        );
+    }
+
+    #[test]
+    fn only_a_rejected_grant_is_forgotten() {
+        let (runtime, mut worker, _events) = worker("playback-rejected");
+        let _entered = runtime.enter();
+        verify(&mut worker, ApiSource::Shared, "alice");
+        worker.playback_grant = Some(Credentials::with_password("alice", "dummy-reusable-grant"));
+        let session = worker.album_type_lookup.session_generation;
+        worker.engine_busy = true;
+        let rejected = friendly_connect_error(&anyhow::anyhow!("Login failed: BadCredentials"));
+        worker.on_engine_connected(session, None, Some(rejected));
+        assert!(worker.playback_grant.is_none());
+        assert_eq!(worker.engine_failures, 0);
+        assert!(!engine_error_is_transient(PREMIUM_NEEDED));
+    }
+
+    #[test]
+    fn engine_retries_back_off_to_two_minutes() {
+        assert_eq!(engine_retry_delay(0), Duration::from_secs(5));
+        assert_eq!(engine_retry_delay(3), Duration::from_secs(60));
+        assert_eq!(engine_retry_delay(4), Duration::from_secs(120));
+        assert_eq!(engine_retry_delay(400), Duration::from_secs(120));
     }
 
     #[test]
