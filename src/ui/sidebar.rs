@@ -169,10 +169,8 @@ fn grid_play_button(
     let button = ui.interact(rect, ui.id().with("library-grid-play"), Sense::click());
     let playing = playing_here && app.believed_playing();
     let label = if playing {
-        // Translators: The play button on a Library card. {name} is the playlist, album, artist, or podcast.
         gettext(app.locale, "Pause {name}")
     } else {
-        // Translators: The play button on a Library card. {name} is the playlist, album, artist, or podcast.
         gettext(app.locale, "Play {name}")
     }
     .replace("{name}", &entry.name);
@@ -822,7 +820,6 @@ fn playlist_entry(
         image: pick_image(&playlist.images, 64).map(str::to_string),
         grid_image: pick_image(&playlist.images, super::GRID_ART_TARGET_WIDTH).map(str::to_string),
         name: playlist.name.clone(),
-        // Translators: {owner} is the name of the playlist's owner.
         subtitle: gettext(locale, "Playlist • {owner}").replace("{owner}", playlist.owner_name()),
         grid_subtitle: playlist.owner_name().to_string(),
         page: Page::Playlist(playlist.id.clone()),
@@ -1011,10 +1008,9 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
                     app.library.filter.clear();
                 }
             }
-            // The buttons come first; the heading takes the space left,
-            // a little smaller where a translation runs long, and gives way
-            // to them in the narrowest sidebar, where the icon still names
-            // the section.
+            // The buttons come first; the heading takes the space left and
+            // gives way to them in the narrowest sidebar, where the icon
+            // still names the section.
             ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                 let heading = gettext(locale, "Library");
                 let room = ui.available_width() - 6.0;
@@ -1241,7 +1237,6 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
                     grid_image: pick_image(&show.images, super::GRID_ART_TARGET_WIDTH)
                         .map(str::to_string),
                     name: show.name.clone(),
-                    // Translators: {publisher} is the podcast's publisher.
                     subtitle: gettext(locale, "Podcast • {publisher}")
                         .replace("{publisher}", &show.publisher),
                     grid_subtitle: show.publisher.clone(),
@@ -2461,11 +2456,9 @@ mod ordering_tests {
     }
 
     #[test]
-    fn folder_names_and_subtitles_follow_the_locale() {
-        use crate::i18n::Locale;
+    fn unnamed_folders_get_a_name_and_a_count() {
         use crate::player::RootlistEntry::{FolderEnd, FolderStart, Playlist};
-        let mut app = app("folder-locale");
-        app.locale = Locale::German;
+        let mut app = app("folder-names");
         app.rootlist = vec![
             FolderStart {
                 id: "folder".into(),
@@ -2477,9 +2470,9 @@ mod ordering_tests {
         ];
         let mut entries = vec![];
         folder_rows(&app, "", &mut entries);
-        assert_eq!(entries[0].name, "Ordner");
-        assert_eq!(entries[0].subtitle, "Ordner • 2 Playlists");
-        assert_eq!(entries[0].grid_subtitle, "2 Playlists");
+        assert_eq!(entries[0].name, "Folder");
+        assert_eq!(entries[0].subtitle, "Folder • 2 playlists");
+        assert_eq!(entries[0].grid_subtitle, "2 playlists");
         app.backend.shutdown();
     }
 

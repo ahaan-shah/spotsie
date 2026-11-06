@@ -32,8 +32,7 @@ pub const NAME: &str = "rodio";
 /// Told about output failures, with a message fit for the interface.
 pub type ErrorHook = Arc<dyn Fn(String) + Send + Sync>;
 
-/// Reported when the system has no audio output at all. The interface
-/// recognises it and shows it in the user's language.
+/// Reported when the system has no audio output at all.
 pub const NO_DEVICE: &str =
     "No audio output device was found. Connect or enable one, then press play again.";
 

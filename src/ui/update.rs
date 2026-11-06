@@ -86,7 +86,6 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
                         ui.add_space(6.0);
                         theme::text(
                             ui,
-                            // Translators: {received} and {total} are sizes in megabytes, such as 12.5.
                             gettext(locale, "{received} of {total} MB")
                                 .replace(
                                     "{received}",

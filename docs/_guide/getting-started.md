@@ -100,14 +100,6 @@ Long titles are shortened with dots to fit the available space.
 
 ![Japanese, Chinese, and Korean titles in a playlist](../assets/images/scripts.png)
 
-## Choosing the interface language
-
-Spotsie uses your computer's language when it has a translation for it, and
-English otherwise. To pick another language, open **Settings → Appearance →
-Language**. Each language is listed under its own name, and the change applies
-at once. Choose **System** to follow the computer again. Spanish and Turkish
-are complete; other translations are in progress, and anything not yet translated
-appears in English. See [Translating Spotsie](../_reference/translating.md) to help.
 
 ## Choosing which app opens Spotify links
 

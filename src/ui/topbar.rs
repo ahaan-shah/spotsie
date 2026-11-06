@@ -166,7 +166,6 @@ fn update_label(locale: crate::i18n::Locale, download: &crate::updates::Download
             } else {
                 0
             };
-            // Translators: {percent} is a whole number from 0 to 100.
             gettext(locale, "Updating… {percent}%").replace("{percent}", &percent.to_string())
         }
         crate::updates::DownloadState::Idle | crate::updates::DownloadState::Failed(_) => {
@@ -409,7 +408,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             let device_galley = app.now_playing().filter(|now| !now.local).map(|now| {
                 let label = match now.device_name {
                     Some(device) => {
-                        // Translators: {device} is the name of the device playing the music.
                         gettext(locale, "Playing on {device}").replace("{device}", &device)
                     }
                     None => gettext(locale, "Playing on another device").into_owned(),
@@ -609,18 +607,13 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                         update_badge(ui, &palette, galley, &app.update_download, fit.labels);
                     let tip = match &app.update_download {
                         crate::updates::DownloadState::Ready(_) => {
-                            // Translators: {version} is a version number such as 1.2.0.
                             gettext(locale, "Spotsie {version} is installed. Click to restart.")
                         }
                         crate::updates::DownloadState::Downloading { .. }
                         | crate::updates::DownloadState::Installing => {
-                            // Translators: {version} is a version number such as 1.2.0.
                             gettext(locale, "Installing Spotsie {version}")
                         }
-                        _ => {
-                            // Translators: {version} is a version number such as 1.2.0.
-                            gettext(locale, "Spotsie {version} is out. Click to update.")
-                        }
+                        _ => gettext(locale, "Spotsie {version} is out. Click to update."),
                     }
                     .replace("{version}", &update.version);
                     if response.on_hover_text(tip).clicked() {

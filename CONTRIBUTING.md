@@ -109,13 +109,6 @@ Platform runtime, and checks both manifests using disposable dummy state.
 Pass a runtime and branch to use an existing installation, for example
 `packaging/flatpak/test-state.sh org.kde.Platform 6.9`.
 
-Translation changes also need `.github/scripts/update-translations.sh --check`,
-using GNU gettext tools with Rust support. Run the script without `--check` when
-translatable source strings change, and review any fuzzy or missing entries in
-the updated PO files. Normal Cargo builds compile the catalogs without gettext
-tools. See [Translating Spotsie](docs/_reference/translating.md) for the pilot
-scope and contributor workflow.
-
 Releases must wait for all required CI jobs on the version commit before
 the tag is pushed.
 

@@ -782,7 +782,7 @@ pub fn apply_flags(app: &mut App, page: Option<&str>, show: Option<&str>) {
                 app.show_queue_panel = true;
                 app.queue_tab = QueueTab::Recents;
             }
-            // Deterministic panel states for translation and layout reviews.
+            // Deterministic panel states for layout reviews.
             "queue-empty" | "queue-loading" | "queue-error" => {
                 app.show_queue_panel = true;
                 app.queue = match surface {
@@ -866,11 +866,6 @@ pub fn apply_flags(app: &mut App, page: Option<&str>, show: Option<&str>) {
                     }
                     page.items.revision += 1;
                 }
-            }
-            "german" => {
-                app.settings.language =
-                    crate::settings::LanguageChoice::Locale(crate::i18n::Locale::German);
-                app.locale = crate::i18n::Locale::German;
             }
             "update" => {
                 app.update = Some(crate::updates::Release {
@@ -1215,8 +1210,7 @@ mod tests {
     }
 
     /// #576: the Library heading never runs under the header's buttons. It
-    /// shrinks a little for a long translation and gives way entirely in
-    /// the narrowest sidebar, but stays where there is room.
+    /// gives way entirely in the narrowest sidebar, but stays where there is room.
     #[test]
     fn the_library_heading_never_overlaps_its_buttons() {
         fn texts(shape: &egui::epaint::Shape, out: &mut Vec<(String, egui::Rect)>) {
@@ -1231,61 +1225,59 @@ mod tests {
                 _ => {}
             }
         }
-        for locale in [crate::i18n::Locale::English, crate::i18n::Locale::German] {
-            for width in [210.0, 250.0, 420.0] {
-                let (ctx, mut app) = accessible_app("library-heading");
-                app.locale = locale;
-                app.settings.sidebar_width = width;
-                let heading = crate::i18n::gettext(locale, "Library").into_owned();
-                let search = crate::i18n::gettext(locale, "Search Your Library").into_owned();
-                let mut last = None;
-                for _ in 0..2 {
-                    let mut output = ctx.run_ui(
-                        egui::RawInput {
-                            screen_rect: Some(egui::Rect::from_min_size(
-                                egui::Pos2::ZERO,
-                                egui::vec2(1280.0, 800.0),
-                            )),
-                            ..Default::default()
-                        },
-                        |ui| app.frame_ui(ui),
-                    );
-                    output.textures_delta.clear();
-                    last = Some(output);
-                }
-                let output = last.unwrap();
-                let mut drawn = Vec::new();
-                output
-                    .shapes
-                    .iter()
-                    .for_each(|shape| texts(&shape.shape, &mut drawn));
-                let label = drawn
-                    .iter()
-                    .find(|(text, rect)| *text == heading && rect.top() < 300.0)
-                    .map(|(_, rect)| *rect);
-                let tree = output.platform_output.accesskit_update.unwrap();
-                let button = tree
-                    .nodes
-                    .iter()
-                    .find(|(_, node)| node.label() == Some(search.as_str()))
-                    .and_then(|(_, node)| node.bounds())
-                    .expect("the Search Your Library button");
-                if let Some(label) = label {
-                    assert!(
-                        f64::from(label.right()) <= button.x0,
-                        "{locale:?} at {width}: the heading ends at {} but the button starts at {}",
-                        label.right(),
-                        button.x0
-                    );
-                }
-                if width >= 250.0 {
-                    assert!(
-                        label.is_some(),
-                        "{locale:?} at {width}: the heading has room"
-                    );
-                }
-                app.backend.shutdown();
+        let locale = crate::i18n::Locale::English;
+        for width in [210.0, 250.0, 420.0] {
+            let (ctx, mut app) = accessible_app("library-heading");
+            app.settings.sidebar_width = width;
+            let heading = crate::i18n::gettext(locale, "Library").into_owned();
+            let search = crate::i18n::gettext(locale, "Search Your Library").into_owned();
+            let mut last = None;
+            for _ in 0..2 {
+                let mut output = ctx.run_ui(
+                    egui::RawInput {
+                        screen_rect: Some(egui::Rect::from_min_size(
+                            egui::Pos2::ZERO,
+                            egui::vec2(1280.0, 800.0),
+                        )),
+                        ..Default::default()
+                    },
+                    |ui| app.frame_ui(ui),
+                );
+                output.textures_delta.clear();
+                last = Some(output);
             }
+            let output = last.unwrap();
+            let mut drawn = Vec::new();
+            output
+                .shapes
+                .iter()
+                .for_each(|shape| texts(&shape.shape, &mut drawn));
+            let label = drawn
+                .iter()
+                .find(|(text, rect)| *text == heading && rect.top() < 300.0)
+                .map(|(_, rect)| *rect);
+            let tree = output.platform_output.accesskit_update.unwrap();
+            let button = tree
+                .nodes
+                .iter()
+                .find(|(_, node)| node.label() == Some(search.as_str()))
+                .and_then(|(_, node)| node.bounds())
+                .expect("the Search Your Library button");
+            if let Some(label) = label {
+                assert!(
+                    f64::from(label.right()) <= button.x0,
+                    "{locale:?} at {width}: the heading ends at {} but the button starts at {}",
+                    label.right(),
+                    button.x0
+                );
+            }
+            if width >= 250.0 {
+                assert!(
+                    label.is_some(),
+                    "{locale:?} at {width}: the heading has room"
+                );
+            }
+            app.backend.shutdown();
         }
     }
 
@@ -1506,425 +1498,353 @@ mod tests {
     }
 
     #[test]
-    fn translated_sidebar_keeps_keyboard_navigation_and_accessible_names() {
+    fn sidebar_keeps_keyboard_navigation_and_accessible_names() {
         use crate::i18n::{Locale, gettext};
-        use clap::ValueEnum;
         use egui::accesskit::{Action as AccessibleAction, Role};
-        for &locale in Locale::value_variants() {
-            let (ctx, mut app) = accessible_app(&format!("translated-sidebar-{locale:?}"));
-            app.locale = locale;
-            accessible_frame(&ctx, &mut app, vec![]);
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let home = accessible_node(&tree, &gettext(locale, "Home"), Role::Button);
-            let search = accessible_node(&tree, &gettext(locale, "Search"), Role::Button);
-            accessible_node(&tree, &gettext(locale, "Create a playlist"), Role::Button);
-            accessible_node(&tree, &gettext(locale, "Albums"), Role::Button);
-            accessible_node(&tree, &gettext(locale, "Artists"), Role::Button);
-            let liked = accessible_node(&tree, &gettext(locale, "Liked Songs"), Role::Button);
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(home, AccessibleAction::Focus, None)],
-            );
-            let tree = accessible_frame(
-                &ctx,
-                &mut app,
-                vec![keyboard(egui::Key::Tab, egui::Modifiers::NONE)],
-            );
-            assert_eq!(tree.focus, search, "Tab order must survive translation");
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(liked, AccessibleAction::Focus, None)],
-            );
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![keyboard(egui::Key::Enter, egui::Modifiers::NONE)],
-            );
-            assert_eq!(app.page(), &Page::LikedSongs);
+        let locale = Locale::English;
+        let (ctx, mut app) = accessible_app("a11y-sidebar");
+        accessible_frame(&ctx, &mut app, vec![]);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let home = accessible_node(&tree, &gettext(locale, "Home"), Role::Button);
+        let search = accessible_node(&tree, &gettext(locale, "Search"), Role::Button);
+        accessible_node(&tree, &gettext(locale, "Create a playlist"), Role::Button);
+        accessible_node(&tree, &gettext(locale, "Albums"), Role::Button);
+        accessible_node(&tree, &gettext(locale, "Artists"), Role::Button);
+        let liked = accessible_node(&tree, &gettext(locale, "Liked Songs"), Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(home, AccessibleAction::Focus, None)],
+        );
+        let tree = accessible_frame(
+            &ctx,
+            &mut app,
+            vec![keyboard(egui::Key::Tab, egui::Modifiers::NONE)],
+        );
+        assert_eq!(tree.focus, search, "Tab goes from Home to Search");
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(liked, AccessibleAction::Focus, None)],
+        );
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![keyboard(egui::Key::Enter, egui::Modifiers::NONE)],
+        );
+        assert_eq!(app.page(), &Page::LikedSongs);
 
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let library_search =
+            accessible_node(&tree, &gettext(locale, "Search Your Library"), Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(
+                library_search,
+                AccessibleAction::Click,
+                None,
+            )],
+        );
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        accessible_node(
+            &tree,
+            &gettext(locale, "Search in Your Library"),
+            Role::TextInput,
+        );
+        app.library.filter = gettext(locale, "Liked Songs").to_uppercase();
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        accessible_node(&tree, &gettext(locale, "Liked Songs"), Role::Button);
+        assert!(
+            !tree
+                .nodes
+                .iter()
+                .any(|(_, node)| node.label() == Some("Discover Weekly"))
+        );
+        app.backend.shutdown();
+    }
+
+    #[test]
+    fn player_bar_keeps_control_identity_and_keyboard_actions() {
+        use crate::i18n::{Locale, gettext};
+        use egui::accesskit::{Action as AccessibleAction, Role};
+
+        let locale = Locale::English;
+        let (ctx, mut app) = accessible_app("a11y-player");
+        accessible_frame(&ctx, &mut app, vec![]);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        for (label, role) in [
+            ("Shuffle", Role::CheckBox),
+            ("Previous", Role::Button),
+            ("Pause", Role::Button),
+            ("Next", Role::Button),
+            ("Repeat", Role::Button),
+            ("Playback position (%)", Role::Slider),
+            ("Volume (%)", Role::Slider),
+            ("Mute", Role::Button),
+            ("Connect to a device", Role::Button),
+            ("Queue", Role::Button),
+            ("Lyrics", Role::Button),
+        ] {
+            accessible_node(&tree, label, role);
+        }
+        let pause = accessible_node(&tree, "Pause", Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(pause, AccessibleAction::Focus, None)],
+        );
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        assert_eq!(tree.focus, pause, "the focus stays on the control");
+
+        // A reported pause uses the same control with its new label.
+        // Offline demo requests have no backend acknowledgment, so a
+        // requested remote pause would keep the pending spinner visible.
+        app.remote.as_mut().unwrap().state.is_playing = false;
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        assert_eq!(
+            accessible_node(&tree, &gettext(locale, "Play"), Role::Button),
+            pause
+        );
+        app.remote.as_mut().unwrap().state.is_playing = true;
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let volume = accessible_node(&tree, &gettext(locale, "Volume (%)"), Role::Slider);
+        let before = app.now_playing().unwrap().volume_percent;
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(volume, AccessibleAction::Focus, None)],
+        );
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![keyboard(egui::Key::ArrowRight, egui::Modifiers::NONE)],
+        );
+        assert_eq!(app.now_playing().unwrap().volume_percent, before + 5);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(pause, AccessibleAction::Focus, None)],
+        );
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![keyboard(egui::Key::Space, egui::Modifiers::NONE)],
+        );
+        assert!(!app.believed_playing());
+        app.backend.shutdown();
+    }
+
+    #[test]
+    fn player_bar_labels_follow_control_state_and_empty_playback() {
+        use crate::i18n::{Locale, gettext};
+        use egui::accesskit::{Action as AccessibleAction, Role};
+
+        let locale = Locale::English;
+        let (ctx, mut app) = accessible_app("a11y-player-state");
+        accessible_frame(&ctx, &mut app, vec![]);
+        for (source, next) in [
+            ("Repeat", "Repeat one"),
+            ("Repeat one", "Repeat off"),
+            ("Repeat off", "Repeat"),
+            ("Mute", "Unmute"),
+            ("Unmute", "Mute"),
+            ("Remove from Liked Songs", "Save to Liked Songs"),
+            ("Save to Liked Songs", "Remove from Liked Songs"),
+        ] {
             let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let library_search =
-                accessible_node(&tree, &gettext(locale, "Search Your Library"), Role::Button);
+            let button = accessible_node(&tree, &gettext(locale, source), Role::Button);
             accessible_frame(
                 &ctx,
                 &mut app,
-                vec![accessible_action(
-                    library_search,
-                    AccessibleAction::Click,
-                    None,
-                )],
+                vec![accessible_action(button, AccessibleAction::Click, None)],
             );
             let tree = accessible_frame(&ctx, &mut app, vec![]);
-            accessible_node(
-                &tree,
-                &gettext(locale, "Search in Your Library"),
-                Role::TextInput,
-            );
-            app.library.filter = gettext(locale, "Liked Songs").to_uppercase();
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            accessible_node(&tree, &gettext(locale, "Liked Songs"), Role::Button);
+            accessible_node(&tree, &gettext(locale, next), Role::Button);
+        }
+
+        app.remote = None;
+        assert!(app.now_playing().is_none());
+        let render = |app: &mut App, ui: &mut egui::Ui| crate::ui::player_bar::show(app, ui);
+        view_frame(&ctx, &mut app, vec![], render);
+        let painted = view_frame(&ctx, &mut app, vec![], render);
+        for source in ["Nothing playing", "Pick a song, album, or playlist"] {
             assert!(
-                !tree
-                    .nodes
+                painted
                     .iter()
-                    .any(|(_, node)| node.label() == Some("Discover Weekly"))
+                    .any(|(text, _)| text == &gettext(locale, source)),
+                "missing empty playback label: {source}"
             );
-            app.backend.shutdown();
         }
+        app.backend.shutdown();
     }
 
     #[test]
-    fn translated_player_bar_keeps_control_identity_and_keyboard_actions() {
+    fn queue_controls_preserve_manual_and_context_rows() {
         use crate::i18n::{Locale, gettext};
-        use clap::ValueEnum;
         use egui::accesskit::{Action as AccessibleAction, Role};
 
-        for &locale in Locale::value_variants() {
-            let (ctx, mut app) = accessible_app(&format!("translated-player-{locale:?}"));
-            accessible_frame(&ctx, &mut app, vec![]);
-            let english = accessible_frame(&ctx, &mut app, vec![]);
-            let controls = [
-                ("Shuffle", Role::CheckBox),
-                ("Previous", Role::Button),
-                ("Pause", Role::Button),
-                ("Next", Role::Button),
-                ("Repeat", Role::Button),
-                ("Playback position (%)", Role::Slider),
-                ("Volume (%)", Role::Slider),
-                ("Mute", Role::Button),
-                ("Connect to a device", Role::Button),
-                ("Queue", Role::Button),
-                ("Lyrics", Role::Button),
-            ];
-            let ids: Vec<_> = controls
-                .iter()
-                .map(|(source, role)| accessible_node(&english, source, *role))
-                .collect();
-            let pause = accessible_node(&english, "Pause", Role::Button);
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(pause, AccessibleAction::Focus, None)],
-            );
-            app.locale = locale;
-            let translated = accessible_frame(&ctx, &mut app, vec![]);
-            assert_eq!(translated.focus, pause, "translation must retain focus");
-            for ((source, role), id) in controls.iter().zip(ids) {
-                assert_eq!(
-                    accessible_node(&translated, &gettext(locale, source), *role),
-                    id,
-                    "translation must retain the {source} control"
-                );
-            }
-
-            // A reported pause uses the same control with its new label.
-            // Offline demo requests have no backend acknowledgment, so a
-            // requested remote pause would keep the pending spinner visible.
-            app.remote.as_mut().unwrap().state.is_playing = false;
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            assert_eq!(
-                accessible_node(&tree, &gettext(locale, "Play"), Role::Button),
-                pause
-            );
-            app.remote.as_mut().unwrap().state.is_playing = true;
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let volume = accessible_node(&tree, &gettext(locale, "Volume (%)"), Role::Slider);
-            let before = app.now_playing().unwrap().volume_percent;
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(volume, AccessibleAction::Focus, None)],
-            );
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![keyboard(egui::Key::ArrowRight, egui::Modifiers::NONE)],
-            );
-            assert_eq!(app.now_playing().unwrap().volume_percent, before + 5);
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(pause, AccessibleAction::Focus, None)],
-            );
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![keyboard(egui::Key::Space, egui::Modifiers::NONE)],
-            );
-            assert!(!app.believed_playing());
-            app.backend.shutdown();
-        }
+        let locale = Locale::English;
+        let (ctx, mut app) = accessible_app("a11y-queue");
+        app.show_queue_panel = true;
+        app.local_ready = true;
+        app.local.track = Some(crate::player::LocalTrack {
+            uri: app.now_playing().unwrap().uri,
+            ..Default::default()
+        });
+        app.local.playback = crate::player::Playback::Paused;
+        let rows = app.queue.get().unwrap().queue.clone();
+        app.manual_queue = rows[..2]
+            .iter()
+            .map(|item| item.uri().to_string())
+            .collect();
+        let saved_uris = app.queue_playlist_uris();
+        accessible_frame(&ctx, &mut app, vec![]);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let save = accessible_node(&tree, &gettext(locale, "Save as a playlist"), Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(save, AccessibleAction::Click, None)],
+        );
+        let Some(Dialog::CreatePlaylist {
+            name,
+            public,
+            add_uris,
+        }) = &app.dialog
+        else {
+            panic!("saving the queue must open the existing playlist dialog");
+        };
+        assert_eq!(name, &app.queue_playlist_name());
+        assert!(!public);
+        assert_eq!(add_uris, &saved_uris);
+        app.dialog = None;
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let clear = accessible_node(&tree, &gettext(locale, "Clear queue"), Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(clear, AccessibleAction::Click, None)],
+        );
+        assert!(app.manual_queue.is_empty());
+        assert_eq!(app.queue.get().unwrap().queue, rows[2..]);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let recent = accessible_node(&tree, &gettext(locale, "Recent"), Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(recent, AccessibleAction::Click, None)],
+        );
+        assert_eq!(app.queue_tab, QueueTab::Recents);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let close = accessible_node(&tree, &gettext(locale, "Close"), Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(close, AccessibleAction::Click, None)],
+        );
+        assert!(!app.show_queue_panel);
+        app.backend.shutdown();
     }
 
     #[test]
-    fn translated_player_bar_labels_follow_control_state_and_empty_playback() {
-        use crate::i18n::{Locale, gettext};
-        use clap::ValueEnum;
-        use egui::accesskit::{Action as AccessibleAction, Role};
-
-        for &locale in Locale::value_variants() {
-            let (ctx, mut app) = accessible_app(&format!("translated-player-state-{locale:?}"));
-            app.locale = locale;
-            accessible_frame(&ctx, &mut app, vec![]);
-            for (source, next) in [
-                ("Repeat", "Repeat one"),
-                ("Repeat one", "Repeat off"),
-                ("Repeat off", "Repeat"),
-                ("Mute", "Unmute"),
-                ("Unmute", "Mute"),
-                ("Remove from Liked Songs", "Save to Liked Songs"),
-                ("Save to Liked Songs", "Remove from Liked Songs"),
-            ] {
-                let tree = accessible_frame(&ctx, &mut app, vec![]);
-                let button = accessible_node(&tree, &gettext(locale, source), Role::Button);
-                accessible_frame(
-                    &ctx,
-                    &mut app,
-                    vec![accessible_action(button, AccessibleAction::Click, None)],
-                );
-                let tree = accessible_frame(&ctx, &mut app, vec![]);
-                accessible_node(&tree, &gettext(locale, next), Role::Button);
-            }
-
-            app.remote = None;
-            assert!(app.now_playing().is_none());
-            let render = |app: &mut App, ui: &mut egui::Ui| crate::ui::player_bar::show(app, ui);
-            view_frame(&ctx, &mut app, vec![], render);
-            let painted = view_frame(&ctx, &mut app, vec![], render);
-            for source in ["Nothing playing", "Pick a song, album, or playlist"] {
-                assert!(
-                    painted
-                        .iter()
-                        .any(|(text, _)| text == &gettext(locale, source)),
-                    "missing translated empty playback label: {source}"
-                );
-            }
-            app.backend.shutdown();
-        }
-    }
-
-    #[test]
-    fn translated_queue_controls_preserve_manual_and_context_rows() {
-        use crate::i18n::{Locale, gettext};
-        use clap::ValueEnum;
-        use egui::accesskit::{Action as AccessibleAction, Role};
-
-        for &locale in Locale::value_variants() {
-            let (ctx, mut app) = accessible_app(&format!("translated-queue-{locale:?}"));
-            app.locale = locale;
-            app.show_queue_panel = true;
-            app.local_ready = true;
-            app.local.track = Some(crate::player::LocalTrack {
-                uri: app.now_playing().unwrap().uri,
-                ..Default::default()
-            });
-            app.local.playback = crate::player::Playback::Paused;
-            let rows = app.queue.get().unwrap().queue.clone();
-            app.manual_queue = rows[..2]
-                .iter()
-                .map(|item| item.uri().to_string())
-                .collect();
-            let saved_uris = app.queue_playlist_uris();
-            accessible_frame(&ctx, &mut app, vec![]);
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let save = accessible_node(&tree, &gettext(locale, "Save as a playlist"), Role::Button);
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(save, AccessibleAction::Click, None)],
-            );
-            let Some(Dialog::CreatePlaylist {
-                name,
-                public,
-                add_uris,
-            }) = &app.dialog
-            else {
-                panic!("saving the translated queue must open the existing playlist dialog");
-            };
-            assert_eq!(name, &app.queue_playlist_name());
-            assert!(!public);
-            assert_eq!(add_uris, &saved_uris);
-            app.dialog = None;
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let clear = accessible_node(&tree, &gettext(locale, "Clear queue"), Role::Button);
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(clear, AccessibleAction::Click, None)],
-            );
-            assert!(app.manual_queue.is_empty());
-            assert_eq!(app.queue.get().unwrap().queue, rows[2..]);
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let recent = accessible_node(&tree, &gettext(locale, "Recent"), Role::Button);
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(recent, AccessibleAction::Click, None)],
-            );
-            assert_eq!(app.queue_tab, QueueTab::Recents);
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let close = accessible_node(&tree, &gettext(locale, "Close"), Role::Button);
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(close, AccessibleAction::Click, None)],
-            );
-            assert!(!app.show_queue_panel);
-            app.backend.shutdown();
-        }
-    }
-
-    #[test]
-    fn translated_lyrics_controls_keep_follow_retry_and_fullscreen_actions() {
+    fn lyrics_controls_keep_follow_retry_and_fullscreen_actions() {
         use crate::i18n::{Locale, gettext, pgettext};
-        use clap::ValueEnum;
         use egui::accesskit::{Action as AccessibleAction, Role};
 
-        for &locale in Locale::value_variants() {
-            let (ctx, mut app) = accessible_app(&format!("translated-lyrics-{locale:?}"));
-            app.locale = locale;
-            app.show_lyrics_panel = true;
-            app.lyrics_uri = app.now_playing().map(|now| now.uri);
-            app.lyrics = Loadable::Loaded(Some(sample_lyrics()));
-            app.lyrics_following = false;
-            accessible_frame(&ctx, &mut app, vec![]);
+        let locale = Locale::English;
+        let (ctx, mut app) = accessible_app("a11y-lyrics");
+        app.show_lyrics_panel = true;
+        app.lyrics_uri = app.now_playing().map(|now| now.uri);
+        app.lyrics = Loadable::Loaded(Some(sample_lyrics()));
+        app.lyrics_following = false;
+        accessible_frame(&ctx, &mut app, vec![]);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let follow = accessible_node(&tree, &pgettext(locale, "lyrics", "Follow"), Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(follow, AccessibleAction::Click, None)],
+        );
+        assert!(app.lyrics_following);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let expand = accessible_node(&tree, &gettext(locale, "Full screen lyrics"), Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(expand, AccessibleAction::Click, None)],
+        );
+        assert!(app.lyrics_fullscreen.is_some());
+        app.lyrics_following = false;
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let follow = accessible_node(&tree, &pgettext(locale, "lyrics", "Follow"), Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(follow, AccessibleAction::Click, None)],
+        );
+        assert!(app.lyrics_following);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let leave = accessible_node(
+            &tree,
+            &gettext(locale, "Leave full screen (Esc)"),
+            Role::Button,
+        );
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(leave, AccessibleAction::Click, None)],
+        );
+        assert!(app.lyrics_fullscreen.is_none());
+        for fullscreen in [false, true] {
+            app.lyrics_fullscreen = fullscreen.then_some(false);
+            app.lyrics = Loadable::Failed("fixture failure".into());
             let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let follow =
-                accessible_node(&tree, &pgettext(locale, "lyrics", "Follow"), Role::Button);
+            let retry = accessible_node(&tree, &gettext(locale, "Try again"), Role::Button);
             accessible_frame(
                 &ctx,
                 &mut app,
-                vec![accessible_action(follow, AccessibleAction::Click, None)],
+                vec![accessible_action(retry, AccessibleAction::Click, None)],
             );
-            assert!(app.lyrics_following);
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let expand =
-                accessible_node(&tree, &gettext(locale, "Full screen lyrics"), Role::Button);
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(expand, AccessibleAction::Click, None)],
-            );
-            assert!(app.lyrics_fullscreen.is_some());
-            app.lyrics_following = false;
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let follow =
-                accessible_node(&tree, &pgettext(locale, "lyrics", "Follow"), Role::Button);
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(follow, AccessibleAction::Click, None)],
-            );
-            assert!(app.lyrics_following);
-            let tree = accessible_frame(&ctx, &mut app, vec![]);
-            let leave = accessible_node(
-                &tree,
-                &gettext(locale, "Leave full screen (Esc)"),
-                Role::Button,
-            );
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(leave, AccessibleAction::Click, None)],
-            );
-            assert!(app.lyrics_fullscreen.is_none());
-            for fullscreen in [false, true] {
-                app.lyrics_fullscreen = fullscreen.then_some(false);
-                app.lyrics = Loadable::Failed("fixture failure".into());
-                let tree = accessible_frame(&ctx, &mut app, vec![]);
-                let retry = accessible_node(&tree, &gettext(locale, "Try again"), Role::Button);
-                accessible_frame(
-                    &ctx,
-                    &mut app,
-                    vec![accessible_action(retry, AccessibleAction::Click, None)],
-                );
-                // Offline retries finish without contacting a lyrics provider.
-                assert!(matches!(app.lyrics, Loadable::Loaded(None)));
-            }
-            app.lyrics_fullscreen = None;
-            // The lyrics fill the main area and the player bar steps aside;
-            // moving the pointer to the bottom brings it back, and its
-            // Lyrics button closes them.
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![egui::Event::PointerMoved(egui::pos2(640.0, 780.0))],
-            );
-            let tree = accessible_frame(
-                &ctx,
-                &mut app,
-                vec![egui::Event::PointerMoved(egui::pos2(640.0, 790.0))],
-            );
-            let close = accessible_node(&tree, &gettext(locale, "Lyrics"), Role::Button);
-            accessible_frame(
-                &ctx,
-                &mut app,
-                vec![accessible_action(close, AccessibleAction::Click, None)],
-            );
-            assert!(!app.show_lyrics_panel);
-            app.backend.shutdown();
+            // Offline retries finish without contacting a lyrics provider.
+            assert!(matches!(app.lyrics, Loadable::Loaded(None)));
         }
+        app.lyrics_fullscreen = None;
+        // The lyrics fill the main area and the player bar steps aside;
+        // moving the pointer to the bottom brings it back, and its
+        // Lyrics button closes them.
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![egui::Event::PointerMoved(egui::pos2(640.0, 780.0))],
+        );
+        let tree = accessible_frame(
+            &ctx,
+            &mut app,
+            vec![egui::Event::PointerMoved(egui::pos2(640.0, 790.0))],
+        );
+        let close = accessible_node(&tree, &gettext(locale, "Lyrics"), Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(close, AccessibleAction::Click, None)],
+        );
+        assert!(!app.show_lyrics_panel);
+        app.backend.shutdown();
     }
 
     #[test]
-    fn translated_panel_states_keep_original_lyrics_and_failure_details() {
+    fn panel_states_keep_original_lyrics_and_failure_details() {
         use crate::i18n::{Locale, gettext};
-        use clap::ValueEnum;
-        for &locale in Locale::value_variants() {
-            let (ctx, mut app) = accessible_app(&format!("translated-panel-states-{locale:?}"));
-            app.locale = locale;
-            app.show_lyrics_panel = true;
-            app.lyrics_uri = app.now_playing().map(|now| now.uri);
-            for fullscreen in [false, true] {
-                app.lyrics_fullscreen = fullscreen.then_some(false);
-                let view = |app: &mut App, ui: &mut egui::Ui| app.frame_ui(ui);
-                let mut instrumental = sample_lyrics();
-                instrumental.instrumental = true;
-                for (state, messages) in [
-                    (
-                        Loadable::Loading,
-                        vec![gettext(locale, "Loading…").into_owned()],
-                    ),
-                    (
-                        Loadable::Failed("fixture {count} 42".into()),
-                        vec![
-                            gettext(locale, "Couldn't fetch the lyrics: {error}")
-                                .replace("{error}", "fixture {count} 42"),
-                        ],
-                    ),
-                    (
-                        Loadable::Loaded(None),
-                        vec![
-                            gettext(locale, "Lyrics not available").into_owned(),
-                            gettext(locale, "No lyrics found for this track.").into_owned(),
-                        ],
-                    ),
-                    (
-                        Loadable::Loaded(Some(instrumental)),
-                        vec![
-                            gettext(locale, "Instrumental").into_owned(),
-                            gettext(locale, "No timed lyrics for this track.").into_owned(),
-                        ],
-                    ),
-                    (
-                        Loadable::Loaded(Some(sample_lyrics())),
-                        vec![sample_lyrics().lines[0].text.clone()],
-                    ),
-                ] {
-                    app.lyrics = state;
-                    app.lyrics_following = false;
-                    view_frame(&ctx, &mut app, vec![], view);
-                    let painted = view_frame(&ctx, &mut app, vec![], view);
-                    for message in messages {
-                        assert!(
-                            painted.iter().any(|(text, _)| text == &message),
-                            "{locale:?}: missing {message}"
-                        );
-                    }
-                }
-            }
+        let locale = Locale::English;
+        let (ctx, mut app) = accessible_app("a11y-panel-states");
+        app.show_lyrics_panel = true;
+        app.lyrics_uri = app.now_playing().map(|now| now.uri);
+        for fullscreen in [false, true] {
+            app.lyrics_fullscreen = fullscreen.then_some(false);
+            let view = |app: &mut App, ui: &mut egui::Ui| app.frame_ui(ui);
+            let mut instrumental = sample_lyrics();
+            instrumental.instrumental = true;
             for (state, messages) in [
                 (
                     Loadable::Loading,
@@ -1933,21 +1853,33 @@ mod tests {
                 (
                     Loadable::Failed("fixture {count} 42".into()),
                     vec![
-                        "fixture {count} 42".into(),
-                        gettext(locale, "Retry").into_owned(),
+                        gettext(locale, "Couldn't fetch the lyrics: {error}")
+                            .replace("{error}", "fixture {count} 42"),
                     ],
                 ),
                 (
-                    Loadable::Loaded(Queue::default()),
+                    Loadable::Loaded(None),
                     vec![
-                        gettext(locale, "Nothing queued").into_owned(),
-                        gettext(locale, "Queued songs appear here.").into_owned(),
+                        gettext(locale, "Lyrics not available").into_owned(),
+                        gettext(locale, "No lyrics found for this track.").into_owned(),
                     ],
                 ),
+                (
+                    Loadable::Loaded(Some(instrumental)),
+                    vec![
+                        gettext(locale, "Instrumental").into_owned(),
+                        gettext(locale, "No timed lyrics for this track.").into_owned(),
+                    ],
+                ),
+                (
+                    Loadable::Loaded(Some(sample_lyrics())),
+                    vec![sample_lyrics().lines[0].text.clone()],
+                ),
             ] {
-                app.queue = state;
-                view_frame(&ctx, &mut app, vec![], crate::ui::queue::page);
-                let painted = view_frame(&ctx, &mut app, vec![], crate::ui::queue::page);
+                app.lyrics = state;
+                app.lyrics_following = false;
+                view_frame(&ctx, &mut app, vec![], view);
+                let painted = view_frame(&ctx, &mut app, vec![], view);
                 for message in messages {
                     assert!(
                         painted.iter().any(|(text, _)| text == &message),
@@ -1955,55 +1887,85 @@ mod tests {
                     );
                 }
             }
-            app.show_queue_panel = true;
-            app.queue_tab = QueueTab::Recents;
-            app.recents.items.clear();
-            app.recents_view.clear();
-            app.recents.loaded_once = true;
-            app.recents.complete = true;
-            for (loading, error, sources) in [
-                (
-                    false,
-                    None,
-                    vec!["No recent plays", "Played songs appear here."],
-                ),
-                (true, None, vec!["Loading…"]),
-                (false, Some("fixture failure".into()), vec!["Retry"]),
-            ] {
-                app.recents.loading = loading;
-                app.recents.error = error;
-                view_frame(&ctx, &mut app, vec![], crate::ui::queue::side_panel);
-                let painted = view_frame(&ctx, &mut app, vec![], crate::ui::queue::side_panel);
-                for source in sources {
-                    assert!(
-                        painted
-                            .iter()
-                            .any(|(text, _)| text == &gettext(locale, source))
-                    );
-                }
-                if app.recents.error.is_some() {
-                    let retry = painted
-                        .iter()
-                        .find(|(text, _)| text == &gettext(locale, "Retry"))
-                        .unwrap()
-                        .1
-                        .center();
-                    app.actions.clear();
-                    view_frame(
-                        &ctx,
-                        &mut app,
-                        pointer_click(retry, egui::PointerButton::Primary),
-                        crate::ui::queue::side_panel,
-                    );
-                    assert!(
-                        app.actions
-                            .iter()
-                            .any(|action| matches!(action, crate::model::Action::ReloadRecents))
-                    );
-                }
-            }
-            app.backend.shutdown();
         }
+        for (state, messages) in [
+            (
+                Loadable::Loading,
+                vec![gettext(locale, "Loading…").into_owned()],
+            ),
+            (
+                Loadable::Failed("fixture {count} 42".into()),
+                vec![
+                    "fixture {count} 42".into(),
+                    gettext(locale, "Retry").into_owned(),
+                ],
+            ),
+            (
+                Loadable::Loaded(Queue::default()),
+                vec![
+                    gettext(locale, "Nothing queued").into_owned(),
+                    gettext(locale, "Queued songs appear here.").into_owned(),
+                ],
+            ),
+        ] {
+            app.queue = state;
+            view_frame(&ctx, &mut app, vec![], crate::ui::queue::page);
+            let painted = view_frame(&ctx, &mut app, vec![], crate::ui::queue::page);
+            for message in messages {
+                assert!(
+                    painted.iter().any(|(text, _)| text == &message),
+                    "{locale:?}: missing {message}"
+                );
+            }
+        }
+        app.show_queue_panel = true;
+        app.queue_tab = QueueTab::Recents;
+        app.recents.items.clear();
+        app.recents_view.clear();
+        app.recents.loaded_once = true;
+        app.recents.complete = true;
+        for (loading, error, sources) in [
+            (
+                false,
+                None,
+                vec!["No recent plays", "Played songs appear here."],
+            ),
+            (true, None, vec!["Loading…"]),
+            (false, Some("fixture failure".into()), vec!["Retry"]),
+        ] {
+            app.recents.loading = loading;
+            app.recents.error = error;
+            view_frame(&ctx, &mut app, vec![], crate::ui::queue::side_panel);
+            let painted = view_frame(&ctx, &mut app, vec![], crate::ui::queue::side_panel);
+            for source in sources {
+                assert!(
+                    painted
+                        .iter()
+                        .any(|(text, _)| text == &gettext(locale, source))
+                );
+            }
+            if app.recents.error.is_some() {
+                let retry = painted
+                    .iter()
+                    .find(|(text, _)| text == &gettext(locale, "Retry"))
+                    .unwrap()
+                    .1
+                    .center();
+                app.actions.clear();
+                view_frame(
+                    &ctx,
+                    &mut app,
+                    pointer_click(retry, egui::PointerButton::Primary),
+                    crate::ui::queue::side_panel,
+                );
+                assert!(
+                    app.actions
+                        .iter()
+                        .any(|action| matches!(action, crate::model::Action::ReloadRecents))
+                );
+            }
+        }
+        app.backend.shutdown();
     }
 
     #[test]
@@ -2257,12 +2219,10 @@ mod tests {
     }
 
     #[test]
-    fn library_folder_accessibility_labels_follow_the_locale() {
-        use crate::i18n::Locale;
+    fn library_folder_accessibility_labels_name_their_state() {
         use crate::player::RootlistEntry::{FolderEnd, FolderStart};
         use egui::accesskit::Role;
         let (ctx, mut app) = accessible_app("library-folder-labels");
-        app.locale = Locale::German;
         app.settings.sidebar_grid = true;
         app.rootlist = vec![
             FolderStart {
@@ -2279,17 +2239,16 @@ mod tests {
         app.collapsed_folders = vec!["weekend".into()];
 
         let tree = accessible_frame(&ctx, &mut app, vec![]);
-        accessible_node(&tree, "Focus, Ordner, ausgeklappt", Role::Button);
-        accessible_node(&tree, "Weekend, Ordner, eingeklappt", Role::Button);
+        accessible_node(&tree, "Focus, folder, expanded", Role::Button);
+        accessible_node(&tree, "Weekend, folder, collapsed", Role::Button);
         app.backend.shutdown();
     }
 
     #[test]
-    fn library_context_menu_labels_follow_the_locale() {
+    fn library_context_menu_offers_pin_then_unpin() {
         use crate::i18n::{Locale, gettext};
         use egui::accesskit::{Action as AccessibleAction, Role};
-        let (ctx, mut app) = accessible_app("library-menu-locale");
-        app.locale = Locale::German;
+        let (ctx, mut app) = accessible_app("library-menu-pin");
         app.settings.liked_songs_pinned = false;
         let row = |tree: &egui::accesskit::TreeUpdate, label: &str| {
             let bounds = tree
@@ -2311,15 +2270,15 @@ mod tests {
         };
 
         let tree = accessible_frame(&ctx, &mut app, vec![]);
-        let liked = row(&tree, &gettext(Locale::German, "Liked Songs")).center();
+        let liked = row(&tree, &gettext(Locale::English, "Liked Songs")).center();
         accessible_frame(
             &ctx,
             &mut app,
             pointer_click(liked, egui::PointerButton::Secondary),
         );
         let tree = accessible_frame(&ctx, &mut app, vec![]);
-        accessible_node(&tree, &gettext(Locale::German, "Play"), Role::Button);
-        let pin = accessible_node(&tree, &gettext(Locale::German, "Pin to top"), Role::Button);
+        accessible_node(&tree, &gettext(Locale::English, "Play"), Role::Button);
+        let pin = accessible_node(&tree, &gettext(Locale::English, "Pin to top"), Role::Button);
         accessible_frame(
             &ctx,
             &mut app,
@@ -2327,14 +2286,14 @@ mod tests {
         );
 
         let tree = accessible_frame(&ctx, &mut app, vec![]);
-        let liked = row(&tree, &gettext(Locale::German, "Liked Songs")).center();
+        let liked = row(&tree, &gettext(Locale::English, "Liked Songs")).center();
         accessible_frame(
             &ctx,
             &mut app,
             pointer_click(liked, egui::PointerButton::Secondary),
         );
         let tree = accessible_frame(&ctx, &mut app, vec![]);
-        accessible_node(&tree, &gettext(Locale::German, "Unpin"), Role::Button);
+        accessible_node(&tree, &gettext(Locale::English, "Unpin"), Role::Button);
         app.backend.shutdown();
     }
 
@@ -4452,84 +4411,6 @@ mod tests {
             walk(&shape.shape, &mut text);
         }
         text
-    }
-
-    #[test]
-    fn choosing_a_language_redraws_the_interface_at_once_and_is_saved() {
-        use crate::i18n::{Locale, gettext};
-        use crate::settings::LanguageChoice;
-        use egui::accesskit::Role;
-        let (ctx, mut app) = accessible_app("language-picker");
-        app.open(Page::Settings);
-        ctx.data_mut(|data| {
-            data.insert_temp(egui::Id::new("settings-filter"), "Language".to_string())
-        });
-        assert_eq!(app.settings.language, LanguageChoice::System);
-        for _ in 0..3 {
-            view_frame(&ctx, &mut app, vec![], App::frame_ui);
-        }
-        let painted = view_frame(&ctx, &mut app, vec![], App::frame_ui);
-        let picker = sidebar_text(&painted, "System").center();
-        view_frame(
-            &ctx,
-            &mut app,
-            pointer_click(picker, egui::PointerButton::Primary),
-            App::frame_ui,
-        );
-        let painted = view_frame(&ctx, &mut app, vec![], App::frame_ui);
-        let menu_y = |name: &str| {
-            painted
-                .iter()
-                .filter(|(text, rect)| text == name && rect.center().y > picker.y)
-                .map(|(_, rect)| rect.center().y)
-                .next()
-        };
-        // System first, then each language under its own name. The menu
-        // scrolls, so only the entries above its fold are painted.
-        let mut previous = menu_y("System").expect("System heads the menu");
-        let shown = crate::i18n::LOCALES
-            .iter()
-            .map_while(|locale| menu_y(locale.native_name()))
-            .inspect(|&y| {
-                assert!(previous < y, "languages are listed in order");
-                previous = y;
-            })
-            .count();
-        assert!(shown >= 8, "only {shown} languages fit before scrolling");
-        view_frame(
-            &ctx,
-            &mut app,
-            pointer_click(
-                sidebar_text(&painted, "Español").center(),
-                egui::PointerButton::Primary,
-            ),
-            App::frame_ui,
-        );
-        assert_eq!(
-            app.settings.language,
-            LanguageChoice::Locale(Locale::Spanish)
-        );
-        assert_eq!(app.locale, Locale::Spanish);
-        // The English search text no longer matches the Spanish row.
-        crate::ui::settings::clear_search(&ctx);
-        accessible_frame(&ctx, &mut app, vec![]);
-        let tree = accessible_frame(&ctx, &mut app, vec![]);
-        accessible_node(&tree, &gettext(Locale::Spanish, "Home"), Role::Button);
-        let id = accessible_node(&tree, &gettext(Locale::Spanish, "Language"), Role::ComboBox);
-        let node = &tree
-            .nodes
-            .iter()
-            .find(|(node_id, _)| *node_id == id)
-            .unwrap()
-            .1;
-        assert_eq!(node.value(), Some("Español"));
-
-        app.apply(Action::SetLanguage(LanguageChoice::System), &ctx);
-        assert_eq!(app.settings.language, LanguageChoice::System);
-        assert_eq!(app.locale, Locale::English, "tests read an English system");
-        let tree = accessible_frame(&ctx, &mut app, vec![]);
-        accessible_node(&tree, "Home", Role::Button);
-        app.backend.shutdown();
     }
 
     #[test]

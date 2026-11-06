@@ -73,7 +73,7 @@ top result. `Ctrl F` or `/` from anywhere.
 - 9 bundled interface fonts, including JetBrains Mono for a monospaced look, so it looks the same everywhere and works offline.
 - Calm motion: hovers fade, panels slide, pages rise into place.
 - A `spotsie` command that controls the running app, for scripts, launchers and Stream Deck.
-- Screen-reader labels, full keyboard control, and 15 languages.
+- Screen-reader labels and full keyboard control.
 - Updates itself: a quiet **Update available** appears in the top bar, and nothing happens until you click it.
 
 <img src="docs/screenshots/settings-light.png" alt="Settings in Spotsie Light" width="900">
@@ -201,8 +201,7 @@ cargo run --features demo -- --demo
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the project's checks and layout, and
-[AGENTS.md](AGENTS.md) for coding agents. Translations live in `assets/i18n/`
-([Translating](docs/_reference/translating.md)).
+[AGENTS.md](AGENTS.md) for coding agents.
 
 ## Credits
 

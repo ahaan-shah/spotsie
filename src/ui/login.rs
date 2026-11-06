@@ -173,7 +173,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui, connecting: bool) {
             ui.painter().text(
                 pos2(rect.center().x, rect.bottom() - 20.0),
                 Align2::CENTER_BOTTOM,
-                // Translators: {version} is the app's version number, such as 1.2.0.
                 gettext(
                     app.locale,
                     "Spotsie {version} • not affiliated with Spotify",
@@ -381,7 +380,6 @@ fn welcome(app: &mut App, ui: &mut egui::Ui, shown: f64) {
         ui.multiply_opacity(words);
         // The name in the brand's italic and the accent, as the website
         // stresses its words.
-        // Translators: {name} is Spotsie, set in italics in the accent colour.
         let title = gettext(locale, "Welcome to {name}");
         let (before, after) = title.split_once("{name}").unwrap_or((&title, ""));
         let size = if width < 360.0 { 34.0 } else { 46.0 };
@@ -743,7 +741,6 @@ fn redirect_chip(
     ui.painter()
         .galley(chip.center() - galley.size() / 2.0, galley, palette.text);
     let (icon, label) = if copied {
-        // Translators: shown on the Copy button for a moment after it copied.
         (Icon::Check, gettext(locale, "Copied"))
     } else {
         (Icon::Copy, gettext(locale, "Copy"))

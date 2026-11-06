@@ -317,8 +317,7 @@ pub struct App {
     /// Sample data is loaded; Spotify requests are disabled.
     pub offline: bool,
     pub palette: Palette,
-    /// The language the interface is drawn in: [`Settings::language`]
-    /// resolved against the operating system's preferred languages.
+    /// The language the interface is drawn in: always English.
     pub locale: crate::i18n::Locale,
     #[cfg(any(test, feature = "demo"))]
     pub demo_windows_controls: bool,
@@ -751,7 +750,7 @@ impl App {
             waker.clone(),
             options.restore_sign_in,
         );
-        let locale = settings.language.resolve();
+        let locale = Locale::default();
         let applied_proxy = if options.restore_sign_in {
             crate::settings::ProxyConfig::Invalid(
                 gettext(locale, "Restoring proxy settings").into_owned(),
@@ -1163,7 +1162,7 @@ impl App {
         }
     }
 
-    /// Album, Single, EP, Compilation or Appears On, in the interface language.
+    /// Album, Single, EP, Compilation or Appears On.
     pub(crate) fn album_kind_label(&self, album: &Album) -> Cow<'static, str> {
         if album.is_single_release() && self.confirmed_ep_albums.contains(&album.uri) {
             Cow::Borrowed("EP")
@@ -1891,7 +1890,6 @@ impl App {
                     match result {
                         Ok(()) => {
                             self.toast(
-                                // Translators: {name} is the name of a speaker or other playback device.
                                 gettext(self.locale, "{name} is ready").replace("{name}", &name),
                             );
                             // It takes a moment to appear in the device list.
@@ -1917,7 +1915,6 @@ impl App {
                     let message = if self.settings.proxy_password_legacy {
                         gettext(
                             self.locale,
-                            // Translators: {error} is a sentence saying why the proxy password could not be stored.
                             "{error} The original settings file is kept intact; changed preferences are not saved yet.",
                         )
                         .replace("{error}", error.proxy_message())
@@ -2047,7 +2044,6 @@ impl App {
                             // in the top bar; asking by hand also says so.
                             if manual {
                                 self.toast(
-                                    // Translators: {version} is a version number such as 1.4.0.
                                     gettext(self.locale, "Spotsie {version} is available")
                                         .replace("{version}", &notice.version.to_string()),
                                 );
@@ -2074,7 +2070,6 @@ impl App {
                         }
                         Err(error) if manual => {
                             self.toast_error(
-                                // Translators: {error} is an error message.
                                 gettext(self.locale, "Couldn't check for updates: {error}")
                                     .replace("{error}", &error.to_string()),
                             );
@@ -2154,7 +2149,6 @@ impl App {
                     self.intent_track = None;
                 }
                 self.toast_error(
-                    // Translators: {error} is an error message from the playback engine.
                     gettext(self.locale, "Local playback: {error}").replace("{error}", message),
                 );
             }
@@ -2330,7 +2324,7 @@ impl App {
         if let Some(error) = &state.error
             && self.local.error.as_deref() != Some(error.as_str())
         {
-            self.toast_error(engine_error_text(self.locale, error));
+            self.toast_error(error.clone());
             // One unavailable track is Spotify's catalogue; several in a
             // row is the session's audio-key service gone bad, which
             // leaves librespot feeding the decoder encrypted bytes and
@@ -2987,7 +2981,6 @@ impl App {
             Err(error) => self.toast_error(
                 gettext(
                     self.locale,
-                    // Translators: {error} is an error message.
                     "Proxy could not be applied: {error}. Previous connection settings are still in use.",
                 )
                 .replace("{error}", &error.to_string()),
@@ -4410,7 +4403,6 @@ impl App {
             return name;
         }
         let today = jiff::Zoned::now().strftime("%Y-%m-%d").to_string();
-        // Translators: Keep {date} unchanged. It is a date in YYYY-MM-DD form.
         gettext(self.locale, "Queue {date}").replace("{date}", &today)
     }
 
@@ -4866,7 +4858,6 @@ impl App {
                         );
                     } else {
                         self.toast_error(
-                            // Translators: {error} is an error message.
                             gettext(self.locale, "Couldn't load your profile: {error}")
                                 .replace("{error}", &error.to_string()),
                         );
@@ -4905,7 +4896,6 @@ impl App {
                         }
                     }
                     Err(error) => self.toast_error(
-                        // Translators: {error} is an error message.
                         gettext(self.locale, "Couldn't list devices: {error}")
                             .replace("{error}", &error.to_string()),
                     ),
@@ -5234,7 +5224,6 @@ impl App {
                         self.library.playlists = Loadable::Failed(error.to_string());
                     } else {
                         self.toast_error(
-                            // Translators: {error} is an error message.
                             gettext(self.locale, "Couldn't load more playlists: {error}")
                                 .replace("{error}", &error.to_string()),
                         );
@@ -5484,7 +5473,6 @@ impl App {
                 match result {
                     Ok(playlist) => {
                         self.toast(
-                            // Translators: {name} is a playlist name.
                             gettext(self.locale, "Created {name}")
                                 .replace("{name}", &playlist.name),
                         );
@@ -5504,13 +5492,10 @@ impl App {
                         }
                         self.open(Page::Playlist(playlist.id));
                     }
-                    Err(error) => {
-                        self.toast_error(
-                            // Translators: {error} is an error message.
-                            gettext(self.locale, "Couldn't create the playlist: {error}")
-                                .replace("{error}", &error.to_string()),
-                        )
-                    }
+                    Err(error) => self.toast_error(
+                        gettext(self.locale, "Couldn't create the playlist: {error}")
+                            .replace("{error}", &error.to_string()),
+                    ),
                 }
             }
             ApiResponse::PlaylistCoverUploaded {
@@ -5577,13 +5562,10 @@ impl App {
                             self.ensure_loaded(Page::Playlist(id));
                         }
                     }
-                    Err(error) => {
-                        self.toast_error(
-                            // Translators: {error} is an error message.
-                            gettext(self.locale, "Couldn't update the playlist: {error}")
-                                .replace("{error}", &error.to_string()),
-                        )
-                    }
+                    Err(error) => self.toast_error(
+                        gettext(self.locale, "Couldn't update the playlist: {error}")
+                            .replace("{error}", &error.to_string()),
+                    ),
                 }
             }
             ApiResponse::PlaylistDuplicatesChecked {
@@ -5653,7 +5635,6 @@ impl App {
                     }
                     Err(error) => {
                         self.toast_error(
-                            // Translators: {error} is an error message.
                             gettext(self.locale, "Playlist change failed: {error}")
                                 .replace("{error}", &error.to_string()),
                         );
@@ -5694,7 +5675,6 @@ impl App {
                     self.saved
                         .insert(format!("spotify:playlist:{id}"), !followed);
                     self.toast_error(
-                        // Translators: {error} is an error message.
                         gettext(self.locale, "Couldn't update the playlist: {error}")
                             .replace("{error}", &error.to_string()),
                     );
@@ -5887,7 +5867,6 @@ impl App {
                         }
                         if !current_uris.is_empty() {
                             self.toast_error(
-                                // Translators: {error} is an error message.
                                 gettext(self.locale, "Couldn't update your library: {error}")
                                     .replace("{error}", &error.to_string()),
                             );
@@ -6139,7 +6118,6 @@ impl App {
                         {
                             self.pending_link = None;
                             self.toast_error(
-                                // Translators: {error} is an error message.
                                 gettext(self.locale, "Cannot open this song: {error}")
                                     .replace("{error}", &error.to_string()),
                             );
@@ -6158,7 +6136,6 @@ impl App {
                     )),
                 },
                 Err(error) => self.toast_error(
-                    // Translators: {error} is an error message.
                     gettext(self.locale, "Cannot open this episode: {error}")
                         .replace("{error}", &error.to_string()),
                 ),
@@ -6218,7 +6195,6 @@ impl App {
                     self.refresh_devices();
                 }
                 Err(error) => self.toast_error(
-                    // Translators: {error} is an error message.
                     gettext(self.locale, "Couldn't switch device: {error}")
                         .replace("{error}", &error.to_string()),
                 ),
@@ -6229,7 +6205,6 @@ impl App {
                     self.refresh_queue(true);
                 }
                 Err(error) => self.toast_error(
-                    // Translators: {error} is an error message.
                     gettext(self.locale, "Couldn't add to queue: {error}")
                         .replace("{error}", &error.to_string()),
                 ),
@@ -6253,7 +6228,6 @@ impl App {
                 }
                 if let Err(error) = result {
                     self.toast_error(
-                        // Translators: {error} is an error message.
                         gettext(self.locale, "Couldn't add to queue: {error}")
                             .replace("{error}", &error.to_string()),
                     );
@@ -7537,7 +7511,6 @@ impl App {
             offset: 0,
             request,
         });
-        // Translators: {name} is an album name.
         self.toast(gettext(self.locale, "Loading {name} to queue…").replace("{name}", &label));
     }
 
@@ -7572,7 +7545,6 @@ impl App {
             }
             Err(error) => {
                 self.toast_error(
-                    // Translators: {name} is an album name and {error} is an error message.
                     gettext(self.locale, "Couldn't add {name} to queue: {error}")
                         .replace("{name}", &pending.label)
                         .replace("{error}", &error.to_string()),
@@ -7639,7 +7611,6 @@ impl App {
         self.toast(
             ngettext(
                 self.locale,
-                // Translators: {count} is a number of songs and {name} is an album name.
                 "{count} song from {name} added to queue",
                 "{count} songs from {name} added to queue",
                 count as u32,
@@ -7683,7 +7654,6 @@ impl App {
             .as_ref()
             .is_some_and(|pending| pending.id == id)
         {
-            // Translators: {name} is a playlist name.
             self.toast(gettext(self.locale, "Loading {name} to queue…").replace("{name}", &label));
         }
     }
@@ -7702,7 +7672,6 @@ impl App {
             let label = pending.label.clone();
             self.pending_playlist_queue = None;
             self.toast_error(
-                // Translators: {name} is a playlist name and {error} is an error message.
                 gettext(self.locale, "Couldn't add {name} to queue: {error}")
                     .replace("{name}", &label)
                     .replace("{error}", &error),
@@ -7774,7 +7743,6 @@ impl App {
         self.toast(
             ngettext(
                 self.locale,
-                // Translators: {count} is a number of songs.
                 "{count} song added to queue",
                 "{count} songs added to queue",
                 count as u32,
@@ -7811,7 +7779,6 @@ impl App {
         let pending_start = self.pending_queue_adds.len();
         self.show_queued_song(&uri, &label);
         if announce {
-            // Translators: {name} is a song, episode, album, or playlist name.
             self.toast(gettext(self.locale, "{name} added to queue").replace("{name}", &label));
         }
         // Queue tracks and episodes directly on the active local engine.
@@ -8302,7 +8269,6 @@ impl App {
                 self.toast_error(
                     ngettext(
                         self.locale,
-                        // Translators: {count} is the number of pasted links that failed.
                         "{count} pasted link could not be added",
                         "{count} pasted links could not be added",
                         skipped as u32,
@@ -8951,7 +8917,6 @@ impl App {
                         1 => gettext(self.locale, "Link copied").into_owned(),
                         count => ngettext(
                             self.locale,
-                            // Translators: {count} is a number of song links, always more than one.
                             "{count} link copied",
                             "{count} links copied",
                             count as u32,
@@ -9262,12 +9227,6 @@ impl App {
                     self.mark_settings_dirty();
                 }
             }
-            Action::SetLanguage(choice) => {
-                self.settings.language = choice;
-                self.locale = choice.resolve();
-                self.mark_settings_dirty();
-                ctx.request_repaint();
-            }
             Action::SetBuiltinTheme(name) => {
                 if theme::builtin_theme(&name).is_some() {
                     self.settings.builtin_theme = Some(name);
@@ -9378,13 +9337,11 @@ impl App {
                     // a file that is no longer there.
                     self.media_art = None;
                     self.toast(
-                        // Translators: {size} is a size in megabytes, such as 12.5.
                         gettext(self.locale, "Cleared {size} MB of artwork")
                             .replace("{size}", &format!("{:.1}", bytes as f64 / 1_048_576.0)),
                     );
                 }
                 Err(error) => self.toast_error(
-                    // Translators: {error} is an error message.
                     gettext(self.locale, "Couldn't clear artwork: {error}")
                         .replace("{error}", &error.to_string()),
                 ),
@@ -9508,7 +9465,6 @@ impl App {
         if manual && self.offline && self.update_source.is_github() {
             // Asked by hand, the button always answers.
             self.toast_error(
-                // Translators: {error} is an error message.
                 gettext(self.locale, "Couldn't check for updates: {error}")
                     .replace("{error}", &gettext(self.locale, "Spotsie is offline.")),
             );
@@ -10265,19 +10221,6 @@ fn fill_availability(availability: &HashMap<String, bool>, items: &mut [Playlist
     changed
 }
 
-/// The playback engine reports in English from its own thread. The
-/// messages the interface recognises are shown in the user's language.
-fn engine_error_text(locale: Locale, error: &str) -> String {
-    if error == crate::sink::NO_DEVICE {
-        return gettext(
-            locale,
-            "No audio output device was found. Connect or enable one, then press play again.",
-        )
-        .into_owned();
-    }
-    error.to_owned()
-}
-
 fn friendly_page_error(locale: Locale, error: &crate::api::ApiError) -> String {
     match error.status() {
         Some(403) | Some(404) => gettext(
@@ -10423,7 +10366,6 @@ fn cover_error(locale: Locale, error: &crate::api::client::ApiError) -> String {
         Some(413) => {
             gettext(locale, "Spotify rejected the image size. Choose a smaller image.").into_owned()
         }
-        // Translators: {error} is an error message.
         _ => gettext(locale, "Couldn't upload the cover: {error}. Try again.")
             .replace("{error}", &error.to_string()),
     }
@@ -10439,23 +10381,6 @@ mod tests {
     use crate::api::models::{
         Episode, Image, Page as ApiPage, ResumePoint, SavedEpisode, SavedTrack, SearchResults,
     };
-
-    /// #623: the missing-output message the sink reports is the one the
-    /// catalogues translate.
-    #[test]
-    fn a_missing_audio_output_is_reported_in_the_users_language() {
-        assert_eq!(
-            engine_error_text(Locale::English, crate::sink::NO_DEVICE),
-            crate::sink::NO_DEVICE
-        );
-        let german = engine_error_text(Locale::German, crate::sink::NO_DEVICE);
-        assert_ne!(german, crate::sink::NO_DEVICE);
-        assert!(!german.is_empty());
-        assert_eq!(
-            engine_error_text(Locale::German, "Something else"),
-            "Something else"
-        );
-    }
 
     #[test]
     fn middle_clicking_a_playlist_row_autoscrolls_only_on_windows_by_default() {
@@ -15147,36 +15072,6 @@ mod tests {
         std::fs::remove_dir_all(app.dirs.config.parent().unwrap()).unwrap();
     }
 
-    #[test]
-    fn a_chosen_language_applies_at_once_and_survives_a_restart() {
-        use crate::i18n::Locale;
-        use crate::settings::LanguageChoice;
-        let mut app = test_app("language-choice");
-        app.backend.shutdown();
-        let ctx = egui::Context::default();
-        assert_eq!(app.locale, Locale::English);
-        let choice = LanguageChoice::Locale(Locale::PortugueseBrazil);
-        app.apply(Action::SetLanguage(choice), &ctx);
-        assert_eq!(app.locale, Locale::PortugueseBrazil);
-        assert!(app.settings_dirty);
-        app.save_settings();
-        let saved = Settings::load(&app.dirs.settings_file());
-        assert_eq!(saved.language, choice);
-        let mut restarted = App::new(
-            &Waker::default(),
-            app.dirs.clone(),
-            saved,
-            AppOptions {
-                media_controls: false,
-                restore_sign_in: false,
-                tray: false,
-            },
-        );
-        restarted.backend.shutdown();
-        assert_eq!(restarted.locale, Locale::PortugueseBrazil);
-        std::fs::remove_dir_all(app.dirs.config.parent().unwrap()).unwrap();
-    }
-
     /// What a scan reports when Omarchy is (or is not) followed.
     fn show_system_theme(
         app: &mut App,
@@ -16106,9 +16001,8 @@ mod tests {
     }
 
     #[test]
-    fn translated_context_labels_preserve_spotify_names() {
+    fn context_labels_preserve_spotify_names() {
         use crate::i18n::Locale;
-        use clap::ValueEnum;
         let mut app = headless_app();
         let today = jiff::Zoned::now().strftime("%Y-%m-%d").to_string();
         let title = "Home {date} 夜";
@@ -16127,46 +16021,44 @@ mod tests {
             name: title.into(),
             ..Default::default()
         }]);
-        for &locale in Locale::value_variants() {
-            app.locale = locale;
-            app.assumed_context = None;
-            assert_eq!(
-                app.queue_playlist_name(),
-                gettext(locale, "Queue {date}").replace("{date}", &today)
-            );
-            for (uri, expected, page) in [
-                (
-                    "spotify:playlist:pl9",
-                    title.into(),
-                    Some(Page::Playlist("pl9".into())),
-                ),
-                (
-                    "spotify:playlist:unloaded",
-                    gettext(locale, "Playlist").into_owned(),
-                    Some(Page::Playlist("unloaded".into())),
-                ),
-                (
-                    "spotify:user:me:collection",
-                    gettext(locale, "Liked Songs").into_owned(),
-                    Some(Page::LikedSongs),
-                ),
-                (
-                    "spotify:station:track:xyz",
-                    gettext(locale, "{track} Radio").replace("{track}", title),
-                    Some(Page::Radio("spotify:track:xyz".into())),
-                ),
-            ] {
-                app.assumed_context = Some(AssumedContext {
-                    uri: uri.into(),
-                    shuffle: None,
-                    at: Instant::now(),
-                });
-                let from = app.playing_from().unwrap();
-                assert_eq!(from.name, expected);
-                assert_eq!(from.page, page);
-                if uri.starts_with("spotify:station:") {
-                    assert_eq!(app.queue_playlist_name(), expected);
-                }
+        let locale = Locale::English;
+        app.assumed_context = None;
+        assert_eq!(
+            app.queue_playlist_name(),
+            gettext(locale, "Queue {date}").replace("{date}", &today)
+        );
+        for (uri, expected, page) in [
+            (
+                "spotify:playlist:pl9",
+                title.into(),
+                Some(Page::Playlist("pl9".into())),
+            ),
+            (
+                "spotify:playlist:unloaded",
+                gettext(locale, "Playlist").into_owned(),
+                Some(Page::Playlist("unloaded".into())),
+            ),
+            (
+                "spotify:user:me:collection",
+                gettext(locale, "Liked Songs").into_owned(),
+                Some(Page::LikedSongs),
+            ),
+            (
+                "spotify:station:track:xyz",
+                gettext(locale, "{track} Radio").replace("{track}", title),
+                Some(Page::Radio("spotify:track:xyz".into())),
+            ),
+        ] {
+            app.assumed_context = Some(AssumedContext {
+                uri: uri.into(),
+                shuffle: None,
+                at: Instant::now(),
+            });
+            let from = app.playing_from().unwrap();
+            assert_eq!(from.name, expected);
+            assert_eq!(from.page, page);
+            if uri.starts_with("spotify:station:") {
+                assert_eq!(app.queue_playlist_name(), expected);
             }
         }
     }

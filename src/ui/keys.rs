@@ -221,10 +221,8 @@ pub fn shortcuts(locale: Locale) -> Vec<(Cow<'static, str>, Cow<'static, str>)> 
         ),
         (
             if cfg!(target_os = "macos") {
-                // Translators: Keep the key names. Only the word "or" is translated.
                 gettext(locale, "Cmd+F  or  /")
             } else {
-                // Translators: Keep the key names. Only the word "or" is translated.
                 gettext(locale, "Ctrl+F  or  /")
             },
             gettext(locale, "Search"),
@@ -256,10 +254,8 @@ pub fn shortcuts(locale: Locale) -> Vec<(Cow<'static, str>, Cow<'static, str>)> 
         ),
         (
             if cfg!(target_os = "macos") {
-                // Translators: Keep the key names. Only the word "or" is translated.
                 gettext(locale, "Cmd+/ or ?")
             } else {
-                // Translators: Keep the key names. Only the word "or" is translated.
                 gettext(locale, "Ctrl+/ or ?")
             },
             gettext(locale, "Keyboard shortcuts"),

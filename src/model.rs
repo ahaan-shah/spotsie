@@ -1108,7 +1108,6 @@ pub enum Action {
     SettingsChanged,
     SetTheme(crate::settings::ThemeChoice),
     /// Draw the interface in this language from the next frame on.
-    SetLanguage(crate::settings::LanguageChoice),
     /// Draw the interface in this font, by name.
     SetFont(String),
     SetCustomTheme(String),

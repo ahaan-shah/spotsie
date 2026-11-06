@@ -300,13 +300,9 @@ fn with_cover(app: &mut App, ui: &mut egui::Ui, rect: Rect, top: f32, place: Pla
                 gettext(app.locale, "No lyrics found for this track."),
             ),
             Loadable::Failed(error) => (
-                gettext(
-                    app.locale,
-                    // Translators: Keep {error} unchanged. It is the original failure detail.
-                    "Couldn't fetch the lyrics: {error}",
-                )
-                .replace("{error}", error)
-                .into(),
+                gettext(app.locale, "Couldn't fetch the lyrics: {error}")
+                    .replace("{error}", error)
+                    .into(),
                 Default::default(),
             ),
             Loadable::NotLoaded | Loadable::Loading => {
@@ -497,12 +493,8 @@ fn fullscreen_contents(app: &mut App, ui: &mut egui::Ui) {
             return;
         }
         Loadable::Failed(error) => {
-            let message = gettext(
-                app.locale,
-                // Translators: Keep {error} unchanged. It is the original failure detail.
-                "Couldn't fetch the lyrics: {error}",
-            )
-            .replace("{error}", error);
+            let message =
+                gettext(app.locale, "Couldn't fetch the lyrics: {error}").replace("{error}", error);
             ui.add_space(8.0);
             theme::text(ui, message, theme::regular(13.0), palette.text);
             ui.add_space(8.0);

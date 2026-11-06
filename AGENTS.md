@@ -22,7 +22,7 @@ These instructions add implementation constraints for coding agents.
   when a task needs it, and keep such changes small and separate from UI
   commits.
 - **Removing features.** When stripping a feature, remove its UI, settings,
-  tests, docs and translations together, and keep settings files written by
+  tests and docs together, and keep settings files written by
   the older build loading without error.
 
 ## Product boundaries
@@ -33,6 +33,8 @@ These instructions add implementation constraints for coding agents.
   capability merely because its name appears in a protobuf or enum. In
   particular, do not pursue Spotify Lossless or DRM circumvention.
 - Do not broaden a task into adjacent features or a general refactor.
+- The interface is English only. `src/i18n.rs` holds the helpers its text goes
+  through. Titles and lyrics still come in any language and script.
 
 ## Architecture
 
