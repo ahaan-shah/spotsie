@@ -11,6 +11,7 @@ use crate::theme::{self, Icon, Palette};
 
 const DEFAULT_ROW_HEIGHT: f32 = 60.0;
 const COMPACT_ROW_HEIGHT: f32 = 32.0;
+const NAV_ROW_HEIGHT: f32 = 40.0;
 
 struct Entry {
     image: Option<String>,
@@ -844,7 +845,8 @@ fn nav_row(
     label: &str,
     active: bool,
 ) -> egui::Response {
-    let (rect, response) = ui.allocate_exact_size(vec2(ui.available_width(), 40.0), Sense::click());
+    let (rect, response) =
+        ui.allocate_exact_size(vec2(ui.available_width(), NAV_ROW_HEIGHT), Sense::click());
     if ui.is_rect_visible(rect) {
         let lit = crate::motion::toggle(
             ui.ctx(),
@@ -875,9 +877,26 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
     let palette = app.palette;
     let page = app.page().clone();
     let locale = app.locale;
+    let hide_sidebar = super::keys::platform_shortcut(
+        &gettext(locale, "Hide sidebar (Ctrl+B)"),
+        &gettext(locale, "Hide sidebar (Cmd+B)"),
+    )
+    .to_owned();
     ui.add_space(4.0);
+    // The top row shares its width with the sidebar's own button, the same
+    // one the top bar shows while the sidebar is hidden. Drawing it first
+    // keeps Tab going from Home straight on to Search.
+    let (_, home_row) = ui.allocate_space(vec2(ui.available_width(), NAV_ROW_HEIGHT));
+    let mut home_row = ui.new_child(
+        egui::UiBuilder::new()
+            .max_rect(home_row)
+            .layout(Layout::right_to_left(Align::Center)),
+    );
+    if super::topbar::sidebar_button(&mut home_row, &palette, &hide_sidebar).clicked() {
+        app.actions.push(Action::ToggleSidebar);
+    }
     if nav_row(
-        ui,
+        &mut home_row,
         &palette,
         Icon::House,
         &gettext(locale, "Home"),
@@ -918,14 +937,9 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
     let mut focus_search = false;
     let header_sort = selected_sort(app, filter);
 
-    // The Library icon and heading are the sidebar's collapse button, as
-    // Spotify's are; the top bar's button brings the sidebar back. Both
-    // brighten together, from the hover the last frame saw.
-    let hide_sidebar = super::keys::platform_shortcut(
-        &gettext(locale, "Hide sidebar (Ctrl+B)"),
-        &gettext(locale, "Hide sidebar (Cmd+B)"),
-    )
-    .to_owned();
+    // The Library icon and heading also collapse the sidebar, as Spotify's
+    // do; the top bar's button brings it back. Both brighten together, from
+    // the hover the last frame saw.
     let library_hover_id = egui::Id::new("sidebar-library-hover");
     let library_was_hovered = ui
         .data(|data| data.get_temp::<bool>(library_hover_id))

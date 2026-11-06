@@ -1452,6 +1452,60 @@ mod tests {
     }
 
     #[test]
+    fn the_sidebar_button_sits_top_right_and_hides_the_sidebar() {
+        use egui::accesskit::Role;
+        for width in [210.0, 250.0, 420.0] {
+            let (ctx, mut app) = accessible_app(&format!("sidebar-button-{width}"));
+            app.settings.sidebar_width = width;
+            accessible_frame(&ctx, &mut app, vec![]);
+            let tree = accessible_frame(&ctx, &mut app, vec![]);
+            let bounds = |label: &str| {
+                tree.nodes
+                    .iter()
+                    .filter(|(_, node)| node.label() == Some(label) && node.role() == Role::Button)
+                    .filter_map(|(_, node)| node.bounds())
+                    .max_by(|a, b| a.x1.total_cmp(&b.x1))
+                    .unwrap_or_else(|| panic!("missing {label:?}"))
+            };
+            let hide = bounds(if cfg!(target_os = "macos") {
+                "Hide sidebar (Cmd+B)"
+            } else {
+                "Hide sidebar (Ctrl+B)"
+            });
+            let home = bounds("Home");
+            let sort = bounds("Recents");
+            assert!(
+                home.x1 <= hide.x0,
+                "at {width}: Home ends at {} but the button starts at {}",
+                home.x1,
+                hide.x0
+            );
+            assert!(hide.y0 >= home.y0 && hide.y1 <= home.y1, "at {width}");
+            assert!(
+                (hide.x1 - sort.x1).abs() <= 8.0,
+                "at {width}: the button should line up with the Library buttons"
+            );
+
+            let center = egui::pos2(
+                ((hide.x0 + hide.x1) / 2.0) as f32,
+                ((hide.y0 + hide.y1) / 2.0) as f32,
+            );
+            accessible_frame(
+                &ctx,
+                &mut app,
+                pointer_click(center, egui::PointerButton::Primary),
+            );
+            accessible_frame(&ctx, &mut app, vec![]);
+            assert!(
+                !app.settings.sidebar_visible,
+                "at {width}: the click hides the sidebar"
+            );
+            assert_eq!(app.page(), &Page::Home, "and does not press Home");
+            app.backend.shutdown();
+        }
+    }
+
+    #[test]
     fn translated_sidebar_keeps_keyboard_navigation_and_accessible_names() {
         use crate::i18n::{Locale, gettext};
         use clap::ValueEnum;

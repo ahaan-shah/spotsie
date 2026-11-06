@@ -279,6 +279,18 @@ fn update_badge(
     }
 }
 
+/// The button that shows or hides the sidebar: here while it is hidden, at
+/// the top of the sidebar while it is open.
+pub(super) fn sidebar_button(
+    ui: &mut egui::Ui,
+    palette: &Palette,
+    tooltip: &str,
+) -> egui::Response {
+    let response = nav_button(ui, palette, Icon::PanelLeft, true, tooltip);
+    response.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, tooltip));
+    response
+}
+
 fn nav_button(
     ui: &mut egui::Ui,
     palette: &Palette,
@@ -301,15 +313,20 @@ fn nav_button(
             egui::Color32::from_black_alpha(20)
         };
         ui.painter().circle_filled(rect.center(), 16.0, fill);
-        let color = if !enabled {
-            palette.dim
-        } else if response.hovered() {
-            palette.text
+        let color = if enabled {
+            let lit = crate::motion::toggle(
+                ui.ctx(),
+                response.id.with("lit"),
+                response.hovered() || response.has_focus(),
+                crate::motion::MICRO,
+            );
+            crate::motion::lerp_color(palette.secondary, palette.text, lit)
         } else {
-            palette.secondary
+            palette.dim
         };
         theme::paint_icon(ui, icon, rect, 20.0, color);
     }
+    theme::focus_ring(ui, &response);
     if enabled {
         response.on_hover_text(tooltip)
     } else {
@@ -344,11 +361,9 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             ui.add_space(super::widgets::PAGE_PADDING);
             ui.spacing_mut().item_spacing.x = ITEM_SPACING;
             if !app.settings.sidebar_visible {
-                if nav_button(
+                if sidebar_button(
                     ui,
                     &palette,
-                    Icon::PanelLeft,
-                    true,
                     super::keys::platform_shortcut(
                         &gettext(locale, "Show sidebar (Ctrl+B)"),
                         &gettext(locale, "Show sidebar (Cmd+B)"),
