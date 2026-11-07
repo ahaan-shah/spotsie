@@ -285,9 +285,7 @@ pub(super) fn sidebar_button(
     palette: &Palette,
     tooltip: &str,
 ) -> egui::Response {
-    let response = nav_button(ui, palette, Icon::PanelLeft, true, tooltip);
-    response.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, tooltip));
-    response
+    nav_button(ui, palette, Icon::PanelLeft, true, tooltip)
 }
 
 fn nav_button(
@@ -325,6 +323,7 @@ fn nav_button(
         };
         theme::paint_icon(ui, icon, rect, 20.0, color);
     }
+    response.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, enabled, tooltip));
     theme::focus_ring(ui, &response);
     if enabled {
         response.on_hover_text(tooltip)

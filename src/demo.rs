@@ -1444,11 +1444,13 @@ mod tests {
     }
 
     #[test]
-    fn the_sidebar_button_sits_top_right_and_hides_the_sidebar() {
+    fn the_sidebar_button_sits_top_right_level_with_back_and_hides_the_sidebar() {
         use egui::accesskit::Role;
         for width in [210.0, 250.0, 420.0] {
             let (ctx, mut app) = accessible_app(&format!("sidebar-button-{width}"));
             app.settings.sidebar_width = width;
+            // A page to go back from, so Back is a live button to measure.
+            app.actions.push(Action::Open(Page::LikedSongs));
             accessible_frame(&ctx, &mut app, vec![]);
             let tree = accessible_frame(&ctx, &mut app, vec![]);
             let bounds = |label: &str| {
@@ -1466,6 +1468,33 @@ mod tests {
             });
             let home = bounds("Home");
             let sort = bounds("Recents");
+            let back = bounds("Back");
+            let hide_label = if cfg!(target_os = "macos") {
+                "Hide sidebar (Cmd+B)"
+            } else {
+                "Hide sidebar (Ctrl+B)"
+            };
+            assert_eq!(
+                tree.nodes
+                    .iter()
+                    .filter(|(_, node)| node.label() == Some(hide_label))
+                    .count(),
+                1,
+                "at {width}: the sidebar button is the only control that hides the sidebar"
+            );
+            assert!(
+                !tree.nodes.iter().any(|(_, node)| {
+                    node.label() == Some("Library") && node.role() == Role::Button
+                }),
+                "at {width}: the Library heading is a label, not a button"
+            );
+            let middle = |b: egui::accesskit::Rect| (b.y0 + b.y1) / 2.0;
+            assert!(
+                (middle(hide) - middle(back)).abs() <= 0.5,
+                "at {width}: the sidebar button ({}) is level with Back ({})",
+                middle(hide),
+                middle(back)
+            );
             assert!(
                 home.x1 <= hide.x0,
                 "at {width}: Home ends at {} but the button starts at {}",
@@ -1492,7 +1521,7 @@ mod tests {
                 !app.settings.sidebar_visible,
                 "at {width}: the click hides the sidebar"
             );
-            assert_eq!(app.page(), &Page::Home, "and does not press Home");
+            assert_eq!(app.page(), &Page::LikedSongs, "and does not press Home");
             app.backend.shutdown();
         }
     }

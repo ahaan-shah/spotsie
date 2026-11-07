@@ -12,6 +12,8 @@ use crate::theme::{self, Icon, Palette};
 const DEFAULT_ROW_HEIGHT: f32 = 60.0;
 const COMPACT_ROW_HEIGHT: f32 = 32.0;
 const NAV_ROW_HEIGHT: f32 = 40.0;
+/// The space above the Home row, inside the sidebar's top margin.
+const HOME_ROW_SPACE: f32 = 4.0;
 
 struct Entry {
     image: Option<String>,
@@ -509,9 +511,10 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
     let palette = app.palette;
     let expanded_art = has_expanded_art(app);
     let floating_art = app.settings.sidebar_grid && expanded_art;
-    // The traffic lights float over the top-left of the sidebar now, so the
-    // first nav row has to start below them.
-    let top = 12 + theme::titlebar_inset(ui.ctx()) as i8;
+    // The Home row, with the sidebar button at its right, is centred on the
+    // same line as the top bar's Back and Forward buttons. On macOS both
+    // drop by half the traffic lights' inset, which keeps the row below them.
+    let top = sidebar_top(theme::titlebar_inset(ui.ctx()));
     let beside = if app.show_queue_panel {
         theme::SIDE_PANEL_MIN_WIDTH
     } else {
@@ -835,6 +838,13 @@ fn playlist_entry(
     }
 }
 
+/// The sidebar's top margin: enough that the Home row's centre, after the
+/// 4-point space above it, meets the centre of the top bar.
+fn sidebar_top(titlebar_inset: f32) -> i8 {
+    ((theme::TOP_BAR_HEIGHT + titlebar_inset) / 2.0 - HOME_ROW_SPACE - NAV_ROW_HEIGHT / 2.0).round()
+        as i8
+}
+
 fn nav_row(
     ui: &mut egui::Ui,
     palette: &Palette,
@@ -879,7 +889,7 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
         &gettext(locale, "Hide sidebar (Cmd+B)"),
     )
     .to_owned();
-    ui.add_space(4.0);
+    ui.add_space(HOME_ROW_SPACE);
     // The top row shares its width with the sidebar's own button, the same
     // one the top bar shows while the sidebar is hidden. Drawing it first
     // keeps Tab going from Home straight on to Search.
@@ -934,32 +944,14 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
     let mut focus_search = false;
     let header_sort = selected_sort(app, filter);
 
-    // The Library icon and heading also collapse the sidebar, as Spotify's
-    // do; the top bar's button brings it back. Both brighten together, from
-    // the hover the last frame saw.
-    let library_hover_id = egui::Id::new("sidebar-library-hover");
-    let library_was_hovered = ui
-        .data(|data| data.get_temp::<bool>(library_hover_id))
-        .unwrap_or(false);
-    let mut library_hovered = false;
-    let mut library_clicked = false;
-
+    // The Library icon and heading only name the section; the sidebar
+    // button on the Home row is what hides it.
     ui.horizontal(|ui| {
         ui.add_space(6.0);
-        let (icon_rect, icon_response) = ui.allocate_exact_size(vec2(22.0, 22.0), Sense::click());
-        icon_response.widget_info(|| {
-            egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), &hide_sidebar)
-        });
-        let icon_tint =
-            if library_was_hovered || icon_response.hovered() || icon_response.has_focus() {
-                palette.text
-            } else {
-                palette.secondary
-            };
-        Icon::Library.image(icon_tint, 22.0).paint_at(ui, icon_rect);
-        theme::focus_ring(ui, &icon_response);
-        library_hovered |= icon_response.hovered();
-        library_clicked |= icon_response.on_hover_text(&hide_sidebar).clicked();
+        let (icon_rect, _) = ui.allocate_exact_size(vec2(22.0, 22.0), Sense::hover());
+        Icon::Library
+            .image(palette.secondary, 22.0)
+            .paint_at(ui, icon_rect);
         ui.add_space(2.0);
         ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
             ui.spacing_mut().item_spacing.x = 2.0;
@@ -1027,25 +1019,15 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
                         theme::bold(size),
                         palette.text,
                     );
-                    let (rect, response) = ui.allocate_exact_size(galley.size(), Sense::click());
+                    let (rect, response) = ui.allocate_exact_size(galley.size(), Sense::hover());
                     response.widget_info(|| {
-                        egui::WidgetInfo::labeled(
-                            egui::WidgetType::Button,
-                            ui.is_enabled(),
-                            &hide_sidebar,
-                        )
+                        egui::WidgetInfo::labeled(egui::WidgetType::Label, true, &heading)
                     });
                     ui.painter().galley(rect.min, galley, palette.text);
-                    library_hovered |= response.hovered();
-                    library_clicked |= response.on_hover_text(&hide_sidebar).clicked();
                 }
             });
         });
     });
-    ui.data_mut(|data| data.insert_temp(library_hover_id, library_hovered));
-    if library_clicked {
-        app.actions.push(Action::ToggleSidebar);
-    }
     ui.add_space(6.0);
 
     ui.horizontal_wrapped(|ui| {
