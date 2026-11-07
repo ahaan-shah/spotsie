@@ -95,7 +95,21 @@ fn recent(app: &mut App, ui: &mut egui::Ui) {
         );
         return;
     }
-    theme::section_title(ui, &palette, &gettext(app.locale, "Recent searches"));
+    ui.horizontal(|ui| {
+        theme::section_title(ui, &palette, &gettext(app.locale, "Recent searches"));
+        ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+            if theme::link(
+                ui,
+                gettext(app.locale, "Clear recent searches"),
+                theme::regular(13.0),
+                palette.secondary,
+            )
+            .clicked()
+            {
+                app.actions.push(Action::ClearSearchHistory);
+            }
+        });
+    });
     ui.add_space(6.0);
     let history = app.settings.search_history.clone();
     ui.horizontal_wrapped(|ui| {

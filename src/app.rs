@@ -8942,6 +8942,10 @@ impl App {
                 self.settings.search_history.retain(|entry| entry != &query);
                 self.settings_dirty = true;
             }
+            Action::ClearSearchHistory => {
+                self.settings.search_history.clear();
+                self.settings_dirty = true;
+            }
             Action::SetSearchFilter(filter) => self.search.filter = filter,
             Action::FocusSearch => {
                 self.search.focus_requested = true;

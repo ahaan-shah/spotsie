@@ -2812,6 +2812,26 @@ mod tests {
         app.backend.shutdown();
     }
 
+    #[test]
+    fn clear_recent_searches_forgets_every_query() {
+        use egui::accesskit::{Action as AccessibleAction, Role};
+        let (ctx, mut app) = accessible_app("search-history-clear");
+        app.open(Page::Search);
+        app.search.query.clear();
+        app.search.committed.clear();
+        accessible_frame(&ctx, &mut app, vec![]);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let clear = accessible_node(&tree, "Clear recent searches", Role::Link);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(clear, AccessibleAction::Click, None)],
+        );
+        assert!(app.settings.search_history.is_empty());
+        assert!(app.search.committed.is_empty());
+        app.backend.shutdown();
+    }
+
     /// #596: clearing the global search from another page empties the field
     /// without leaving that page.
     #[test]
