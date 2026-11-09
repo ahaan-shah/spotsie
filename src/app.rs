@@ -2372,6 +2372,15 @@ impl App {
         if track_changed {
             self.on_now_playing_changed();
         }
+        // Keep the spot to come back to with the song, so a play after the
+        // engine went down picks it up there instead of from its start.
+        // The report that the engine stopped leaves it at the last spot.
+        if let Some(track) = &self.local.track
+            && self.local.playback != Playback::Stopped
+            && self.resume_track.as_deref() == Some(track.uri.as_str())
+        {
+            self.resume_position_ms = self.local.position_now();
+        }
         if reconnected {
             if let Some(request) = self.queued_play.take() {
                 self.play_request(request, false);
@@ -12258,6 +12267,40 @@ mod tests {
     }
 
     /// The queue can still disagree with librespot after an anchored skip.
+    /// When the engine drops mid-song, a later play rebuilds the song from
+    /// the remembered spot. That spot follows playback, so it is where the
+    /// song was, not its start.
+    #[test]
+    fn the_resume_point_follows_local_playback_through_an_engine_drop() {
+        let mut app = headless_app();
+        let track = crate::player::LocalTrack {
+            uri: "spotify:track:long".into(),
+            duration_ms: 300_000,
+            ..Default::default()
+        };
+        let mut playing = app.local.clone();
+        playing.connected = true;
+        playing.track = Some(track);
+        playing.track_sequence += 1;
+        playing.playback = Playback::Playing;
+        playing.position_ms = 0;
+        app.handle_local(playing.clone());
+        assert_eq!(app.resume_track.as_deref(), Some("spotify:track:long"));
+        assert_eq!(app.resume_position_ms, 0);
+
+        playing.position_ms = 142_000;
+        app.handle_local(playing.clone());
+        assert_eq!(app.resume_position_ms, 142_000);
+
+        // The session ended: the engine reports itself stopped.
+        let mut ended = playing;
+        ended.connected = false;
+        ended.playback = Playback::Stopped;
+        ended.position_ms = 0;
+        app.handle_local(ended);
+        assert_eq!(app.resume_position_ms, 142_000);
+    }
+
     /// Once the engine reports the track that started, its report is final.
     #[test]
     fn an_engine_track_report_overrules_the_optimistic_queue_marker() {

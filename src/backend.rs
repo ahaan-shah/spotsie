@@ -64,6 +64,10 @@ fn engine_retry_delay(failures: u32) -> Duration {
     Duration::from_secs(DELAYS[(failures as usize).min(DELAYS.len() - 1)])
 }
 
+/// How many failed reconnects in a row still keep what was playing for the
+/// next try: the retries at 5, 15 and 30 seconds, about a minute in all.
+const RESUME_KEPT_FAILURES: u32 = 3;
+
 /// Whether a failed engine connection can be tried again with the same
 /// credential. A rejected credential or a Free account cannot.
 fn engine_error_is_transient(message: &str) -> bool {
@@ -1771,7 +1775,14 @@ impl Worker {
                 Command::SignOut => self.sign_out(),
                 Command::AuthorizePlayback => self.authorize_playback(),
                 Command::ResumePlayback => {
-                    if !self.reconnect_with_saved_grant() && self.signed_in {
+                    if let Some(engine) = &self.engine {
+                        // The engine came back (a background retry) after
+                        // the interface last heard it was down. Say so
+                        // again: a failure here would leave the interface
+                        // routing every control around a working engine.
+                        let device_id = engine.device_id().to_string();
+                        self.emit(Event::Playback(LocalPlayback::Ready { device_id }));
+                    } else if !self.reconnect_with_saved_grant() && self.signed_in {
                         self.emit(Event::Playback(LocalPlayback::Failed(
                             PLAYBACK_SET_UP_AGAIN.into(),
                         )));
@@ -3096,15 +3107,25 @@ impl Worker {
                 self.start_radio();
             }
             None => {
-                self.resume = None;
                 let message = error.unwrap_or_else(|| "Local playback is unavailable".into());
+                let retrying = message != PLAYBACK_REJECTED
+                    && engine_error_is_transient(&message)
+                    && self.playback_grant.is_some();
                 if message == PLAYBACK_REJECTED {
                     // Only now is the saved credential gone for good; the
                     // next attempt has to be a browser approval.
                     self.playback_grant = None;
                     self.delete_stored_grant(CredentialSlot::Playback);
-                } else if engine_error_is_transient(&message) && self.playback_grant.is_some() {
+                } else if retrying {
                     self.schedule_engine_retry();
+                }
+                // A session that dropped during a network blip (a Wi-Fi
+                // roam, a wake) often fails its first reconnect. Keep what
+                // was playing for the retries that follow within the
+                // minute, so the song carries on at the same spot; past
+                // that it is let go and a play starts it afresh.
+                if !retrying || self.engine_failures > RESUME_KEPT_FAILURES {
+                    self.resume = None;
                 }
                 if !quiet {
                     self.emit(Event::Playback(LocalPlayback::Failed(message)));
@@ -6294,6 +6315,45 @@ mod authorization_tests {
         assert_eq!(worker.engine_failures, 2);
         assert!(!worker.engine_quiet);
         assert!(events.try_iter().next().is_none());
+    }
+
+    #[test]
+    fn a_failed_reconnect_keeps_what_was_playing_for_the_quick_retries() {
+        let (runtime, mut worker, _events) = worker("playback-retry-resume");
+        let _entered = runtime.enter();
+        verify(&mut worker, ApiSource::Shared, "alice");
+        worker.playback_grant = Some(Credentials::with_password("alice", "dummy-reusable-grant"));
+        let session = worker.album_type_lookup.session_generation;
+        let spec = crate::player::LoadSpec {
+            uris: vec!["spotify:track:playing".into()],
+            position_ms: 93_000,
+            play: true,
+            ..crate::player::LoadSpec::default()
+        };
+        // The session dropped mid-song during a Wi-Fi roam, and each
+        // reconnect ran before the network was back.
+        worker.resume = Some(PlaybackResume::Track(spec.clone()));
+        for failures in 1..=RESUME_KEPT_FAILURES {
+            worker.engine_busy = true;
+            worker.engine_quiet = failures > 1;
+            worker.on_engine_connected(session, None, Some("Couldn't reach Spotify: dns".into()));
+            assert_eq!(worker.engine_failures, failures);
+            assert!(
+                matches!(&worker.resume, Some(PlaybackResume::Track(kept)) if *kept == spec),
+                "kept for the retry after failure {failures}"
+            );
+        }
+        // Retries are a minute or more apart from here: let the song go.
+        worker.engine_busy = true;
+        worker.engine_quiet = true;
+        worker.on_engine_connected(session, None, Some("Couldn't reach Spotify: dns".into()));
+        assert!(worker.resume.is_none());
+
+        // A failure no retry follows lets it go at once.
+        worker.resume = Some(PlaybackResume::Track(spec));
+        worker.engine_busy = true;
+        worker.on_engine_connected(session, None, Some(PREMIUM_NEEDED.into()));
+        assert!(worker.resume.is_none());
     }
 
     #[test]

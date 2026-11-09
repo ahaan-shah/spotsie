@@ -325,8 +325,13 @@ playback back never needs the browser while Spotify still accepts it. A
 reconnect that fails for a reason that can pass (no network yet after
 waking, a timeout) is shown once and then tried again in the background,
 after 5, 15, 30 and 60 seconds and then every two minutes, until it
-connects. Playing a song while the engine is down reconnects with the
-stored credential and holds the song until it plays, and **Try again** and
+connects. What was playing when the session dropped is kept for the retries
+in the first minute, so a short network blip (a Wi-Fi roam) carries the song
+on at the same spot; after that it is let go. Playing a song while the
+engine is down reconnects with the stored credential and holds the song
+until it plays, picking the remembered song up where it was, and if a
+background retry has already brought the engine back, the interface is told
+it is ready instead of that it failed. **Try again** and
 **Set up playback here** do the same. Only when Spotify refuses the stored
 credential itself is it removed, and the next attempt asks for a new
 browser approval.
